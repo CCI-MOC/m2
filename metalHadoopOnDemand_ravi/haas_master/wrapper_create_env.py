@@ -1,9 +1,13 @@
+#! /bin/python
 import sys
 import subprocess
 import threading
 
-def create_env_wrapper(path, m_args):
-	arglist = [path]
+def call_shellscript(path, m_args, ssh_cmdline):
+	arglist = ssh_cmdline
+	arglist.append(path)
+	print arglist
+        print "the above is the cmdline that will run on the current machine"
 	for arg in m_args:
 		print arg
 		arglist.append(arg)
@@ -44,7 +48,7 @@ def parse_stdout_output(output_tuple, lookup_tuple): #just a lookup parser
 	print output
 
 if __name__ == "__main__": ## use this for quick tests.. in the application we will call the functions directly.
-	temp = create_env_wrapper(sys.argv[1], sys.argv[2:])
+        hardcoded_ssh = ["ssh", "-A", "psurana@129.10.3.48", "-C"]
+	temp = call_shellscript(sys.argv[1], sys.argv[2:],hardcoded_ssh)
 	parse_stdout_output(temp, ("createBigDataEnvNew.sh"))
-
 
