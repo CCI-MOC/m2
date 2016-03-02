@@ -77,7 +77,6 @@ def attach_nodes_haas_proj(haas_url, project, node_list, debug = None, prehooks 
         None, posthooks = None,):
     api = '/connect_node'
 
-## due to limitation in urlparse, we need to join in steps
     c_api = urlparse.urljoin(haas_url, 'project/' + project + api)
     ret_obj = list()
     for node in node_list:
@@ -91,17 +90,21 @@ def attach_nodes_haas_proj(haas_url, project, node_list, debug = None, prehooks 
     return ret_obj
 
 
+def attach_to_project_network(haas_url, project, node_list,\
+        debug = None, prehooks = None, post_hooks = None):
+    pass
+
 def add_to_project(haas_url, project, node_c, debug = None, prehooks \
         = None, posthooks = None):
     if debug:
         print "node count : " + str(node_c)
     node_c = int(node_c)
-    free_list = list_free_nodes(haas_url, debug = True ).json
-    if free_list.count < node_c:
+    free_list = list_free_nodes(haas_url, debug).json
+    if len(free_list) < node_c:
         raise Exception("count greater than available") 
     return attach_nodes_haas_proj(haas_url, project, free_list[0:node_c], debug) 
 
 if __name__ == "__main__":
-    haas_ret =  add_to_project('http://127.0.0.1:7000/', 'bmi_infra', 2)
+    haas_ret =  add_to_project('http://127.0.0.1:7000/', 'bmi_infra', 2, debug = True)
     for ret in haas_ret:
         print ret
