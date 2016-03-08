@@ -4,6 +4,7 @@ import requests
 import json
 import time
 import sys
+from  ceph_wrapper import *
 #Global variable
 #haas_url = 'http://127.0.0.1:7000/'
 
@@ -142,16 +143,17 @@ def add_to_project(haas_url, project, node_c,\
         = None, posthooks = None):
     node_tuple_list =  list()
     if debug:
-        print "node count : " + str(node_c)
+        print {"node count" : str(node_c)}
     node_c = int(node_c)
     free_list = list_free_nodes(haas_url, debug).json
     if len(free_list) < node_c:
         raise Exception("count greater than available") 
     attach_ret = attach_nodes_haas_proj(haas_url,\
             project, free_list[0:node_c], debug)
-
+    if debug:
+        print attach_ret
     for ret, node in zip(attach_ret, free_list[0:node_c]):
-        if ret.haas_ret.status_code  is not 404 or\
+        if ret.haas_ret.status_code  is not 404 and\
             ret.haas_ret.status_code is not 409:
             node_tuple_list.append((node, nic))
         else:
@@ -160,12 +162,11 @@ def add_to_project(haas_url, project, node_c,\
         haas_url, node_tuple_list, network,\
         channel, \
         debug)
-    return attach_ret, a_net_ret
-'''
-(haas_url, node_nic_list_t,\
-        network, nic, channel = "vlan/native",\
-        debug = None, prehooks = None, post_hooks = None):
-'''
+## TODO
+## We need to harden the code for Any exceptions thrown by Haas.
+## these are not done here much, but in the atomics we really 
+## need to, I'm not comfortable with returning free_list
+    return attach_ret, a_net_ret, free_list[0:node_c]
 
 def detach_from_project_network(haas_url, node,\
         network, nic = 'enp130s0f0', debug = None,\
@@ -173,7 +174,6 @@ def detach_from_project_network(haas_url, node,\
     ret_obj = list()
     api = '/node/' + node + '/nic/' + nic + '/detach_network'
     c_api = urlparse.urljoin(haas_url, api)
-    print c_api
     body = {"network" : network}
     haas_req = HaasRequest('post', body)
     t_ret, t_hook_ret = call_haas(c_api, haas_req, debug)
@@ -182,13 +182,10 @@ def detach_from_project_network(haas_url, node,\
     return t_ret, t_hook_ret
 
 
-#This function queries for the list of nodes in project and for every node 
-#detachs it from vlan network associated with it and then detachs it
-#from project.
 def detach_nodes(haas_url, project,\
-        network, nic = 'enp130s0f0', debug = None, pre_hooks = None, post_hooks = None):
-    node_list = query_project_nodes(haas_url, project, debug, \
-                                    pre_hooks,post_hooks) 
+        network, node_list,\
+        nic = 'enp130s0f0', debug = None,\
+        pre_hooks = None, post_hooks = None):
     ret_net_obj = list()
     ret_obj = list()
     for node in node_list.json:
@@ -201,13 +198,14 @@ def detach_nodes(haas_url, project,\
                              node, debug, pre_hooks, post_hooks)
         ret_obj.append(HaasReturns(t_ret, t_hook_ret))
     if debug:
-        print {"node_list": node_list}
+        print {"node_list": node_list, "bla" : [a for a in ret_obj]}
     return ret_net_obj, ret_obj    
 
 #Detaches a node from project using the HaaS API call. This usually
 #receives call from detach_nodes function.
 def detach_node_from_project(haas_url, project, node,\
-            debug = None, pre_hooks = None, post_hooks = None):
+            debug = None, pre_hooks = None,\
+            post_hooks = None):
     api = '/detach_node'
     c_api = urlparse.urljoin(haas_url, 'project/' + project + api)
     ret_net_obj = list()
@@ -229,7 +227,37 @@ def query_project_nodes(haas_url, project, \
     free_node_list, hook_ret = call_haas(c_api, haas_req)
     return HaasReturns(free_node_list, hook_ret)   
 
-    
+  
+def create_bigdata_env(haas_url, project, nc, network, fs_obj,\
+        debug = None, pre_hooks = None,\
+        post_hooks = None):
+    if debug:
+        print {"haas_url" : haas_url, "project" : project,\
+            "node_cn" : nc, "network" : network, "fs_obj" : fs_obj}
+    proj_ret = add_to_project(haas_url, project, nc, network, debug = True)
+    master = proj_ret[2][0]
+    print "master"
+    print master
+    fs_obj.clone("hadoopMaster.img".encode('utf-8'),\
+            "HadoopMasterGoldenImage".encode('utf-8'),\
+            master.encode("utf-8"))
+# not doing clone cross context, although our wrapper allows for that
+    for slave in proj_ret[2][1:]:
+        fs_obj.clone("HadoopSlave.img".encode('utf-8'),\
+                "HadoopSlaveGoldenImage".encode('utf-8'),\
+                slave.encode("utf-8"))
+    return proj_ret, fs_obj
+
+def del_nodelist(haas_url, project, network, node_list,\
+        fs_obj, debug = None,\
+        pre_hooks = None, post_hooks = None):
+    detached_ret = detach_nodes(haas_url, project, network,\
+            node_list, debug = debug, pre_hooks = None, post_hooks = None) 
+    for node in node_list.json:
+        print "node to remove" + "  " + node
+        fs_obj._remove(node.encode("utf-8"))
+
+
 
 if __name__ == "__main__":
     #print   list_free_nodes('http://127.0.0.1:7000/', debug = True)
@@ -238,10 +266,23 @@ if __name__ == "__main__":
     #for jj in haas_ret.json:
     #    tt.append((jj, 'enp130s0f0'))
     #print tt
+    if 'create' in sys.argv:
+        ceph_obj = RBD(rid = "henn", r_conf = "/etc/ceph/ceph.conf", pool = 'boot-disk-prototype', debug = True)
+        cb = create_bigdata_env('http://127.0.0.1:7000/', 'bmi_infra', 2, "bmi-provision", ceph_obj, debug = True)
+        ceph_obj.tear_down()
+        print cb
+
     if 'attach' in sys.argv:
-        add_to_project('http://127.0.0.1:7000/', 'bmi_infra',5,"bmi-provision", debug = True)
+        print add_to_project('http://127.0.0.1:7000/', 'bmi_infra', 2, "bmi-provision", debug = True)
+        
+    node_list = query_project_nodes('http://127.0.0.1:7000/', 'bmi_infra',True)
+    print node_list.json
+    print "a bove is nodelsit"
+    #ceph_obj =  RBD(rid = "henn", r_conf = "/etc/ceph/ceph.conf", pool = 'boot-disk-prototype', debug=55)
     if 'detach' in sys.argv:
-        ay = detach_nodes('http://127.0.0.1:7000/', 'bmi_infra','bmi-provision', debug = True)
+        ceph_obj = RBD(rid = "henn", r_conf = "/etc/ceph/ceph.conf", pool = 'boot-disk-prototype', debug = True)
+        ay = del_nodelist('http://127.0.0.1:7000/', 'bmi_infra','bmi-provision', node_list, ceph_obj, debug = True)
+        ceph_obj.tear_down()
     #for kk in ay:
     #    print ay
         #time.sleep(5)
