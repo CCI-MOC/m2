@@ -18,6 +18,9 @@ class GlobalConfig(object):
 
     def parse_config(self):
         pass
+
+
+
 class ResponseException(object):
  
     def __init__(self, e):
@@ -28,9 +31,9 @@ class ResponseException(object):
         self.exception_dict = {
            type(rbd.ImageExists())  : 401,
            type(CephException()) : 403,
-           type(rbd.ImageBusy()) : 404,
+           type(rbd.ImageBusy()) : 409,
            type(rbd.ImageHasSnapshots()) : 405,
-           type(rbd.ImageNotFound()) : 409,
+           type(rbd.ImageNotFound()) : 404,
            type(rbd.FunctionNotSupported()) : 410,
            type(rbd.ArgumentOutOfRange()) : 411,
                               } # throw 401 ... ?(not yet decided) these are placeholders for now, will work though 
@@ -41,13 +44,6 @@ class ResponseException(object):
             emsg = self.exception.message
         return {'error' : self.current_err, 'msg' : emsg}
  
-
-
-
-
-
-
-
 
 
 
@@ -107,12 +103,6 @@ def init_fs(fsconfig, debug = False):
                     fsconfig.pool, debug)
     except Exception as e:
         return ResponseException(e).parse_curr_err()
-
-
-
-
-
-
 
 
 
