@@ -41,6 +41,18 @@ class ResponseException(object):
             emsg = self.exception.message
         return {'error' : self.current_err, 'msg' : emsg}
  
+
+
+
+
+
+
+
+
+
+
+
+
 def provision(fs_obj, node_name, img_name = "hadoopMaster.img",\
         snap_name = "HadoopMasterGoldenImage",\
         debug = False):
@@ -55,7 +67,7 @@ def provision(fs_obj, node_name, img_name = "hadoopMaster.img",\
             return True
 
     except Exception as e:
-        ResponseException(e) 
+        return ResponseException(e).parse_curr_err() 
 
 def remove(fs_obj, node_name):
     '''
@@ -68,9 +80,8 @@ def remove(fs_obj, node_name):
         return ResponseException(e).parse_curr_err() 
 
 def create_snapshot(fs_obj, img_name, snap_name):
-    '''
-        Creates snapshot for the given image with snap_name as given name
-    '''
+    
+      '''  Creates snapshot for the given image with snap_name as given name '''
     try:
         if fs_obj.init_image(img_name):
             return fs_obj.snap_image(img_name, snap_name)
@@ -83,16 +94,32 @@ def list(fs_obj, debug = True):
         Lists the images for the project which includes the snapshot
     '''
     try:
-        fs_obj.list_n()
+        return fs_obj.list_n()
+
     except Exception as e:
         return ResponseException(e).parse_curr_err()
 
 def init_fs(fsconfig, debug = False):
-    if fsconfig.fstype is "Ceph":
-        return RBD(fsconfig.rid,\
-                fsconfig.r_conf,\
-                fsconfig.pool, debug)
+    try:
+        if fsconfig.fstype is "Ceph":
+            return RBD(fsconfig.rid,\
+                    fsconfig.r_conf,\
+                    fsconfig.pool, debug)
+    except Exception as e:
+        return ResponseException(e).parse_curr_err()
 
+
+
+
+
+
+
+
+
+
+def class Tests(object):
+    fsconfig = GlobalConfig()
+    fs_obj = init_fs(fsconfig) 
 
 if __name__ == "__main__":
     #print   list_free_nodes('http://127.0.0.1:7000/', debug = True)
