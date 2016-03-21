@@ -1,18 +1,17 @@
-#! env python
+#! /bin/python
 import rados
 import rbd
 import os
 
 #Need to define abstract class for Filesystem in a seperate file. 
 
+    
 class CephBase(object):
-
     def __init__(self, rid, r_conf, pool, debug=None):
         if not rid or not r_conf or not pool:
             raise Exception("one or more arguments for ceph is incorrect")
         if not os.path.isfile(r_conf):
             raise Exception("invalid configuration file")
-
         self.rid = rid
         self.r_conf = r_conf
         self.pool = pool
@@ -25,7 +24,6 @@ class CephBase(object):
         if debug:   
             self.is_debug = debug
         
-    
     def __repr__(self):
         return str([self.rid, self.r_conf, self.pool, self.is_debug])
 #
@@ -36,7 +34,7 @@ class CephBase(object):
                 'is_debug? = {3}, current images {4}'\
                 .format(self.rid,self.r_conf,\
                         self.pool, self.is_debug,\
-                        str(self.img_dict.keys()))      
+                        str(self.img_dict.keys()))
 
     def __init_context(self):
         try:
@@ -67,11 +65,14 @@ class CephBase(object):
                 ctx = self.ctx
             image_instance = rbd.Image(ctx, name, snapshot, read_only)
             self.img_dict[name] = image_instance 
+            ##return True We return True because you can already reference the image
+            ##using the name as the key to the dict. The worklflos is something like
             return True
         except Exception as e:
             raise e
 # define this function in the derivative class
 # to be specific for the call.
+
     def run(self):
         pass
 
@@ -123,7 +124,7 @@ class RBD(CephBase):
         except Exception as e:
             raise e
     
-    def remove(self,  iname, ctx = None):
+    def remove(self, iname, ctx = None):
         if not ctx:
             ctx = self.ctx
         if iname in self.c_img_list:
@@ -146,6 +147,9 @@ class RBD(CephBase):
             except Exception as e:
                 raise e
 
+    def write(data, offset):
+        self.img_dict[name].write(data, offset)
+
     def close_image(name):
         if name in self.img_dict:
             self.img_dict[name].close()
@@ -159,21 +163,32 @@ class RBD(CephBase):
                 raise Exception("Invalid image name"\
                         " or image not instantiated")
             self.img_dict[img_name].create_snap(name)
+            return True
         except Exception as e:
             raise e
 
-
-
+    def create_image(self, img_name, img_file,\
+                 img_size, ctx = None):
+        ctx = self.ctx    
+        self.rbd.create(ctx, img_name, img_size)
+    
+    def get_image(self, img_name):
+         '''
+            Gets image object for manipulation
+         '''
+         return self.img_dict[img_name]
+        
 if __name__ == "__main__" :
-    a = RBD(rid = "henn", r_conf = "/etc/ceph/ceph.conf", pool = 'boot-disk-prototype', debug=55)
-    b  = RBD(rid = "henn", r_conf = "/etc/ceph/ceph.conf", pool = 'boot-disk-prototype', debug=55)
-    #a.clone("hadoopMaster.img".encode('utf-8'), "HadoopMasterGoldenImage".encode('utf-8'),"ABLALdALA".encode('utf-8'))
-    a.init_image("test.img")
-    a.snap_image("test.img", "test_snap")
-    print a.c_img_list
-    print a.list_n()
-    #print a.remove("ABLALdALA")
-    print a.list_n()
-    print a
-    a.tear_down()
-    print a   
+    pass
+#    a = RBD(rid = "henn", r_conf = "/etc/ceph/ceph.conf", pool = 'boot-disk-prototype', debug=55)
+#    b  = RBD(rid = "henn", r_conf = "/etc/ceph/ceph.conf", pool = 'boot-disk-prototype', debug=55)
+#    #a.clone("hadoopMaster.img".encode('utf-8'), "HadoopMasterGoldenImage".encode('utf-8'),"ABLALdALA".encode('utf-8'))
+#    a.init_image("test.img")
+#    a.snap_image("test.img", "test_snap")
+#    print a.c_img_list
+#    print a.list_n()
+#    #print a.remove("ABLALdALA")
+#    print a.list_n()
+#    print a
+#    a.tear_down()
+#    print a   
