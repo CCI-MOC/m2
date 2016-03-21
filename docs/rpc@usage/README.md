@@ -42,6 +42,7 @@ To run the name server simply run the python program:
 This creates a name server. The name server is binded to a IP Address that can be reached
 by other systems on the network. This IP Address needs to be specified in the config.json
 file under the element:-  
+  
     "server-details" : { 
            "name-server-address" : "the-ip-address-goes-here" }  
   
@@ -56,8 +57,9 @@ the server objects. The main server is binded to a IP Address as well. This addr
 to the Pyro server through config.HOST variable.  
   
 The IP Address for the main server is to be entered in the config.json file under the element:-  
+  
     "server-details" : {    
-          "server-address" : "the-ip-address-goes-here" }    
+           "server-address" : "the-ip-address-goes-here" }    
   
 This IP Address should be reachable by name server and clients.   
   
@@ -72,11 +74,11 @@ The mainclient.py file needs to be executed with the appropriate arguments every
 the server is to be made.  
   
 The example command looks as follows:  
+    
     python mainclient.py 1/2/3.. arg1 arg2 arg3 ...  
   
 where,  
-   1/2/3.. :- Is the number the script is associated to in config.json file.  
-   arg1 arg2 ... :- Is the arguments that needs to be provided for a script
-                    to run.
+     1/2/3.. :- Is the number the script is associated to in config.json file.  
+     arg1 arg2 ... :- Is the arguments that needs to be provided for a script to run.
 
 
