@@ -11,6 +11,10 @@ class GlobalConfig(object):
         self.r_conf = '/etc/ceph/ceph.conf'
     #add parser code here once we have a configfile/ if we decide on a Db
     # we put the db code here.
+    def __str__(self):
+        return {'file system :' : self.fstype, \
+            'rid' : self.rid, 'pool' : self.pool,\
+                'configfile' : self.r_conf} 
 
     def parse_config(self):
         pass
@@ -18,19 +22,28 @@ class ResponseException(object):
  
     def __init__(self, e):
         self.exception_dict = dict()
+        self.exception = e
 # Extend this dict as needed for future expceptions. this
 # ensures readeability and uniformity of errors.
         self.exception_dict = {
-           type(rbd.ImageExists())  : 401 
-                              } # throw 401?(not yet decided) if the image exists
+           type(rbd.ImageExists())  : 401,
+           type(CephException()) : 403,
+           type(rbd.ImageBusy()) : 404,
+           type(rbd.ImageHasSnapshots()) : 405,
+           type(rbd.ImageNotFound()) : 409,
+           type(rbd.FunctionNotSupported()) : 410,
+           type(rbd.ArgumentOutOfRange()) : 411,
+                              } # throw 401 ... ?(not yet decided) these are placeholders for now, will work though 
         self.current_err = self.exception_dict[type(e)]
 
     def parse_curr_err(self, emsg = "Generic Error"):
+        if self.exception.message:
+            emsg = self.exception.message
         return {'error' : self.current_err, 'msg' : emsg}
  
 def provision(fs_obj, node_name, img_name = "hadoopMaster.img",\
         snap_name = "HadoopMasterGoldenImage",\
-        ):
+        debug = False):
     '''
         Provisioning the nodes for a given project using the image and snapshot name
         given. The nodes are typically implemented using ceph.
@@ -39,7 +52,6 @@ def provision(fs_obj, node_name, img_name = "hadoopMaster.img",\
         if fs_obj.clone(img_name.encode('utf-8'),\
                 snap_name.encode('utf-8'),\
             node_name.encode("utf-8")):
-            fs_obj.tear_down()
             return True
 
     except Exception as e:
@@ -51,7 +63,6 @@ def remove(fs_obj, node_name):
     ''' 
     try:
         if fs_obj._remove(node_name.encode("utf-8")):
-            fs_obj.tear_down()
             return True
     except Exception as e:
         return ResponseException(e).parse_curr_err() 
@@ -65,7 +76,6 @@ def create_snapshot(fs_obj, img_name, snap_name):
             return fs_obj.snap_image(img_name, snap_name)
 
     except Exception as e:
-         print ResponseException(e).current_err 
          return ResponseException(e).parse_curr_err()
 
 def list(fs_obj, debug = True):
@@ -100,9 +110,9 @@ if __name__ == "__main__":
         #ceph_obj = RBD(rid = "henn", r_conf = "/etc/ceph/ceph.conf", pool = 'boot-disk-prototype', debug = True)
         #cb = create_bigdata_env('http://127.0.0.1:7000/', 'bmi_infra', 2, "bmi-provision", ceph_obj, debug = True)
         #ceph_obj.tear_down()
-        provision('cisco-04',debug = True)
+        print provision( fs_obj, 'cisco-04',debug = True)
     if 'del' in sys.argv:
-        remove('cisco-04')
+        print remove(fs_obj , 'cisco-04')
     if 'attach' in sys.argv:
         print add_to_project('http://127.0.0.1:7000/', 'bmi_infra', 2, "bmi-provision", debug = True)
     if 'snap' in sys.argv:
@@ -118,6 +128,14 @@ if __name__ == "__main__":
         ceph_obj.tear_down()
     #for kk in ay:
     #    print ay
-        #time.sleep(5)
+    fs_obj.tear_down()
+    print "imin"
+    try: 
+        print "iminini"
+        raise CephException("hello")
+    except Exception as e:
+        print ResponseException(e).parse_curr_err()
+        
+#time.sleep(5)
     #print  ax
     print "############################################# CLEARED ##########################"

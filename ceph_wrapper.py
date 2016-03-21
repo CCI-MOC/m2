@@ -5,13 +5,18 @@ import os
 
 #Need to define abstract class for Filesystem in a seperate file. 
 
-    
+
+class CephException(Exception):
+    def __init__(self, message = None, errors = None):
+        super(CephException, self).__init__(message)
+        self.errors = errors   
+ 
 class CephBase(object):
     def __init__(self, rid, r_conf, pool, debug=None):
         if not rid or not r_conf or not pool:
-            raise Exception("one or more arguments for ceph is incorrect")
+            raise CephException("one or more arguments for ceph is incorrect")
         if not os.path.isfile(r_conf):
-            raise Exception("invalid configuration file")
+            raise CephException("invalid configuration file")
         self.rid = rid
         self.r_conf = r_conf
         self.pool = pool
@@ -86,7 +91,7 @@ class CephBase(object):
     def __td_images(self):
         if self.img_dict is None:
             return
-        for key in self.img_dict:
+        for key in self.img_dict.keys():
             self.img_dict[key].close()
             del(self.img_dict[key])
 
@@ -120,7 +125,7 @@ class RBD(CephBase):
                 self.c_img_list.append(c_nm)
                 return True
             else:
-                raise Exception("post image creation check failed")
+                raise CephException("post image creation check failed")
         except Exception as e:
             raise e
     
@@ -130,13 +135,13 @@ class RBD(CephBase):
         if iname in self.c_img_list:
             self._remove(iname, ctx) 
         else:
-            raise Exception("image not found in list,'\
+            raise CephException("image not found in list,'\
                     ' use the unsafe remove if you are sure")
         if iname not in self.list_n():
             self.c_img_list.remove(iname)
             return True
         else:
-            raise Exception("post image removal\
+            raise CephException("post image removal\
                     ' check failed")
 
     def _remove(self, iname, ctx = None):
@@ -144,7 +149,7 @@ class RBD(CephBase):
                 if not ctx:
                     ctx = self.ctx
                 self.rbd.remove(ctx, iname)
-            except Exception as e:
+            except CephException as e:
                 raise e
 
     def write(data, offset):
@@ -155,12 +160,12 @@ class RBD(CephBase):
             self.img_dict[name].close()
             del(self.img_dict[name])
         else:
-            raise Exception("{0} not found!".format(name))
+            raise CephException("{0} not found!".format(name))
 
     def snap_image(self, img_name, name):
         try:
             if img_name not in self.img_dict:
-                raise Exception("Invalid image name"\
+                raise CephException("Invalid image name"\
                         " or image not instantiated")
             self.img_dict[img_name].create_snap(name)
             return True
