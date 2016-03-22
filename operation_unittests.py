@@ -15,8 +15,12 @@ class Tests(unittest.TestCase):
         del self.fs_obj 
         del self.fsconfig
 
+
+## ## ## we use UID's for unique string generation. 
+## 4 byte string.This works for Ceph.
     def test_provision(self):    
         rnd_str = str(uuid.uuid4())
+        print rnd_str
         if provision( self.fs_obj, rnd_str):
             img_list = self.fs_obj.list_n()
             self.assertTrue(rnd_str in img_list)
@@ -27,6 +31,7 @@ class Tests(unittest.TestCase):
     def test_removal(self):    
         try:
             rnd_str = str(uuid.uuid4())
+            print rnd_str
             if provision( self.fs_obj, rnd_str):
                 self.fs_obj.remove(rnd_str) 
                 img_list = self.fs_obj.list_n()
