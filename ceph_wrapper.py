@@ -152,8 +152,13 @@ class RBD(CephBase):
             except CephException as e:
                 raise e
 
-    def write(data, offset):
+    def write(img_name, data, offset):
+        try:
+            if not img_name in self.img_dict:
+                raise CephException('open the image first')
         self.img_dict[name].write(data, offset)
+        except Exception as e:
+            raise e
 
     def close_image(name):
         if name in self.img_dict:
@@ -176,6 +181,7 @@ class RBD(CephBase):
                  img_size, ctx = None):
         ctx = self.ctx    
         self.rbd.create(ctx, img_name, img_size)
+        return True
     
     def get_image(self, img_name):
          '''
