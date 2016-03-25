@@ -70,7 +70,7 @@ class CephBase(object):
                 ctx = self.ctx
             image_instance = rbd.Image(ctx, name, snapshot, read_only)
             self.img_dict[name] = image_instance 
-            ##return True We return True because you can already reference the image
+            ##return True We return True because we can already reference the image
             ##using the name as the key to the dict. The worklflos is something like
             return True
         except Exception as e:
@@ -155,12 +155,13 @@ class RBD(CephBase):
     def write(img_name, data, offset):
         try:
             if not img_name in self.img_dict:
-                raise CephException('open the image first')
-        self.img_dict[name].write(data, offset)
+                raise CephException('Image not instantiated:'\
+                        ' Open the image first')
+            self.img_dict[img_name].write(data, offset)
         except Exception as e:
             raise e
 
-    def close_image(name):
+    def close_image(self, name):
         if name in self.img_dict:
             self.img_dict[name].close()
             del(self.img_dict[name])
