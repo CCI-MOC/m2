@@ -19,7 +19,8 @@ The main concerns of a bare metal system are the inherent slowness in provisioni
 This project proposes a system that includes all of the above advantages and also addresses the fast provisioning issue for a bare metal system. Using this system, we propose to provision and release hundreds of nodes as quickly as possible with little impact on application performance.
 Current BMI (IMS) Architecture
 
-!![https://github.com/CCI-MOC/ims/blob/master/Selection_003.png]
+![](https://github.com/CCI-MOC/ims/blob/master/Selection_003.png)
+
 The current design consists of a pluggable architecture that exposes an API for such features as:
 
     map – Maps a physical node to an image
