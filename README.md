@@ -1,6 +1,6 @@
-# ims
+# BMI
 
-The Bare Metal Imaging (BMI) is a core component of the Massachusetts Open Cloud that 
+The Bare Metal Imaging (BMI) is a core component of the Massachusetts Open Cloud and a image management system(ims) that 
 (i)provisions numerous nodes as quickly as possible while preserving support for multitenancy using Hardware as a Service (HaaS) and 
 (ii)introduces the image management techniques that are supported by virtual machines, with little to no impact on application performance.
 
