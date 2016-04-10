@@ -131,7 +131,8 @@ def detach_node(node_name):
 #Creates snapshot for the given image with snap_name as given name
 def create_snapshot(img_name, snap_name):
     try:
-        fs_obj = init_fs()
+        fsconfig = create_fsconfigobj() 
+        fs_obj = init_fs(fsconfig)
         if fs_obj.init_image(img_name):
             a = ret_200(fs_obj.snap_image(img_name, snap_name))
             fs_obj.tear_down()
@@ -145,7 +146,8 @@ def create_snapshot(img_name, snap_name):
 def list_all_images(debug = True):
     
     try:
-        fs_obj = init_fs()
+        fsconfig = create_fsconfigobj()
+        fs_obj = init_fs(fsconfig)
         a = ret_200(fs_obj.list_n())
         fs_obj.tear_down()
         return a
