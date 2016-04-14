@@ -177,6 +177,31 @@ class RBD(CephBase):
             return True
         except Exception as e:
             raise e
+    
+    def list_snapshots(self, img_name):
+        try:
+            if img_name not in self.img_dict:
+                raise CephException("Invalid image name"\
+                        " or image not instantiated")
+            snap_list_iter = self.img_dict[img_name].list_snaps()
+            snap_list = [snap['name'] for snap in snap_list_iter]
+            return snap_list
+        except Exception as e:
+            raise e
+    
+    def remove_snapshots(self, img_name, name, debug = False):
+        try:
+            if img_name not in self.img_dict:
+                raise CephException("Invalid image name"\
+                        " or image not instantiated")
+            self.img_dict[img_name].remove_snap(name)
+            if debug:
+                print {"image name" : self.img_dict[img_name]}
+            return True
+
+        except Exception as e:
+            raise e
+
 
     def create_image(self, img_name, img_file,\
                  img_size, ctx = None):
@@ -189,18 +214,4 @@ class RBD(CephBase):
             Gets image object for manipulation
          '''
          return self.img_dict[img_name]
-        
-if __name__ == "__main__" :
-    pass
-#    a = RBD(rid = "henn", r_conf = "/etc/ceph/ceph.conf", pool = 'boot-disk-prototype', debug=55)
-#    b  = RBD(rid = "henn", r_conf = "/etc/ceph/ceph.conf", pool = 'boot-disk-prototype', debug=55)
-#    #a.clone("hadoopMaster.img".encode('utf-8'), "HadoopMasterGoldenImage".encode('utf-8'),"ABLALdALA".encode('utf-8'))
-#    a.init_image("test.img")
-#    a.snap_image("test.img", "test_snap")
-#    print a.c_img_list
-#    print a.list_n()
-#    #print a.remove("ABLALdALA")
-#    print a.list_n()
-#    print a
-#    a.tear_down()
-#    print a   
+
