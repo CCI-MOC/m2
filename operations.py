@@ -56,9 +56,11 @@ def call_shellscript(path, m_args):
 #Custom Exception Class that we are going to use which is a wrapper around
 #Ceph exception classes.
 class ResponseException(object):
-    def __init__(self, e):
+    def __init__(self, e, debug = False):
         self.exception_dict = dict()
         self.exception = e
+        if debug:
+            print self.exception
 # Extend this dict as needed for future expceptions. this
 # ensures readeability and uniformity of errors.
         self.exception_dict = {
@@ -81,8 +83,6 @@ class ResponseException(object):
             #This is for debugging original exceptions, if we don't have this, 
             #we will always get internal error, so that end-user can't 
             #see original exceptions
-            if debug == True:
-                print e
             emsg = "Internal server error"
         return {'status_code' : self.current_err, 'msg' : emsg}
 
@@ -98,7 +98,7 @@ def provision(node_name, img_name = "hadoopMaster.img",\
         if fs_obj.clone(img_name.encode('utf-8'),\
                 snap_name.encode('utf-8'),\
                 node_name.encode("utf-8")):
-            iscsi_output = call_shellscript('iscsi_update.sh', \
+            iscsi_output = call_shellscript('./iscsi_update.sh', \
                                         [fsconfig.keyring, \
                                 fsconfig.rid, fsconfig.pool, node_name, 'create'])
             if 'successfully' in iscsi_output[0]:
@@ -116,7 +116,7 @@ def detach_node(node_name):
     try:
         fsconfig = create_fsconfigobj()
         fs_obj = init_fs(fsconfig)
-        iscsi_output = call_shellscript('iscsi_update.sh', \
+        iscsi_output = call_shellscript('./iscsi_update.sh', \
                                         [fsconfig.keyring, \
                                 fsconfig.rid, fsconfig.pool, node_name,\
                                 'delete'])
@@ -140,21 +140,46 @@ def create_snapshot(img_name, snap_name):
             a = ret_200(fs_obj.snap_image(img_name, snap_name))
             fs_obj.tear_down()
             return a
-
     except Exception as e:
         fs_obj.tear_down()
         return ResponseException(e).parse_curr_err()
 
+#Lists snapshot for the given image img_name 
+def list_snaps(img_name):
+    try:
+        fsconfig = create_fsconfigobj() 
+        fs_obj = init_fs(fsconfig)
+        if fs_obj.init_image(img_name):
+            a = ret_200(fs_obj.list_snapshots(img_name))
+            fs_obj.tear_down()
+            return a
+    except Exception as e:
+        fs_obj.tear_down()
+        return ResponseException(e).parse_curr_err()
+
+#Removes snapshot sna_name for the given image img_name
+def remove_snaps(img_name, snap_name):
+    try:
+        fsconfig = create_fsconfigobj() 
+        fs_obj = init_fs(fsconfig)
+        if fs_obj.init_image(img_name):
+            a = ret_200(fs_obj.remove_snapshots(img_name, snap_name))
+            fs_obj.tear_down()
+            return a
+    except Exception as e:
+        fs_obj.tear_down()
+        return ResponseException(e).parse_curr_err()
+
+
+
 #Lists the images for the project which includes the snapshot
 def list_all_images(debug = True):
-    
     try:
         fsconfig = create_fsconfigobj()
         fs_obj = init_fs(fsconfig)
         a = ret_200(fs_obj.list_n())
         fs_obj.tear_down()
         return a
-
     except Exception as e:
         return ResponseException(e).parse_curr_err()
 
@@ -173,7 +198,6 @@ def init_fs(fsconfig, debug = False):
              return RBD(fsconfig.rid,\
                     fsconfig.r_conf,\
                     fsconfig.pool, debug)
-           
     except Exception as e:
         return ResponseException(e).parse_curr_err()
 
@@ -182,4 +206,3 @@ def init_fs(fsconfig, debug = False):
 #we are creating.
 def ret_200(obj):
     return {"status_code" : 200, "retval" : obj}
-   
