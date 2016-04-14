@@ -9,7 +9,9 @@ class RPCClient(object):
                             "provision" : "4",
                             "detach_node" : "1",
                             "create_snapshot" : "2",
-                            "list_all_images" : "1"
+                            "list_all_images" : "1",
+                            "list_snaps" : "1",
+                            "remove_snaps" : "2"
                             }
                      } 
         self.func_list = self.dict['function-list'] #The script name and no. of arguments.
