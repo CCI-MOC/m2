@@ -53,7 +53,7 @@ class RPCClient(object):
 if __name__ == "__main__":
     client =  RPCClient()
     list_of_commands = sys.argv[1:]
-    name_server = Pyro4.locateNS() #Locates the name server
+    name_server = Pyro4.locateNS(host='192.168.122.34',port=9090) #Locates the name server
     uri = name_server.lookup("example.mainserver") #Looks up for the registered service in the name server
     main_obj = Pyro4.Proxy(uri)
     client.client_function(list_of_commands)
