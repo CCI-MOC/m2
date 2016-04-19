@@ -14,13 +14,13 @@ over the network.
   
 
 ### Folder contents:  
-1. mainserver.py - This is the server program that processes the client request.  
+1. rpcserver.py - This is the server program that processes the client request.  
 2. nameserver.py - This is the name server program, the server registers the object 
                    with the name server and the client looks up for the object or
                    service.  
-3. mainclient.py - This file is the client program that needs to be run to make a 
+3. rpcclient.py - This file is the client program that needs to be run to make a 
                    a request to the main server.
-4. testclass.py  - This file is the python program that tests the MainSever class
+4. test.py  - This file is the python program that tests the MainSever class
                    in the mainserver.py file by creating objects of the class, and
                    testing the actual output of the methods against the desired output.  
   
@@ -42,7 +42,7 @@ variable name_server_address.
   
 This ip address should be reachable by name server and clients
   
-**2. mainserver.py:**   
+**2. rpcserver.py:**   
   
 The mainserver.py file needs to be executed once the name server is running and listening for
 the server objects. The main server is binded to a IP Address as well. This address is provided
@@ -56,7 +56,7 @@ This IP Address should be reachable by name server and clients.
 NOTE: The name server and main server can be run on the same system as well. Still the both this 
       system will need to be configured with ip addresses the client program can reach.  
   
-**3. mainclient.py:**  
+**3. rpcclient.py:**  
   
 The mainclient.py file needs to be executed with the appropriate arguments everytime a request to
 the server is to be made.  
