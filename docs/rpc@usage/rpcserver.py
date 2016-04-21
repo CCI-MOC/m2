@@ -13,6 +13,8 @@ class MainServer(object):
     #The commandline arguments following that are the arguments to the method.
     def run_script(self, list_of_commands):
         methodToCall = getattr(operations, list_of_commands[0])
+        for x in range(1,len(list_of_commands)):
+           list_of_commands[x] = list_of_commands[x].encode('utf-8')
         args = tuple(list_of_commands[1:]) 
         output = methodToCall(*args)
         return output
