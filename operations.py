@@ -136,8 +136,9 @@ def create_snapshot(img_name, snap_name):
     try:
         fsconfig = create_fsconfigobj() 
         fs_obj = init_fs(fsconfig)
-        if fs_obj.init_image(img_name):
-            a = ret_200(fs_obj.snap_image(img_name, snap_name))
+        #return (img_name, snap_name)
+        if fs_obj.init_image(img_name.encode("utf-8")):
+            a = ret_200(fs_obj.snap_image(img_name.encode("utf-8"), snap_name.encode("utf-8")))
             fs_obj.tear_down()
             return a
     except Exception as e:
@@ -149,8 +150,8 @@ def list_snaps(img_name):
     try:
         fsconfig = create_fsconfigobj() 
         fs_obj = init_fs(fsconfig)
-        if fs_obj.init_image(img_name):
-            a = ret_200(fs_obj.list_snapshots(img_name))
+        if fs_obj.init_image(img_name.encode("utf-8")):
+            a = ret_200(fs_obj.list_snapshots(img_name.encode("utf-8")))
             fs_obj.tear_down()
             return a
     except Exception as e:
@@ -162,8 +163,8 @@ def remove_snaps(img_name, snap_name):
     try:
         fsconfig = create_fsconfigobj() 
         fs_obj = init_fs(fsconfig)
-        if fs_obj.init_image(img_name):
-            a = ret_200(fs_obj.remove_snapshots(img_name, snap_name))
+        if fs_obj.init_image(img_name.encode("utf-8")):
+            a = ret_200(fs_obj.remove_snapshots(img_name.encode("utf-8"), snap_name.encode("utf-8")))
             fs_obj.tear_down()
             return a
     except Exception as e:
