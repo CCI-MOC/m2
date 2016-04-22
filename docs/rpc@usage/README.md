@@ -23,6 +23,10 @@ over the network.
 4. test.py  - This file is the python program that tests the MainSever class
                    in the mainserver.py file by creating objects of the class, and
                    testing the actual output of the methods against the desired output.  
+5. nameserver-daemon.sh - This file runs the nameserver.py file as a daemon. This allows  
+                          the nameserver.py file to run as long as the system is not rebooted.  
+6. rpcserver-daemon.sh - This file runs the rpcserver.py file as a daemon. This allows  
+                          the rpcserver.py file to run in background as long the system is not rebooted.
   
 ### How to run the programs:  
 The programs should be run in the following sequence:  
@@ -40,7 +44,9 @@ This creates a name server. The name server is binded to a IP Address that can b
 by other systems on the network. This ip address is mentioned in nameserver.py file to the
 variable name_server_address.
   
-This ip address should be reachable by name server and clients
+This ip address should be reachable by name server and clients.  
+  
+NOTE: This file is now executed by running the nameserver-daemon shell script.
   
 **2. rpcserver.py:**   
   
@@ -55,6 +61,7 @@ This IP Address should be reachable by name server and clients.
   
 NOTE: The name server and main server can be run on the same system as well. Still the both this 
       system will need to be configured with ip addresses the client program can reach.  
+      This file is now executed by running the rpcserver-daemon shell script.
   
 **3. rpcclient.py:**  
   
@@ -63,10 +70,26 @@ the server is to be made.
   
 The example command looks as follows:  
     
-    python mainclient.py provision/detach_node/create_snapshot/list_all_images arg1 arg2 .....
+    python rpcclient.py provision/detach_node/create_snapshot/list_all_images... arg1 arg2 .....
   
 where,  
-     provision/detach_node/create_snapshot/list_all_images:- These are the methods provided by the server.  
-     arg1 arg2 ... :- Is the arguments that needs to be provided for a script to run.
+     provision/detach_node/create_snapshot/list_all_images/... :- These are the methods provided by the server.  
+     arg1 arg2 ... :- Is the arguments that needs to be provided for a script to run.  
+  
+**4. test.py:**  
+The test.py file uses the Unittest class of python to test the behavior of the rpcclient.py program.  
+  
+This is should be executed as a normal python program, i.e  
+
+    python test.py  
+  
+**5. nameserver-daemon.sh:**  
+The nameserver-daemon.sh file needs to be present in the /etc/init.d folder on the server machine. This file should be  
+executed with root privileges as it creates and accesses the nameserver.pid file from the /var/run directory. 
+
+
+**6. rpcserver-daemon.sh:**  
+The rpcserver-daemon.sh file needs to be present in the /etc/init.d folder on the server machine. This file should be  
+executed with root privileges as it creates and accesses the rpcserver.pid file from the /var/run directory.
 
 
