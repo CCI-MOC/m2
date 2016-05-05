@@ -1,4 +1,4 @@
-#
+#!/usr/bin/env python
 import Pyro4
 import operations
 import sys

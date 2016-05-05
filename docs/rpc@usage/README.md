@@ -85,12 +85,26 @@ This is should be executed as a normal python program, i.e
   
 **5. nameserver-daemon.sh:**  
 The nameserver-daemon.sh file needs to be present in the /etc/init.d folder on the server machine. This file should be  
-executed with root privileges as it creates and accesses the nameserver.pid file from the /var/run directory. 
+executed with root privileges as it creates and accesses the nameserver.pid file from the /var/run directory.  
+
+Run the following commands to give nameserver.py the appropriate access rights. Then copy the daemon shell script to the /etc/init.d folder. Then assign the daemon file with execution permission.  
+  
+    chmod 755 nameserver.py  
+    sudo cp nameserver-daemon.sh /etc/init.d  
+    sudo chmod +x nameserver-daemon.sh  
+    sudo update-rc.d nameserver-daemon.sh defaults
 
 
 **6. rpcserver-daemon.sh:**  
 The rpcserver-daemon.sh file needs to be present in the /etc/init.d folder on the server machine. This file should be  
-executed with root privileges as it creates and accesses the rpcserver.pid file from the /var/run directory.
+executed with root privileges as it creates and accesses the rpcserver.pid file from the /var/run directory.  
+  
+Run the following commands to give nameserver.py the appropriate access rights. Then copy the daemon shell script to the /etc/init.d folder. Then assign the daemon file with execution permission.  
+  
+    chmod 755 rpcserver.py  
+    sudo cp rpcserver-daemon.sh /etc/init.d  
+    sudo chmod +x rpcserver-daemon.sh  
+    sudo update-rc.d rpcserver-daemon.sh defaults
 
 **7. daemon-installation.sh:**  
 This script needs to be run when the daemon files are copied to a new server system. This script assumes all your file  

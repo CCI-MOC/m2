@@ -18,7 +18,7 @@ class TestClass(unittest.TestCase):
         #To capture the print stdout
         sys.stdout = stdout_ # restore the previous stdout.
         op = stream.getvalue()
-        self.assertEqual(op,'Invalid arguments.\n')    
+        self.assertEqual(op,'Invalid argument.\n')    
 
 
     def test_wrong_method_name_1(self):
@@ -50,7 +50,7 @@ class TestClass(unittest.TestCase):
         #To capture the print stdout
         sys.stdout = stdout_ # restore the previous stdout.
         op = stream.getvalue()
-        self.assertEqual(op,'Invalid arguments.\n')
+        self.assertEqual(op,'Invalid argument.\n')
      
 
     def test_escape_characters_present_2(self):
@@ -66,7 +66,7 @@ class TestClass(unittest.TestCase):
         #To capture the print stdout 
         sys.stdout = stdout_ # restore the previous stdout.
         op = stream.getvalue()
-        self.assertEqual(op,'Invalid arguments.\n')
+        self.assertEqual(op,'Invalid argument.\n')
         
 if __name__ == '__main__':
     rpcl = RPCClient()
