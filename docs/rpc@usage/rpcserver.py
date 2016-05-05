@@ -2,11 +2,15 @@
 import Pyro4
 import operations
 import sys
+import json
 
 class MainServer(object):
     def __init__(self):
-    #This is the ip address of the machine on which the host is binded on.
-        Pyro4.config.HOST = '192.168.122.34'
+	    
+	self.dict = json.loads(open('rpc-config.json').read())
+	rpc_server_address = self.dict['rpc_server_address']
+	#This is the ip address of the machine on which the host is binded on.
+        Pyro4.config.HOST = rpc_server_address
     #Takes in the list_of_commands passed by the client program.
     
     #This method takes in the commandline arguments from the client program.

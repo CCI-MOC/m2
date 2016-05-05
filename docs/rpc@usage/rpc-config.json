@@ -1,0 +1,15 @@
+{
+	"NAMESERVER_DIR":"/home/user/ims",
+	"NAMESERVER_DAEMON_FILE":"nameserver.py",
+	"NAMESERVER_DAEMON_NAME":"nameserver",
+	"NAMESERVER_DAEMON_OPTS":"/home/user/ims/rpc-config.json",
+	
+	"RPCSERVER_DIR":"/home/user/ims",
+        "RPCSERVER_DAEMON_FILE":"rpcserver.py",
+        "RPCSERVER_DAEMON_NAME":"rpcserver",
+        "RPCSERVER_DAEMON_OPTS":"/home/user/ims/rpc-config.json",
+	
+	"name_server_address" : "192.168.122.34",
+	"rpc_server_address" : "192.168.122.34"
+}
+

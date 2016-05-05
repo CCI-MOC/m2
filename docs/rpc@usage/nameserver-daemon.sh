@@ -1,22 +1,27 @@
 #!/bin/sh
 
 ### BEGIN INIT INFO
-# Provides:          myservice
-# Required-Start:    $remote_fs $syslog
-# Required-Stop:     $remote_fs $syslog
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: Put a short description of the service here
-# Description:       Put a long description of the service here
+# Provides:          nameserver daemon
+# 
+# 
+# 
+# 
 ### END INIT INFO
 
-# Change the next 3 lines to suit where you install your script and what you want to call it
-DIR=/home/user/ims
-DAEMON=nameserver.py
-DAEMON_NAME=nameserver
 
-# Add any command line options for your daemon here
-DAEMON_OPTS=""
+#The configuration file that has other details.
+CONFIG_FILE=/home/ims/rpc-config.json
+
+#This takes the necessary configuration from the rpc-config.json file present in 
+#the directory mentioned above.
+#The directory in which the file nameserver.py is present
+DIR=$(cat $CONFIG_FILE|grep NAMESERVER_DIR|awk -F '"' '{print $4 }')
+#The name of the python script that is present 
+DAEMON=$(cat $CONFIG_FILE|grep NAMESERVER_DAEMON_FILE|awk -F '"' '{print $4 }')
+#The name that is printed on the screen when the daemon is started
+DAEMON_NAME=$(cat $CONFIG_FILE|grep NAMESERVER_DAEMON_NAME|awk -F '"' '{print $4 }')
+#The arguments that are passed to the nameserver.py file
+DAEMON_OPTS=$(cat $CONFIG_FILE|grep NAMESERVER_DAEMON_OPTS|awk -F '"' '{print $4 }')
 
 # This next line determines what user the script runs as.
 # Root generally not recommended but necessary if you are using the Raspberry Pi GPIO from Python.
@@ -30,7 +35,7 @@ PIDFILE=/var/run/$DAEMON_NAME.pid
 
 do_start () {
     log_daemon_msg "Starting system $DAEMON_NAME daemon"
-    start-stop-daemon --start --pidfile $PIDFILE --make-pidfile --user $DAEMON_USER --chuid $DAEMON_USER --chdir $DIR --startas $DAEMON -- $DAEMON_OPTS
+    start-stop-daemon --start --background  --pidfile $PIDFILE --make-pidfile --user $DAEMON_USER --chuid $DAEMON_USER --chdir $DIR --startas $DAEMON $DAEMON_OPTS
     log_end_msg $?
 }
 do_stop () {

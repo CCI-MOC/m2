@@ -92,4 +92,6 @@ executed with root privileges as it creates and accesses the nameserver.pid file
 The rpcserver-daemon.sh file needs to be present in the /etc/init.d folder on the server machine. This file should be  
 executed with root privileges as it creates and accesses the rpcserver.pid file from the /var/run directory.
 
-
+**7. daemon-installation.sh:**  
+This script needs to be run when the daemon files are copied to a new server system. This script assumes all your file  
+are present in the same directory.
