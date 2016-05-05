@@ -108,4 +108,5 @@ Run the following commands to give nameserver.py the appropriate access rights. 
 
 **7. daemon-installation.sh:**  
 This script needs to be run when the daemon files are copied to a new server system. This script assumes all your file  
-are present in the same directory.
+are present in the same directory. This script also starts the daemon the first time. The daemon starts automatically  
+when the system is rebooted.
