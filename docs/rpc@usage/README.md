@@ -106,4 +106,6 @@ Run the following commands to give nameserver.py the appropriate access rights. 
     sudo chmod +x rpcserver-daemon.sh  
     sudo update-rc.d rpcserver-daemon.sh defaults
 
-
+**7. daemon-installation.sh:**  
+This script needs to be run when the daemon files are copied to a new server system. This script assumes all your file  
+are present in the same directory.
