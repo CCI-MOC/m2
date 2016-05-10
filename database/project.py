@@ -9,8 +9,6 @@ from database import Database
 # the relationship variable is loaded eagerly as the session is terminated after the object is retrieved
 # The relationship is also delete on cascade
 # images relationship is a reverse relation for easy traversal if required
-
-
 class Project(Database.Base):
     __tablename__ = "project"
 
@@ -23,6 +21,9 @@ class Project(Database.Base):
     def __init__(self,db):
         self.database = db
 
+
+    # inserts this object into the table
+    # commits after insertion otherwise rollback occurs after which exception is bubbled up
     def insert(self):
         try:
             self.database.create_session()
@@ -36,12 +37,13 @@ class Project(Database.Base):
         finally:
             self.database.close_session()
 
-
+    # deletes project with name
+    # commits after deletion otherwise rollback occurs after which exception is bubbled up
     def delete_with_name(self,name):
         try:
             self.database.create_session()
             for project in self.database.session.query(Project).filter_by(name = name):
-                self.database.delete(project)
+                self.database.session.delete(project)
 
             self.database.session.commit()
         except Exception as e:
@@ -51,6 +53,8 @@ class Project(Database.Base):
             self.database.close_session()
 
 
+    # fetch the project with name
+    # only project object is returned as the name is unique
     def fetch_with_name(self,name):
         try:
             self.database.create_session()

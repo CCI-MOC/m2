@@ -5,11 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 
 # The class which represents the BMI database
-# To insert object
-# create object of respective table
-# populate the object with data
-# call insert_object on Database object
-# querying and deletion are self explanatory
+# It is responsible for creating and closing sessions
 class Database:
 
     # the sqlalchemy base class which the table classes will inherit
@@ -17,15 +13,16 @@ class Database:
 
     # creates the engine for the database, creates all tables if not present and creates a Session Maker
     def __init__(self):
-
+        # test.db should be changed to something more realistic
         self.engine = create_engine('sqlite:///test.db', poolclass = NullPool)
         Database.Base.metadata.create_all(self.engine)
         self.Session_Maker = sessionmaker(bind=self.engine)
 
+    # create a session to the db
     def create_session(self):
         self.session = self.Session_Maker()
-        return self.session
 
+    # closes the session to the db
     def close_session(self):
         self.session.close()
 

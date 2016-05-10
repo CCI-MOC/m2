@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 from database import  Database
 
 
-# Dont need it for now. Keeping just in case
+# Dont need it for now. Keeping just in case and is incomplete
 
 # This class represents the image table  # the Column variables are the columns in the table
 # the relationship variable is loaded eagerly as the session is terminated after the object is retrieved
