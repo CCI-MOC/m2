@@ -1,8 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 
-from database import  Database
-
 
 # Dont need it for now. Keeping just in case and is incomplete
 
@@ -17,11 +15,8 @@ class Snapshot():
 
     image = relationship("Image", back_populates="snapshots", lazy="joined")
 
-
-    def __init__(self,db):
+    def __init__(self, db):
         self.database = db
-
-
 
     def insert(self):
         try:
@@ -35,11 +30,10 @@ class Snapshot():
         finally:
             self.database.close_session()
 
-
-    def delete_with_name(self,name):
+    def delete_with_name(self, name):
         try:
             self.database.create_session()
-            for image in self.database.session.query(Snapshot).filter_by(name = name):
+            for image in self.database.session.query(Snapshot).filter_by(name=name):
                 self.database.delete(image)
 
             self.database.session.commit()
@@ -49,12 +43,11 @@ class Snapshot():
         finally:
             self.database.close_session()
 
-
     def fetch_with_name_from_project(self, name, project_name):
         try:
             self.database.create_session()
             images = []
-            for image in self.database.session.query(Image).filter_by(name = name):
+            for image in self.database.session.query(Image).filter_by(name=name):
                 if image.project.name == project_name:
                     images.append(image)
 
