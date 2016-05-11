@@ -1,4 +1,4 @@
-from database import Database
+from database import DatabaseConnection
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 
@@ -8,7 +8,7 @@ from sqlalchemy.orm import relationship
 # the relationship variables is loaded eagerly as the session is terminated after the object is retrieved
 # The snaphosts relationship is also delete on cascade (Commented)
 # snapshots relationship is a reverse relation for easy traversal if required (Commented)
-class Image(Database.Base):
+class Image(DatabaseConnection.Base):
     __tablename__ = "image"
 
     # Columns in the table
@@ -24,45 +24,45 @@ class Image(Database.Base):
     # Removed snapshot class for now
     # snapshots = relationship("Snapshot", back_populates="image", lazy="joined", cascade="all, delete, delete-orphan")
 
-    def __init__(self, db):
-        self.database = db
+    def __init__(self):
+        self.connection = None
 
     # inserts the contents of this object into table
     # Commits if inserted successfully otherwise rollbacks if some issue occured and bubbles the exception
     def insert(self):
         try:
-            self.database.create_session()
-            self.database.session.add(self)
-            self.database.session.commit()
+            self.connection = DatabaseConnection()
+            self.connection.session.add(self)
+            self.connection.session.commit()
         # should change to more specific exception
         except Exception:
-            self.database.session.rollback()
+            self.connection.session.rollback()
             raise
         finally:
-            self.database.close_session()
+            self.connection.close()
 
     # deletes images with name
     # commits if deletion was successful otherwise rollback occurs and exception is bubbled up
-    def delete_with_name(self, name):
+    def delete(self):
         try:
-            self.database.create_session()
-            for image in self.database.session.query(Image).filter_by(name=name):
-                self.database.session.delete(image)
-            self.database.session.commit()
+            self.connection = DatabaseConnection()
+            self.connection.session.delete(self)
+            self.connection.session.commit()
         # should change to more specific exception
         except Exception:
-            self.database.session.rollback()
+            self.connection.session.rollback()
             raise
         finally:
-            self.database.close_session()
+            self.connection.close()
 
     # fetch image with name in project with name
     # returns a array of image objects which match the names
-    def fetch_with_name_from_project(self, name, project_name):
+    @staticmethod
+    def fetch_with_name_from_project(name, project_name):
+        connection = DatabaseConnection()
         try:
-            self.database.create_session()
             images = []
-            for image in self.database.session.query(Image).filter_by(name=name):
+            for image in connection.session.query(Image).filter_by(name=name):
                 if image.project.name == project_name:
                     images.append(image)
             return images
@@ -70,4 +70,4 @@ class Image(Database.Base):
         except Exception:
             print "Database Exception: Something bad happened related to database"
         finally:
-            self.database.close_session()
+            connection.close()

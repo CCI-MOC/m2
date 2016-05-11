@@ -6,22 +6,18 @@ from sqlalchemy.pool import NullPool
 
 # The class which represents the BMI database
 # It is responsible for creating and closing sessions
-class Database:
+class DatabaseConnection:
     # the sqlalchemy base class which the table classes will inherit
     Base = declarative_base()
-
+    engine = create_engine('sqlite:///sample_bmi.db', poolclass=NullPool)
+    session_maker = sessionmaker(bind=engine)
     # creates the engine for the database, creates all tables if not present and creates a Session Maker
     def __init__(self):
         # test.db should be changed to something more realistic
         # NullPool pool class is equivalent to no connection pool
-        self.engine = create_engine('sqlite:///test.db', poolclass=NullPool)
-        Database.Base.metadata.create_all(self.engine)
-        self.Session_Maker = sessionmaker(bind=self.engine)
-
-    # create a session to the db
-    def create_session(self):
-        self.session = self.Session_Maker()
+        self.session = DatabaseConnection.session_maker()
+        DatabaseConnection.Base.metadata.create_all(DatabaseConnection.engine)
 
     # closes the session to the db
-    def close_session(self):
+    def close(self):
         self.session.close()

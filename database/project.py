@@ -1,4 +1,4 @@
-from database import Database
+from database import DatabaseConnection
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
@@ -8,7 +8,7 @@ from sqlalchemy.orm import relationship
 # the relationship variable is loaded eagerly as the session is terminated after the object is retrieved
 # The relationship is also delete on cascade
 # images relationship is a reverse relation for easy traversal if required
-class Project(Database.Base):
+class Project(DatabaseConnection.Base):
     __tablename__ = "project"
 
     # Columns in the table
@@ -20,47 +20,48 @@ class Project(Database.Base):
     # and cascade on delete is enabled
     images = relationship("Image", back_populates="project", lazy="joined", cascade="all, delete, delete-orphan")
 
-    def __init__(self, db):
-        self.database = db
+    def __init__(self):
+        self.connection = None
 
     # inserts this object into the table
     # commits after insertion otherwise rollback occurs after which exception is bubbled up
     def insert(self):
         try:
-            self.database.create_session()
-            self.database.session.add(self)
-            self.database.session.commit()
+            self.connection = DatabaseConnection()
+            self.connection.session.add(self)
+            self.connection.session.commit()
         # should change to more specific exception
         except Exception:
-            self.database.session.rollback()
+            self.connection.session.rollback()
             raise
         finally:
-            self.database.close_session()
+            self.connection.close()
 
     # deletes project with name
     # commits after deletion otherwise rollback occurs after which exception is bubbled up
-    def delete_with_name(self, name):
+    def delete(self):
         try:
-            self.database.create_session()
-            for project in self.database.session.query(Project).filter_by(name=name):
-                self.database.session.delete(project)
-            self.database.session.commit()
+            self.connection = DatabaseConnection()
+            self.connection.session.delete(self)
+            self.connection.session.commit()
         # should change to more specific exception
         except Exception:
-            self.database.session.rollback()
+            self.connection.session.rollback()
             raise
         finally:
-            self.database.close_session()
+            self.connection.close()
 
     # fetch the project with name
     # only project object is returned as the name is unique
-    def fetch_with_name(self, name):
+    @staticmethod
+    def fetch_with_name(name):
+        connection = DatabaseConnection()
         try:
-            self.database.create_session()
-            for project in self.database.session.query(Project).filter_by(name=name):
-                return project
+            return connection.session.query(Project).filter_by(name=name).first()
         # should change to more specific exception
         except Exception:
             print "Database Exception: Something bad happened related to database"
         finally:
-            self.database.close_session()
+            connection.close()
+
+
