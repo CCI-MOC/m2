@@ -68,15 +68,13 @@ class TestImage(TestCase):
         imgr.insert("image 1", 2)
 
         # check that the image was inserted properly
-        qimg = imgr.fetch_ids_with_name_from_project("image 1", "project 2")
+        qimg = imgr.fetch_id_with_name_from_project("image 1", "project 2")
         self.assertIsNotNone(qimg)
-        self.assertEqual(qimg.__len__(), 1)
-        self.assertEqual(qimg[0], 1)
+        self.assertEqual(qimg, 1)
 
         # check that the image is not being returned from a different project name
-        qimg = imgr.fetch_ids_with_name_from_project("image 1", "project 1")
-        self.assertIsNotNone(qimg)
-        self.assertEqual(qimg.__len__(), 0)
+        qimg = imgr.fetch_id_with_name_from_project("image 1", "project 1")
+        self.assertIsNone(qimg)
 
     # should not be called
     # test for delete
@@ -88,8 +86,8 @@ class TestImage(TestCase):
         imgr.delete_with_name_from_project("image 1", "project 2")
 
         # checking that it is deleted
-        qimg = imgr.fetch_ids_with_name_from_project("image 1", "project 2")
-        self.assertIsNotNone(qimg)
+        qimg = imgr.fetch_id_with_name_from_project("image 1", "project 2")
+        self.assertIsNone(qimg)
 
     # this test should be called
     # ordering of tests

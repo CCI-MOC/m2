@@ -43,14 +43,12 @@ class ImageRepository:
 
     # fetch image ids with name in project with name
     # returns a array of image ids of the images which have the given name
-    def fetch_ids_with_name_from_project(self, name, project_name):
+    def fetch_id_with_name_from_project(self, name, project_name):
         try:
             self.connection = DatabaseConnection()
-            images = []
             for image in self.connection.session.query(Image).filter_by(name=name):
                 if image.project.name == project_name:
-                    images.append(image.id)
-            return images
+                    return image.id
         # should change to more specific exception
         except Exception:
             print "Database Exception: Something bad happened related to database"
