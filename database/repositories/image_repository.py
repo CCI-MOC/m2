@@ -1,11 +1,14 @@
 from database import *
 
 
-class ImageRepository():
+# This class is responsible for doing CRUD operations on the Image Table in DB
+# This class was written as per the Repository Model which allows us to change the DB in the future without changing
+# business code
+class ImageRepository:
     def __init__(self):
         self.connection = None
 
-    # inserts the contents of this object into table
+    # inserts the arguments into table
     # Commits if inserted successfully otherwise rollbacks if some issue occured and bubbles the exception
     def insert(self, image_name, project_id):
         try:
@@ -22,7 +25,7 @@ class ImageRepository():
         finally:
             self.connection.close()
 
-    # deletes images with name
+    # deletes images with name under the given project name
     # commits if deletion was successful otherwise rollback occurs and exception is bubbled up
     def delete_with_name_from_project(self, name, project_name):
         try:
@@ -38,8 +41,8 @@ class ImageRepository():
         finally:
             self.connection.close()
 
-    # fetch image with name in project with name
-    # returns a array of image objects which match the names
+    # fetch image ids with name in project with name
+    # returns a array of image ids of the images which have the given name
     def fetch_ids_with_name_from_project(self, name, project_name):
         try:
             self.connection = DatabaseConnection()

@@ -1,13 +1,15 @@
 from database import *
 
 
+# This class is responsible for doing CRUD operations on the Project Table in DB
+# This class was written as per the Repository Model which allows us to change the DB in the future without changing
+# business code
 class ProjectRepository:
-    # inserts this object into the table
-    # commits after insertion otherwise rollback occurs after which exception is bubbled up
-
     def __init__(self):
         self.connection = None
 
+    # inserts the arguments into the table
+    # commits after insertion otherwise rollback occurs after which exception is bubbled up
     def insert(self, name, provision_network):
         try:
             self.connection = DatabaseConnection()
@@ -37,11 +39,13 @@ class ProjectRepository:
         finally:
             self.connection.close()
 
-    # fetch the project with name
+    # fetch the project id with name
     # only project object is returned as the name is unique
     def fetch_id_with_name(self, name):
         try:
             self.connection = DatabaseConnection()
+            # could use first() but method doesnt return None when project with name doesnt exist and may crash in that
+            # case
             for project in self.connection.session.query(Project).filter_by(name=name):
                 return project.id
         # should change to more specific exception

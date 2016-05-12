@@ -9,15 +9,21 @@ from sqlalchemy.pool import NullPool
 class DatabaseConnection:
     # the sqlalchemy base class which the table classes will inherit
     Base = declarative_base()
+
+    # the engine and session maker are made static so that only one of them needs to be created
+    # creates the engine for the database
+    # sample_bmi.db should be changed to something more realistic
+    # NullPool pool class is equivalent to no connection pool
     engine = create_engine('sqlite:///sample_bmi.db', poolclass=NullPool)
+
+    # creates a session maker for creating sessions
     session_maker = sessionmaker(bind=engine)
 
-    # creates the engine for the database, creates all tables if not present and creates a Session Maker
+    # creates all tables if not present
+    # creates a session using the session maker
     def __init__(self):
-        # test.db should be changed to something more realistic
-        # NullPool pool class is equivalent to no connection pool
-        self.session = DatabaseConnection.session_maker()
         DatabaseConnection.Base.metadata.create_all(DatabaseConnection.engine)
+        self.session = DatabaseConnection.session_maker()
 
     # closes the session to the db
     def close(self):
