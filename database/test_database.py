@@ -13,13 +13,14 @@ class TestDatabase(TestCase):
     # the test for insert
     # insert two rows and verify with fetch
     # also verify for row which is not there (testing fetch also)
-    def insert__project_test(self):
+    def insert_project_test(self):
         # insert a project
         pr = ProjectRepository()
         pr.insert("project 1", "network 1")
 
         # insert another project
         pr.insert("project 2", "network 2")
+
 
         # check whether first project is present
         pid = pr.fetch_id_with_name("project 1")
@@ -51,7 +52,7 @@ class TestDatabase(TestCase):
     #should not be called
     # runs the project test case
     def project_test(self):
-        self.insert__project_test()
+        self.insert_project_test()
         self.delete_with_name_project_test()
 
 
@@ -64,7 +65,8 @@ class TestDatabase(TestCase):
         # insert a image under second project
         imgr = ImageRepository()
         imgr.insert("image 1", 2)
-
+        imgr.insert("image1", 2)
+        imgr.insert("image2" , 2, True)
         # check that the image was inserted properly
         qimg = imgr.fetch_id_with_name_from_project("image 1", "project 2")
         self.assertIsNotNone(qimg)
@@ -72,6 +74,9 @@ class TestDatabase(TestCase):
 
         # check that the image is not being returned from a different project name
         qimg = imgr.fetch_id_with_name_from_project("image 1", "project 1")
+        qimg_list = imgr.fetch_name_with_public()
+        self.assertIsNotNone(qimg_list)
+        self.assertEqual(qimg_list[0]['image_name'], "image2")
         self.assertIsNone(qimg)
 
     # should not be called
