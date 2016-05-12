@@ -8,12 +8,12 @@ from repositories.project_repository import ProjectRepository
 
 
 # Tests for Project Class
-class TestProject(TestCase):
+class TestDatabase(TestCase):
     # should not actually be called
     # the test for insert
     # insert two rows and verify with fetch
     # also verify for row which is not there (testing fetch also)
-    def insert_test(self):
+    def insert__project_test(self):
         # insert a project
         pr = ProjectRepository()
         pr.insert("project 1", "network 1")
@@ -39,7 +39,7 @@ class TestProject(TestCase):
     # the test for delete
     # delete the inserted row
     # check if it is gone
-    def delete_with_name_test(self):
+    def delete_with_name_project_test(self):
         # delete first project
         pr = ProjectRepository()
         pr.delete_with_name("project 1")
@@ -48,21 +48,19 @@ class TestProject(TestCase):
         pid = pr.fetch_id_with_name("project 1")
         self.assertIsNone(pid)
 
-    # The actual test that should be called
-    # written for ordering of tests
-    def test_project(self):
-        self.insert_test()
-        self.delete_with_name_test()
+    #should not be called
+    # runs the project test case
+    def project_test(self):
+        self.insert__project_test()
+        self.delete_with_name_project_test()
 
 
-# Tests for Image Class
-class TestImage(TestCase):
     # should not be called
     # test for insert
     # insert image for existing project
     # check whether inserted properly
     # check whether image is not being returned if project changed (testing fetch)
-    def insert_test(self):
+    def insert_image_test(self):
         # insert a image under second project
         imgr = ImageRepository()
         imgr.insert("image 1", 2)
@@ -80,7 +78,7 @@ class TestImage(TestCase):
     # test for delete
     # delete existing row
     # check whether row is gone
-    def delete_with_name_test(self):
+    def delete_with_name_image_test(self):
         # delete the inserted image
         imgr = ImageRepository()
         imgr.delete_with_name_from_project("image 1", "project 2")
@@ -89,9 +87,15 @@ class TestImage(TestCase):
         qimg = imgr.fetch_id_with_name_from_project("image 1", "project 2")
         self.assertIsNone(qimg)
 
-    # this test should be called
-    # ordering of tests
-    # should be called after project tests
-    def test_image(self):
-        self.insert_test()
-        self.delete_with_name_test()
+    #should not be called
+    # runs the image test case
+    def image_test(self):
+        self.insert_image_test()
+        self.delete_with_name_image_test()
+
+    # The actual test that should be called
+    # written for ordering of tests
+    def test_database(self):
+        self.project_test()
+        self.image_test()
+
