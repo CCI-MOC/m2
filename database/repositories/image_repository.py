@@ -1,4 +1,4 @@
-from database import *
+from database.tables.image import *
 
 
 # This class is responsible for doing CRUD operations on the Image Table in DB

@@ -1,4 +1,4 @@
-from database import *
+from database.tables.project import *
 
 
 # This class is responsible for doing CRUD operations on the Project Table in DB
