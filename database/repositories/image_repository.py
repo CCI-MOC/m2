@@ -54,3 +54,16 @@ class ImageRepository:
             print "Database Exception: Something bad happened related to database"
         finally:
             self.connection.close()
+
+    def fetch_names_from_project(self,project_name):
+        try:
+            self.connection = DatabaseConnection()
+            images = []
+            for image in self.connection.session.query(Image):
+                if image.project.name == project_name:
+                    images.append(image.name)
+            return images
+        except Exception:
+            print "Database Exception: Something bad happened related to database"
+        finally:
+            self.connection.close()
