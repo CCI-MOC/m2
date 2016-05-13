@@ -1,7 +1,7 @@
 from database import DatabaseConnection
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
-from sqlalchemy.orm import relationship
 from sqlalchemy import UniqueConstraint
+from sqlalchemy.orm import relationship
 
 
 # This class represents the image table
@@ -22,8 +22,9 @@ class Image(DatabaseConnection.Base):
     # Back populates to images in Project Class and is eagerly loaded
     project = relationship("Project", back_populates="images", lazy="joined")
 
-    #Users should not be able to create images with same name in a given
-    #project. So we are creating a unique constraint.
-    UniqueConstraint("project_id", "name" , "Project_id_image_name_unique_constraint")
+    # Users should not be able to create images with same name in a given
+    # project. So we are creating a unique constraint.
+    UniqueConstraint("project_id", "name", "Project_id_image_name_unique_constraint")
+
     # Removed snapshot class for now
     # snapshots = relationship("Snapshot", back_populates="image", lazy="joined", cascade="all, delete, delete-orphan")

@@ -21,7 +21,6 @@ class TestDatabase(TestCase):
         # insert another project
         pr.insert("project 2", "network 2")
 
-
         # check whether first project is present
         pid = pr.fetch_id_with_name("project 1")
         self.assertIsNotNone(pid)
@@ -49,12 +48,11 @@ class TestDatabase(TestCase):
         pid = pr.fetch_id_with_name("project 1")
         self.assertIsNone(pid)
 
-    #should not be called
+    # should not be called
     # runs the project test case
     def project_test(self):
         self.insert_project_test()
         self.delete_with_name_project_test()
-
 
     # should not be called
     # test for insert
@@ -66,7 +64,7 @@ class TestDatabase(TestCase):
         imgr = ImageRepository()
         imgr.insert("image 1", 2)
         imgr.insert("image1", 2)
-        imgr.insert("image2" , 2, True)
+        imgr.insert("image2", 2, True)
         # check that the image was inserted properly
         qimg = imgr.fetch_id_with_name_from_project("image 1", "project 2")
         self.assertIsNotNone(qimg)
@@ -92,7 +90,7 @@ class TestDatabase(TestCase):
         qimg = imgr.fetch_id_with_name_from_project("image 1", "project 2")
         self.assertIsNone(qimg)
 
-    #should not be called
+    # should not be called
     # runs the image test case
     def image_test(self):
         self.insert_image_test()
@@ -103,4 +101,3 @@ class TestDatabase(TestCase):
     def test_database(self):
         self.project_test()
         self.image_test()
-

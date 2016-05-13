@@ -1,5 +1,6 @@
 from database import *
 
+
 # This class is responsible for doing CRUD operations on the Image Table in DB
 # This class was written as per the Repository Model which allows us to change the DB in the future without changing
 # business code
@@ -9,13 +10,13 @@ class ImageRepository:
 
     # inserts the arguments into table
     # Commits if inserted successfully otherwise rollbacks if some issue occured and bubbles the exception
-    def insert(self, image_name, project_id, is_Public = False):
+    def insert(self, image_name, project_id, is_public=False):
         try:
             self.connection = DatabaseConnection()
             img = Image()
             img.name = image_name
             img.project_id = project_id
-            img.is_public = is_Public
+            img.is_public = is_public
             self.connection.session.add(img)
             self.connection.session.commit()
         # should change to more specific exception
@@ -55,23 +56,24 @@ class ImageRepository:
         finally:
             self.connection.close()
 
-
     # Fetch the list of images which are public
     # We are returning a dictionary of format {image_name : <img_name> , project_name : <proj_name>}
     def fetch_name_with_public(self):
         try:
             img_list = []
             self.connection = DatabaseConnection()
-            for image in self.connection.session.query(Image).filter_by(is_public = True):
+            for image in self.connection.session.query(Image).filter_by(is_public=True):
                 img_list.append(image)
-                return [{'image_name' : img.name, 'project_name' : img.project.name} for img in img_list]
+                return [{'image_name': img.name, 'project_name': img.project.name} for img in img_list]
         # should change to more specific exception
         except Exception:
             print "Database Exception: Something bad happened related to database"
         finally:
             self.connection.close()
 
-    def fetch_names_from_project(self,project_name):
+    # fetch the image names which are under the given project name
+    # returning a list of strings
+    def fetch_names_from_project(self, project_name):
         try:
             self.connection = DatabaseConnection()
             images = []
