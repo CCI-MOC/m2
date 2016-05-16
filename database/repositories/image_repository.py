@@ -1,4 +1,6 @@
 from database.tables.image import *
+from exception import db_exceptions
+from sqlalchemy.exc import SQLAlchemyError
 
 
 # This class is responsible for doing CRUD operations on the Image Table in DB
@@ -19,10 +21,9 @@ class ImageRepository:
             img.is_public = is_public
             self.connection.session.add(img)
             self.connection.session.commit()
-        # should change to more specific exception
-        except Exception:
+        except SQLAlchemyError as e:
             self.connection.session.rollback()
-            raise
+            raise db_exceptions.ORMException(e.message)
         finally:
             self.connection.close()
 
@@ -35,10 +36,9 @@ class ImageRepository:
                 if img.project.name == project_name:
                     self.connection.session.delete(img)
             self.connection.session.commit()
-        # should change to more specific exception
-        except Exception:
+        except SQLAlchemyError as e:
             self.connection.session.rollback()
-            raise
+            raise db_exceptions.ORMException(e.message)
         finally:
             self.connection.close()
 
@@ -50,9 +50,8 @@ class ImageRepository:
             for image in self.connection.session.query(Image).filter_by(name=name):
                 if image.project.name == project_name:
                     return image.id
-        # should change to more specific exception
-        except Exception:
-            print "Database Exception: Something bad happened related to database"
+        except SQLAlchemyError as e:
+            raise db_exceptions.ORMException(e.message)
         finally:
             self.connection.close()
 
@@ -65,9 +64,8 @@ class ImageRepository:
             for image in self.connection.session.query(Image).filter_by(is_public=True):
                 img_list.append(image)
                 return [{'image_name': img.name, 'project_name': img.project.name} for img in img_list]
-        # should change to more specific exception
-        except Exception:
-            print "Database Exception: Something bad happened related to database"
+        except SQLAlchemyError as e:
+            raise db_exceptions.ORMException(e.message)
         finally:
             self.connection.close()
 
@@ -81,7 +79,7 @@ class ImageRepository:
                 if image.project.name == project_name:
                     images.append(image.name)
             return images
-        except Exception:
-            print "Database Exception: Something bad happened related to database"
+        except SQLAlchemyError as e:
+            raise db_exceptions.ORMException(e.message)
         finally:
             self.connection.close()

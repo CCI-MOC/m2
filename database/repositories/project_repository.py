@@ -1,4 +1,6 @@
 from database.tables.project import *
+from exception import db_exceptions
+from sqlalchemy.exc import SQLAlchemyError
 
 
 # This class is responsible for doing CRUD operations on the Project Table in DB
@@ -18,10 +20,9 @@ class ProjectRepository:
             p.provision_network = provision_network
             self.connection.session.add(p)
             self.connection.session.commit()
-        # should change to more specific exception
-        except Exception:
+        except SQLAlchemyError as e:
             self.connection.session.rollback()
-            raise
+            raise db_exceptions.ORMException(e.message)
         finally:
             self.connection.close()
 
@@ -32,10 +33,9 @@ class ProjectRepository:
             self.connection = DatabaseConnection()
             self.connection.session.delete(self.connection.session.query(Project).filter_by(name=name).first())
             self.connection.session.commit()
-        # should change to more specific exception
-        except Exception:
+        except SQLAlchemyError as e:
             self.connection.session.rollback()
-            raise
+            raise db_exceptions.ORMException(e.message)
         finally:
             self.connection.close()
 
@@ -48,8 +48,7 @@ class ProjectRepository:
             # case
             for project in self.connection.session.query(Project).filter_by(name=name):
                 return project.id
-        # should change to more specific exception
-        except Exception:
-            print "Database Exception: Something bad happened related to database"
+        except SQLAlchemyError as e:
+            raise db_exceptions.ORMException(e.message)
         finally:
             self.connection.close()
