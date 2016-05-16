@@ -83,3 +83,13 @@ class ImageRepository:
             raise db_exceptions.ORMException(e.message)
         finally:
             self.connection.close()
+
+    def fetch_name_with_id(self, id):
+        try:
+            self.connection = DatabaseConnection()
+            for image in self.connection.session.query(Image).filter_by(id=id):
+                return image.name
+        except SQLAlchemyError as e:
+            raise db_exceptions.ORMException(e.message)
+        finally:
+            self.connection.close()
