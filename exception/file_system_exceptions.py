@@ -5,6 +5,9 @@ from bmi_exceptions import FileSystemException
 
 # This exception should be raised when Image is not found in file system
 class ImageNotFoundException(FileSystemException):
+    def __init__(self, name):
+        self.name = name
+
     def __str__(self):
         return "Image Not Found"
 
@@ -17,24 +20,36 @@ class ConnectionException(FileSystemException):
 
 # this exception should be raised when some operation is called on an image which is busy
 class ImageBusyException(FileSystemException):
+    def __init__(self, name):
+        self.name = name
+
     def __str__(self):
         return "Image is Busy"
 
 
 # this exception should be raised when some operation is called on an image that has snapshots
 class ImageHasSnapshotException(FileSystemException):
+    def __init__(self, name):
+        self.name = name
+
     def __str__(self):
         return "Image has Snapshots"
 
 
 # this exception should be raised when some operation requires that an image not exist in the filesytem
 class ImageExistsException(FileSystemException):
+    def __init__(self, name):
+        self.name = name
+
     def __str__(self):
         return "Image Already Exists"
 
 
 # this exception should be raised when the given image is not opened
 class ImageNotOpenedException(FileSystemException):
+    def __init__(self, name):
+        self.name = name
+
     def __str__(self):
         return "Image should be opened before operation"
 

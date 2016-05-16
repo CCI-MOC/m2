@@ -56,8 +56,8 @@ class CephBase(object):
             ##return True We return True because we can already reference the image
             ##using the name as the key to the dict. The worklflos is something like
             return image_instance
-        except Exception as e:
-            raise e
+        except rbd.ImageNotFound as e:
+            raise file_system_exceptions.ImageNotFoundException(name)
             # define this function in the derivative class
             # to be specific for the call.
 
@@ -72,11 +72,8 @@ class CephBase(object):
         self.cluster.shutdown()
 
     def tear_down(self):
-        try:
-            self.__td_context()
-            self.__td_cluster()
-        except Exception as e:
-            raise e
+        self.__td_context()
+        self.__td_cluster()
 
 
 class RBD(CephBase):
@@ -91,25 +88,26 @@ class RBD(CephBase):
                 c_ctx = self.ctx
             self.rbd.clone(p_ctx, p_name, p_snap, c_ctx, c_nm, features=1)
             return True
+        # Need to test whether image not found is raised for parent image
         except rbd.ImageExists() as e:
-            raise file_system_exceptions.ImageExistsException()
+            raise file_system_exceptions.ImageExistsException(c_nm)
         except rbd.FunctionNotSupported as e:
             raise file_system_exceptions.FunctionNotSupportedException()
         except rbd.ArgumentOutOfRange as e:
             raise file_system_exceptions.ArgumentsOutOfRangeException()
 
-    def remove(self, iname, ctx=None):
+    def remove(self, img_id, ctx=None):
         try:
             if not ctx:
                 ctx = self.ctx
-            self._remove(iname, ctx)
+            self._remove(img_id, ctx)
             return True
         except rbd.ImageNotFound as e:
-            raise file_system_exceptions.ImageNotFoundException()
+            raise file_system_exceptions.ImageNotFoundException(img_id)
         except rbd.ImageBusy as e:
-            raise file_system_exceptions.ImageBusyException()
+            raise file_system_exceptions.ImageBusyException(img_id)
         except rbd.ImageHasSnapshots as e:
-            raise file_system_exceptions.ImageHasSnapshotException()
+            raise file_system_exceptions.ImageHasSnapshotException(img_id)
 
     def _remove(self, iname, ctx=None):
         if not ctx:
@@ -121,8 +119,8 @@ class RBD(CephBase):
             img = self.init_image(name=img_id)
             img.write(data, offset)
             img.close()
-        except KeyError as e:
-            raise file_system_exceptions.ImageNotOpenedException()
+        except rbd.ImageNotFound as e:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
 
     def snap_image(self, img_id, name):
         try:
@@ -130,10 +128,10 @@ class RBD(CephBase):
             img.create_snap(name)
             img.close()
             return True
-        except KeyError as e:
-            raise file_system_exceptions.ImageNotOpenedException()
         except rbd.ImageExists as e:
-            raise file_system_exceptions.ImageExistsException()
+            raise file_system_exceptions.ImageExistsException(img_id)
+        except rbd.ImageNotFound as e:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
 
     def list_snapshots(self, img_id):
         try:
@@ -141,8 +139,8 @@ class RBD(CephBase):
             snap_list_iter = img.list_snaps()
             snap_list = [snap['name'] for snap in snap_list_iter]
             return snap_list
-        except KeyError as e:
-            raise file_system_exceptions.ImageNotOpenedException()
+        except rbd.ImageNotFound as e:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
 
     def remove_snapshots(self, img_id, name):
         try:
@@ -150,10 +148,10 @@ class RBD(CephBase):
             img.remove_snap(name)
             img.close()
             return True
-        except KeyError as e:
-            raise file_system_exceptions.ImageNotOpenedException()
+        except rbd.ImageNotFound as e:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
         except rbd.ImageBusy as e:
-            raise file_system_exceptions.ImageBusyException()
+            raise file_system_exceptions.ImageBusyException(img_id)
 
     def create_image(self, img_id, img_size, ctx=None):
         try:
@@ -161,7 +159,7 @@ class RBD(CephBase):
             self.rbd.create(ctx, img_id, img_size)
             return True
         except rbd.ImageExists as e:
-            raise file_system_exceptions.ImageExistsException()
+            raise file_system_exceptions.ImageExistsException(img_id)
         except rbd.FunctionNotSupported as e:
             raise file_system_exceptions.FunctionNotSupportedException()
 
@@ -169,7 +167,4 @@ class RBD(CephBase):
         """
            Gets image object for manipulation
         """
-        try:
-            return self.init_image(img_id)
-        except KeyError as e:
-            raise file_system_exceptions.ImageNotOpenedException()
+        return self.init_image(img_id)

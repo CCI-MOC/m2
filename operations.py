@@ -114,11 +114,11 @@ def create_snapshot(url, usr, passwd, project, img_name, snap_name):
         pid = pr.fetch_id_with_name(project)
         # None as a query result implies that the project does not exist.
         if pid is None:
-            raise db_exceptions.ProjectNotFoundException()
+            raise db_exceptions.ProjectNotFoundException(project)
         imgr = ImageRepository()
         img_id = imgr.fetch_id_with_name_from_project(img_name, project)
         if img_id is None:
-            raise db_exceptions.ImageNotFoundException()
+            raise db_exceptions.ImageNotFoundException(img_name)
 
         fs_config = create_fsconfigobj()
         fs_obj = init_fs(fs_config)
@@ -142,12 +142,12 @@ def list_snaps(url, usr, passwd, project, img_name):
         pid = pr.fetch_id_with_name(project)
         # None as a query result implies that the project does not exist.
         if pid is None:
-            raise db_exceptions.ProjectNotFoundException
+            raise db_exceptions.ProjectNotFoundException(project)
         imgr = ImageRepository()
         img_id = imgr.fetch_id_with_name_from_project(img_name, project)
 
         if img_id is None:
-            raise db_exceptions.ImageNotFoundException()
+            raise db_exceptions.ImageNotFoundException(img_name)
 
         fsconfig = create_fsconfigobj()
         fs_obj = init_fs(fsconfig)
@@ -170,12 +170,12 @@ def remove_snaps(url, usr, passwd, project, img_name, snap_name):
         pid = pr.fetch_id_with_name(project)
         # None as a query result implies that the project does not exist.
         if pid is None:
-            raise db_exceptions.ProjectNotFoundException
+            raise db_exceptions.ProjectNotFoundException(project)
         imgr = ImageRepository()
         img_id = imgr.fetch_id_with_name_from_project(img_name, project)
 
         if img_id is None:
-            raise db_exceptions.ImageNotFoundException()
+            raise db_exceptions.ImageNotFoundException(img_name)
 
         fsconfig = create_fsconfigobj()
         fs_obj = init_fs(fsconfig)
