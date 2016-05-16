@@ -224,7 +224,20 @@ def ret_200(obj):
 
 def return_error(ex):
     parser = ExceptionParser()
+    if FileSystemException in ex.__class__.__bases__:
+        return {"status_code": parser.parse(ex), "msg": swap_id_with_name(str(ex))}
     return {"status_code": parser.parse(ex), "msg": str(ex)}
+
+
+def swap_id_with_name(str):
+    parts = str.split(" ")
+    imgr = ImageRepository()
+    name = imgr.fetch_name_with_id(parts[0].strip())
+    new_msg = name + " "
+    for index in range(1, parts.__len__() - 1):
+        new_msg += parts[index].strip()
+        new_msg += " "
+    return new_msg
 
 
 if __name__ == "__main__":
