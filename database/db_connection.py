@@ -14,6 +14,7 @@ class DatabaseConnection:
     # creates the engine for the database
     # sample_bmi.db should be changed to something more realistic
     # NullPool pool class is equivalent to no connection pool
+    # Should be adapted to postgres SQL
     engine = create_engine('sqlite:///sample_bmi.db', poolclass=NullPool)
 
     # creates a session maker for creating sessions

@@ -1,15 +1,18 @@
-from file_system_exceptions import *
-
+import file_system_exceptions
+import db_exceptions
 
 # this class parses the given exception and returns the corresponding status code that should be returned to user
 class ExceptionParser:
-    status_codes = {ImageExistsException: 471,
-                    ConnectionException: 472,
-                    ImageBusyException: 473,
-                    ImageHasSnapshotException: 474,
-                    ImageNotFoundException: 475,
-                    FunctionNotSupportedException: 476,
-                    ArgumentsOutOfRangeException: 477}
+
+    status_codes = {file_system_exceptions.ImageExistsException: 471,
+                    file_system_exceptions.ConnectionException: 472,
+                    file_system_exceptions.ImageBusyException: 473,
+                    file_system_exceptions.ImageHasSnapshotException: 474,
+                    file_system_exceptions.ImageNotFoundException: 404,
+                    file_system_exceptions.FunctionNotSupportedException: 476,
+                    file_system_exceptions.ArgumentsOutOfRangeException: 477,
+                    db_exceptions.ImageNotFoundException: 404,
+                    db_exceptions.ProjectNotFoundException: 404}
 
     # returns the status code as per the class of the exception
     # default status code is 500
