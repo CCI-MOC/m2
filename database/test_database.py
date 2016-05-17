@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from repositories.image_repository import ImageRepository
-from repositories.project_repository import ProjectRepository
+from database.image import *
+from database.project import *
 
 
 # Before running make sure no .db files are present in execution directory

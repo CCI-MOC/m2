@@ -1,4 +1,8 @@
-from database.tables.image import *
+from database import DatabaseConnection
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import UniqueConstraint
+from sqlalchemy.orm import relationship
+from sqlalchemy.exc import SQLAlchemyError
 
 
 # This class is responsible for doing CRUD operations on the Image Table in DB
@@ -19,8 +23,7 @@ class ImageRepository:
             img.is_public = is_public
             self.connection.session.add(img)
             self.connection.session.commit()
-        # should change to more specific exception
-        except Exception:
+        except SQLAlchemyError:
             self.connection.session.rollback()
             raise
         finally:
@@ -31,12 +34,10 @@ class ImageRepository:
     def delete_with_name_from_project(self, name, project_name):
         try:
             self.connection = DatabaseConnection()
-            for img in self.connection.session.query(Image).filter_by(name=name):
-                if img.project.name == project_name:
-                    self.connection.session.delete(img)
+            self.connection.session.query(Image).\
+                filter(Image.project.has(name=project_name)).filter_by(name=name).delete(synchronize_session=False)
             self.connection.session.commit()
-        # should change to more specific exception
-        except Exception:
+        except SQLAlchemyError:
             self.connection.session.rollback()
             raise
         finally:
@@ -47,11 +48,10 @@ class ImageRepository:
     def fetch_id_with_name_from_project(self, name, project_name):
         try:
             self.connection = DatabaseConnection()
-            for image in self.connection.session.query(Image).filter_by(name=name):
-                if image.project.name == project_name:
-                    return image.id
-        # should change to more specific exception
-        except Exception:
+            for image in self.connection.session.query(Image).\
+                    filter(Image.project.has(name=project_name)).filter_by(name=name):
+                return image.id
+        except SQLAlchemyError:
             print "Database Exception: Something bad happened related to database"
         finally:
             self.connection.close()
@@ -60,13 +60,10 @@ class ImageRepository:
     # We are returning a dictionary of format {image_name : <img_name> , project_name : <proj_name>}
     def fetch_name_with_public(self):
         try:
-            img_list = []
             self.connection = DatabaseConnection()
-            for image in self.connection.session.query(Image).filter_by(is_public=True):
-                img_list.append(image)
-                return [{'image_name': img.name, 'project_name': img.project.name} for img in img_list]
-        # should change to more specific exception
-        except Exception:
+            img_list = self.connection.session.query(Image).filter_by(is_public=True)
+            return [{'image_name': image.name, 'project_name': image.project.name} for image in img_list]
+        except SQLAlchemyError:
             print "Database Exception: Something bad happened related to database"
         finally:
             self.connection.close()
@@ -76,12 +73,35 @@ class ImageRepository:
     def fetch_names_from_project(self, project_name):
         try:
             self.connection = DatabaseConnection()
-            images = []
-            for image in self.connection.session.query(Image):
-                if image.project.name == project_name:
-                    images.append(image.name)
-            return images
-        except Exception:
+            images = self.connection.session.query(Image).filter(Image.project.has(name=project_name))
+            return [image.name for image in images]
+        except SQLAlchemyError:
             print "Database Exception: Something bad happened related to database"
         finally:
             self.connection.close()
+
+
+# This class represents the image table
+# the Column variables are the columns in the table
+# the relationship variables is loaded eagerly as the session is terminated after the object is retrieved
+# The snaphosts relationship is also delete on cascade (Commented)
+# snapshots relationship is a reverse relation for easy traversal if required (Commented)
+class Image(DatabaseConnection.Base):
+    __tablename__ = "image"
+
+    # Columns in the table
+    id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    name = Column(String, nullable=False)
+    is_public = Column(Boolean, nullable=False, default=False)
+    project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
+
+    # Relationships in the table
+    # Back populates to images in Project Class and is eagerly loaded
+    project = relationship("Project", back_populates="images")
+
+    # Users should not be able to create images with same name in a given
+    # project. So we are creating a unique constraint.
+    UniqueConstraint("project_id", "name", "Project_id_image_name_unique_constraint")
+
+    # Removed snapshot class for now
+    # snapshots = relationship("Snapshot", back_populates="image", lazy="joined", cascade="all, delete, delete-orphan")

@@ -1,4 +1,7 @@
-from database.tables.project import *
+from database import DatabaseConnection
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
+from sqlalchemy.exc import SQLAlchemyError
 
 
 # This class is responsible for doing CRUD operations on the Project Table in DB
@@ -18,8 +21,7 @@ class ProjectRepository:
             p.provision_network = provision_network
             self.connection.session.add(p)
             self.connection.session.commit()
-        # should change to more specific exception
-        except Exception:
+        except SQLAlchemyError:
             self.connection.session.rollback()
             raise
         finally:
@@ -30,10 +32,9 @@ class ProjectRepository:
     def delete_with_name(self, name):
         try:
             self.connection = DatabaseConnection()
-            self.connection.session.delete(self.connection.session.query(Project).filter_by(name=name).first())
+            self.connection.session.query(Project).filter_by(name=name).delete(synchronize_session=False)
             self.connection.session.commit()
-        # should change to more specific exception
-        except Exception:
+        except SQLAlchemyError:
             self.connection.session.rollback()
             raise
         finally:
@@ -48,8 +49,25 @@ class ProjectRepository:
             # case
             for project in self.connection.session.query(Project).filter_by(name=name):
                 return project.id
-        # should change to more specific exception
-        except Exception:
+        except SQLAlchemyError:
             print "Database Exception: Something bad happened related to database"
         finally:
             self.connection.close()
+
+
+# This class represents the project table
+# the Column variables are the columns in the table
+# the relationship variable is loaded eagerly as the session is terminated after the object is retrieved
+# The relationship is also delete on cascade
+# images relationship is a reverse relation for easy traversal if required
+class Project(DatabaseConnection.Base):
+    __tablename__ = "project"
+
+    # Columns in the table
+    id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    name = Column(String, nullable=False, unique=True)
+    provision_network = Column(String, nullable=False)
+
+    # Relationships in the table, this one back populates to project in Image Class, eagerly loaded
+    # and cascade on delete is enabled
+    images = relationship("Image", back_populates="project", cascade="all, delete, delete-orphan")
