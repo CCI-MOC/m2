@@ -1,8 +1,6 @@
-from database import DatabaseConnection
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from ims.database.project import *
+from sqlalchemy import Boolean, ForeignKey
 from sqlalchemy import UniqueConstraint
-from sqlalchemy.orm import relationship
-from sqlalchemy.exc import SQLAlchemyError
 
 
 # This class is responsible for doing CRUD operations on the Image Table in DB
@@ -34,7 +32,7 @@ class ImageRepository:
     def delete_with_name_from_project(self, name, project_name):
         try:
             self.connection = DatabaseConnection()
-            self.connection.session.query(Image).\
+            self.connection.session.query(Image). \
                 filter(Image.project.has(name=project_name)).filter_by(name=name).delete(synchronize_session=False)
             self.connection.session.commit()
         except SQLAlchemyError:
@@ -48,9 +46,12 @@ class ImageRepository:
     def fetch_id_with_name_from_project(self, name, project_name):
         try:
             self.connection = DatabaseConnection()
-            for image in self.connection.session.query(Image).\
-                    filter(Image.project.has(name=project_name)).filter_by(name=name):
-                return image.id
+            images = self.connection.session.query(Image). \
+                filter(Image.project.has(name=project_name)).filter_by(name=name)
+            if images.count() == 0:
+                return None
+            else:
+                return images.first().id
         except SQLAlchemyError:
             print "Database Exception: Something bad happened related to database"
         finally:
@@ -58,7 +59,7 @@ class ImageRepository:
 
     # Fetch the list of images which are public
     # We are returning a dictionary of format {image_name : <img_name> , project_name : <proj_name>}
-    def fetch_name_with_public(self):
+    def fetch_names_with_public(self):
         try:
             self.connection = DatabaseConnection()
             img_list = self.connection.session.query(Image).filter_by(is_public=True)

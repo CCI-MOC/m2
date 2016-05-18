@@ -1,4 +1,4 @@
-from database import DatabaseConnection
+from ims.database import DatabaseConnection
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.exc import SQLAlchemyError
@@ -32,7 +32,11 @@ class ProjectRepository:
     def delete_with_name(self, name):
         try:
             self.connection = DatabaseConnection()
-            self.connection.session.query(Project).filter_by(name=name).delete(synchronize_session=False)
+            projects = self.connection.session.query(Project).filter_by(name=name)
+            if projects.count() == 0:
+                return None
+            else:
+                self.connection.session.delete(projects.first())
             self.connection.session.commit()
         except SQLAlchemyError:
             self.connection.session.rollback()
@@ -45,10 +49,11 @@ class ProjectRepository:
     def fetch_id_with_name(self, name):
         try:
             self.connection = DatabaseConnection()
-            # could use first() but method doesnt return None when project with name doesnt exist and may crash in that
-            # case
-            for project in self.connection.session.query(Project).filter_by(name=name):
-                return project.id
+            projects = self.connection.session.query(Project).filter_by(name=name)
+            if projects.count() == 0:
+                return None
+            else:
+                return projects.first().id
         except SQLAlchemyError:
             print "Database Exception: Something bad happened related to database"
         finally:
