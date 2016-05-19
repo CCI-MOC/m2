@@ -5,6 +5,7 @@ import subprocess
 from ceph_wrapper import *
 from database import *
 from haas_wrapper import *
+from exception import *
 
 
 class GlobalConfig(object):
