@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from repositories.image_repository import ImageRepository
-from repositories.project_repository import ProjectRepository
+from ims.database.image import *
+from ims.database.project import *
 
 
 # Before running make sure no .db files are present in execution directory
@@ -9,11 +9,7 @@ from repositories.project_repository import ProjectRepository
 
 # Tests for Project Class
 class TestDatabase(TestCase):
-    # should not actually be called
-    # the test for insert
-    # insert two rows and verify with fetch
-    # also verify for row which is not there (testing fetch also)
-    def insert_project_test(self):
+    def test_database(self):
         # insert a project
         pr = ProjectRepository()
         pr.insert("project 1", "network 1")
@@ -35,11 +31,6 @@ class TestDatabase(TestCase):
         pid = pr.fetch_id_with_name("project 3")
         self.assertIsNone(pid)
 
-    # should not actually be called
-    # the test for delete
-    # delete the inserted row
-    # check if it is gone
-    def delete_with_name_project_test(self):
         # delete first project
         pr = ProjectRepository()
         pr.delete_with_name("project 1")
@@ -48,18 +39,6 @@ class TestDatabase(TestCase):
         pid = pr.fetch_id_with_name("project 1")
         self.assertIsNone(pid)
 
-    # should not be called
-    # runs the project test case
-    def project_test(self):
-        self.insert_project_test()
-        self.delete_with_name_project_test()
-
-    # should not be called
-    # test for insert
-    # insert image for existing project
-    # check whether inserted properly
-    # check whether image is not being returned if project changed (testing fetch)
-    def insert_image_test(self):
         # insert a image under second project
         imgr = ImageRepository()
         imgr.insert("image 1", 2)
@@ -72,7 +51,7 @@ class TestDatabase(TestCase):
 
         # check that the image is not being returned from a different project name
         qimg = imgr.fetch_id_with_name_from_project("image 1", "project 1")
-        qimg_list = imgr.fetch_name_with_public()
+        qimg_list = imgr.fetch_names_with_public()
         qimg_names = imgr.fetch_names_from_project("project 2")
         qimg_name = imgr.fetch_name_with_id("1")
         self.assertIsNotNone(qimg_list)
@@ -84,12 +63,6 @@ class TestDatabase(TestCase):
         self.assertIsNotNone(qimg_name)
         self.assertEqual(qimg_name,"image 1")
 
-
-    # should not be called
-    # test for delete
-    # delete existing row
-    # check whether row is gone
-    def delete_with_name_image_test(self):
         # delete the inserted image
         imgr = ImageRepository()
         imgr.delete_with_name_from_project("image 1", "project 2")
@@ -98,14 +71,10 @@ class TestDatabase(TestCase):
         qimg = imgr.fetch_id_with_name_from_project("image 1", "project 2")
         self.assertIsNone(qimg)
 
-    # should not be called
-    # runs the image test case
-    def image_test(self):
-        self.insert_image_test()
-        self.delete_with_name_image_test()
+        # testing on delete cascade
+        # Also brings the db to intial state
+        pr = ProjectRepository()
+        pr.delete_with_name("project 2")
 
-    # The actual test that should be called
-    # written for ordering of tests
-    def test_database(self):
-        self.project_test()
-        self.image_test()
+        qp = pr.fetch_id_with_name("project 2")
+        self.assertIsNone(qp)
