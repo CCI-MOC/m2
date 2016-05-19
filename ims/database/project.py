@@ -33,11 +33,9 @@ class ProjectRepository:
     def delete_with_name(self, name):
         try:
             self.connection = DatabaseConnection()
-            projects = self.connection.session.query(Project).filter_by(name=name)
-            if projects.count() == 0:
-                return None
-            else:
-                self.connection.session.delete(projects.first())
+            project = self.connection.session.query(Project).filter_by(name=name).one_or_none()
+            if project is not None:
+                self.connection.session.delete(project)
             self.connection.session.commit()
         except SQLAlchemyError as e:
             self.connection.session.rollback()
@@ -50,6 +48,11 @@ class ProjectRepository:
     def fetch_id_with_name(self, name):
         try:
             self.connection = DatabaseConnection()
+            project = self.connection.session.query(Project).filter_by(name=name).one_or_none()
+            if project is not None:
+                return project.id
+        except SQLAlchemyError:
+            print "Database Exception: Something bad happened related to database"
             projects = self.connection.session.query(Project).filter_by(name=name)
             if projects.count() == 0:
                 return None
