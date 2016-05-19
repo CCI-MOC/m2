@@ -51,13 +51,6 @@ class ProjectRepository:
             project = self.connection.session.query(Project).filter_by(name=name).one_or_none()
             if project is not None:
                 return project.id
-        except SQLAlchemyError:
-            print "Database Exception: Something bad happened related to database"
-            projects = self.connection.session.query(Project).filter_by(name=name)
-            if projects.count() == 0:
-                return None
-            else:
-                return projects.first().id
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
         finally:

@@ -51,14 +51,6 @@ class ImageRepository:
                 filter(Image.project.has(name=project_name)).filter_by(name=name).one_or_none()
             if image is not None:
                 return image.id
-        except SQLAlchemyError:
-            print "Database Exception: Something bad happened related to database"
-            images = self.connection.session.query(Image). \
-                filter(Image.project.has(name=project_name)).filter_by(name=name)
-            if images.count() == 0:
-                return None
-            else:
-                return images.first().id
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
         finally:
@@ -86,8 +78,9 @@ class ImageRepository:
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
         finally:
-            self.connection.close()  # fetch name of image with given id
+            self.connection.close()
 
+    # fetch name of image with given id
     def fetch_name_with_id(self, id):
         try:
             self.connection = DatabaseConnection()
@@ -96,9 +89,9 @@ class ImageRepository:
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
         finally:
-            self.connection.close()  # This class represents the image table
+            self.connection.close()
 
-
+# This class represents the image table
 # the Column variables are the columns in the table
 # the relationship variables is loaded eagerly as the session is terminated after the object is retrieved
 # The snaphosts relationship is also delete on cascade (Commented)
