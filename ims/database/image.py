@@ -46,12 +46,10 @@ class ImageRepository:
     def fetch_id_with_name_from_project(self, name, project_name):
         try:
             self.connection = DatabaseConnection()
-            images = self.connection.session.query(Image). \
-                filter(Image.project.has(name=project_name)).filter_by(name=name)
-            if images.count() == 0:
-                return None
-            else:
-                return images.first().id
+            image = self.connection.session.query(Image). \
+                filter(Image.project.has(name=project_name)).filter_by(name=name).one_or_none()
+            if image is not None:
+                return image.id
         except SQLAlchemyError:
             print "Database Exception: Something bad happened related to database"
         finally:
