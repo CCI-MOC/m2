@@ -91,6 +91,7 @@ class ImageRepository:
         finally:
             self.connection.close()
 
+
 # This class represents the image table
 # the Column variables are the columns in the table
 # the relationship variables is loaded eagerly as the session is terminated after the object is retrieved

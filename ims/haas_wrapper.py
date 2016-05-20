@@ -44,7 +44,7 @@ def resp_parse(obj, resptype=1):
         return {"status_code": obj.status_code}
 
     elif obj.status_code > 399:
-        raise haas_exceptions.UnknownException(obj.status_code, obj.content)
+        raise haas_exceptions.UnknownException(obj.status_code, obj.json()['msg'])
 
 
 def list_free_nodes(haas_url, usr, passwd, debug=None):
