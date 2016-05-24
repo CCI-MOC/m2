@@ -42,7 +42,10 @@ def resp_parse(obj, resptype=1):
 
     elif obj.status_code != 200 and obj.status_code < 400:
         return {"status_code": obj.status_code}
-
+    elif obj.status_code == 401:
+        raise  haas_exceptions.AuthenticationFailedException()
+    elif obj.status_code == 403:
+        raise haas_exceptions.AuthorizationFailedException()
     elif obj.status_code > 399:
         raise haas_exceptions.UnknownException(obj.status_code, obj.json()['msg'])
 
@@ -58,7 +61,7 @@ def list_free_nodes(haas_url, usr, passwd, debug=None):
         return resp_parse(haas_call_ret)
 
     except requests.RequestException as e:
-        return haas_exceptions.ConnectionException()
+        raise haas_exceptions.ConnectionException()
 
 
 def query_project_nodes(haas_url, project, usr, passwd):
@@ -69,7 +72,7 @@ def query_project_nodes(haas_url, project, usr, passwd):
         haas_call_ret = call_haas(c_api, haas_req)
         return resp_parse(haas_call_ret)
     except requests.RequestException as e:
-        return haas_exceptions.ConnectionException()
+        raise haas_exceptions.ConnectionException()
 
 
 def detach_node_from_project(haas_url, project, node, usr, passwd, debug=None):
@@ -83,7 +86,7 @@ def detach_node_from_project(haas_url, project, node, usr, passwd, debug=None):
             print {"url": c_api, "node": node}
         return resp_parse(t_ret, resptype=2)
     except requests.RequestException as e:
-        return haas_exceptions.ConnectionException()
+        raise haas_exceptions.ConnectionException()
 
 
 def attach_node_to_project_network(haas_url, node, nic, \
@@ -99,7 +102,7 @@ def attach_node_to_project_network(haas_url, node, nic, \
             print {"url": c_api, "node": node, "nic": nic}
         return resp_parse(t_ret, resptype=2)
     except requests.RequestException as e:
-        return haas_exceptions.ConnectionException()
+        raise haas_exceptions.ConnectionException()
 
 
 def attach_node_haas_project(haas_url, project, node, usr, passwd, debug=None):
@@ -113,11 +116,11 @@ def attach_node_haas_project(haas_url, project, node, usr, passwd, debug=None):
             print {"url": c_api, "node": node}
         return resp_parse(t_ret, resptype=2)
     except requests.RequestException as e:
-        return haas_exceptions.ConnectionException()
+        raise haas_exceptions.ConnectionException()
 
 
 def detach_node_from_project_network(haas_url, node, \
-                                     network, usr, passwd, nic='enp130s0f0', debug=None):
+                                     network, usr, passwd, nic='eno1', debug=None):
     try:
         api = '/node/' + node + '/nic/' + nic + '/detach_network'
         c_api = urlparse.urljoin(haas_url, api)
@@ -128,7 +131,7 @@ def detach_node_from_project_network(haas_url, node, \
             print {"url": c_api, "node": node, "nic": nic}
         return resp_parse(t_ret, resptype=2)
     except requests.RequestException as e:
-        return haas_exceptions.ConnectionException()
+        raise haas_exceptions.ConnectionException()
 
 
 def check_auth(haas_url, usr, passwd, project):

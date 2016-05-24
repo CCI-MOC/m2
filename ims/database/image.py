@@ -13,13 +13,15 @@ class ImageRepository:
 
     # inserts the arguments into table
     # Commits if inserted successfully otherwise rollbacks if some issue occured and bubbles the exception
-    def insert(self, image_name, project_id, is_public=False):
+    def insert(self, image_name, project_id, is_public=False, id = None):
         try:
             self.connection = DatabaseConnection()
             img = Image()
             img.name = image_name
             img.project_id = project_id
             img.is_public = is_public
+            if id is not None:
+                img.id = id
             self.connection.session.add(img)
             self.connection.session.commit()
         except SQLAlchemyError as e:

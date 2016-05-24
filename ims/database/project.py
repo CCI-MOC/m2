@@ -14,12 +14,14 @@ class ProjectRepository:
 
     # inserts the arguments into the table
     # commits after insertion otherwise rollback occurs after which exception is bubbled up
-    def insert(self, name, provision_network):
+    def insert(self, name, provision_network,id = None):
         try:
             self.connection = DatabaseConnection()
             p = Project()
             p.name = name
             p.provision_network = provision_network
+            if id is not None:
+                p.id = id
             self.connection.session.add(p)
             self.connection.session.commit()
         except SQLAlchemyError as e:

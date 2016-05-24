@@ -4,8 +4,8 @@ import subprocess
 
 from ceph_wrapper import *
 from database import *
-from haas_wrapper import *
 from exception import *
+from haas_wrapper import *
 
 
 class GlobalConfig(object):
@@ -28,7 +28,8 @@ class GlobalConfig(object):
     def parse_config(self):
         config = ConfigParser.SafeConfigParser()
         try:
-            config.read(self.configfile)
+            if not config.read(self.configfile):
+                raise IOError, 'cannot load ' + self.configfile
             for k, v in config.items('filesystem'):
                 if v == 'True':
                     self.fstype = k
@@ -55,11 +56,15 @@ def call_shellscript(path, m_args):
 # given. The nodes are typically implemented using ceph.
 
 # provision : when map filename to num, create num files instead of image_name.
-def provision(node_name, img_name="hadoopMaster.img", \
+# given. The nodes are typically implemented using ceph.
+
+# provision : when map filename to num, create num files instead of image_name.
+def provision(url, usr, pwd, node_name, img_name="hadoopMaster.img", \
               snap_name="HadoopMasterGoldenImage", \
-              debug=False):
+              network="bmi-provision", debug=False):
     fs_obj = None
     try:
+        attach_node_to_project_network(url, node_name, 'eno1', network, usr, pwd)
         fsconfig = create_fsconfigobj()
         fs_obj = init_fs(fsconfig)
         if fs_obj.clone(img_name.encode('utf-8'), \
@@ -71,8 +76,11 @@ def provision(node_name, img_name="hadoopMaster.img", \
             if 'successfully' in iscsi_output[0]:
                 return ret_200(True)
             elif 'already' in iscsi_output[0]:
+                # Was not able to test this exception in test cases as the haas call was blocking this exception
+                # But it was raised during preparation of tests
+                # Rare exception
                 raise shellscript_exceptions.NodeAlreadyInUseException()
-    except (ShellScriptException, FileSystemException) as e:
+    except (HaaSException, ShellScriptException, FileSystemException) as e:
         return return_error(e)
 
     finally:
@@ -83,9 +91,11 @@ def provision(node_name, img_name="hadoopMaster.img", \
 # This is for detach a node and removing it from iscsi
 # and destroying its image
 
-def detach_node(node_name):
+def detach_node(url, usr, pwd, node_name, network="bmi-provision"):
     fs_obj = None
     try:
+        detach_node_from_project_network(url, node_name, \
+                                         network, usr, pwd)
         fsconfig = create_fsconfigobj()
         fs_obj = init_fs(fsconfig)
         iscsi_output = call_shellscript('./iscsi_update.sh', \
@@ -93,11 +103,11 @@ def detach_node(node_name):
                                          fsconfig.rid, fsconfig.pool, node_name, \
                                          'delete'])
         if 'successfully' in iscsi_output[0]:
-            fs_obj._remove(node_name.encode("utf-8"))
+            fs_obj.remove(node_name.encode("utf-8"))
             return ret_200(True)
         elif 'already' in iscsi_output[0]:
             raise shellscript_exceptions.NodeAlreadyUnmappedException()
-    except (ShellScriptException, FileSystemException) as e:
+    except (HaaSException, ShellScriptException, FileSystemException) as e:
         return return_error(e)
     finally:
         if fs_obj is not None:
@@ -123,6 +133,16 @@ def create_snapshot(url, usr, passwd, project, img_name, snap_name):
 
         fs_config = create_fsconfigobj()
         fs_obj = init_fs(fs_config)
+
+        snaps = list_snaps(url, usr, passwd, project, img_name)
+
+        if 'retval' not in snaps.keys():
+            return snaps
+
+        snaps = snaps['retval']
+
+        if snap_name in snaps:
+            raise file_system_exceptions.ImageExistsException(str(img_id))
 
         # Should change wrapper argument to accept int
         return ret_200(fs_obj.snap_image(str(img_id), snap_name))
@@ -192,8 +212,15 @@ def remove_snaps(url, usr, passwd, project, img_name, snap_name):
 def list_all_images(url, usr, passwd, project):
     try:
         check_auth(url, usr, passwd, project)
+
+        pr = ProjectRepository()
+        pid = pr.fetch_id_with_name(project)
+        # None as a query result implies that the project does not exist.
+        if pid is None:
+            raise db_exceptions.ProjectNotFoundException(project)
+
         imgr = ImageRepository()
-        return imgr.fetch_names_from_project(project)
+        return ret_200(imgr.fetch_names_from_project(project))
     except (HaaSException, DBException) as e:
         return return_error(e)
 
@@ -234,20 +261,20 @@ def swap_id_with_name(str):
     parts = str.split(" ")
     imgr = ImageRepository()
     name = imgr.fetch_name_with_id(parts[0].strip())
-    new_msg = name + " "
-    for index in range(1, parts.__len__() - 1):
-        new_msg += parts[index].strip()
-        new_msg += " "
-    return new_msg
+    if name is not None:
+        parts[0] = name
+    return " ".join(parts)
 
 
 if __name__ == "__main__":
-    print check_auth('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'bmi_penultimate')
-    print list_all_images('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'test')
-    print list_all_images('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'bmi_penultimate')
-    print list_snaps('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'bmi_penultimate', 'testimage')
+    # print check_auth('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'bmipenultimate')
+    # print list_all_images('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'test')
+    # print list_all_images('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'bmipenultimate')
+    print provision("http://127.0.0.1:6500/", "haasadmin", "admin1234", "super-37")
+    # print detach_node("http://127.0.0.1:6500/", "haasadmin", "admin1234", "super-37")
+    # print list_snaps('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'bmi_penultimate', 'testimage')
     # print create_snapshot('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'bmi_penultimate','testimage', 'blblb1')
-    print remove_snaps('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'bmi_penultimate', 'testimage', 'blblb1')
+    # print remove_snaps('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'bmi_penultimate', 'testimage', 'blblb1')
     '''
     print list_free_nodes('http://127.0.0.1:6500/', "haasadmin", "admin1234",  debug = True)['retval']
     time.sleep(5)

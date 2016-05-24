@@ -49,17 +49,14 @@ class CephBase(object):
         return rbd.RBD()
 
     def init_image(self, name, ctx=None, snapshot=None, read_only=False):
-        try:
-            if not ctx:
-                ctx = self.ctx
-            image_instance = rbd.Image(ctx, name, snapshot, read_only)
-            ##return True We return True because we can already reference the image
-            ##using the name as the key to the dict. The worklflos is something like
-            return image_instance
-        except rbd.ImageNotFound as e:
-            raise file_system_exceptions.ImageNotFoundException(name)
-            # define this function in the derivative class
-            # to be specific for the call.
+        if not ctx:
+            ctx = self.ctx
+        image_instance = rbd.Image(ctx, name, snapshot, read_only)
+        ##return True We return True because we can already reference the image
+        ##using the name as the key to the dict. The worklflos is something like
+        return image_instance
+        # define this function in the derivative class
+        # to be specific for the call.
 
     def run(self):
         pass
@@ -89,10 +86,19 @@ class RBD(CephBase):
             self.rbd.clone(p_ctx, p_name, p_snap, c_ctx, c_nm, features=1)
             return True
         # Need to test whether image not found is raised for parent image
-        except rbd.ImageExists() as e:
+        except rbd.ImageNotFound as e:
+            images = self.list_n()
+            if p_name not in images:
+                img_name = p_name
+            else:
+                img_name = p_snap
+            raise file_system_exceptions.ImageNotFoundException(img_name)
+        except rbd.ImageExists as e:
             raise file_system_exceptions.ImageExistsException(c_nm)
+        # No Clue when will this be raised so not testing
         except rbd.FunctionNotSupported as e:
             raise file_system_exceptions.FunctionNotSupportedException()
+        # No Clue when will this be raised so not testing
         except rbd.ArgumentOutOfRange as e:
             raise file_system_exceptions.ArgumentsOutOfRangeException()
 
@@ -128,6 +134,7 @@ class RBD(CephBase):
             img.create_snap(name)
             img.close()
             return True
+        # Was having issue ceph implemented work around in method which calls this
         except rbd.ImageExists as e:
             raise file_system_exceptions.ImageExistsException(img_id)
         except rbd.ImageNotFound as e:
@@ -150,6 +157,7 @@ class RBD(CephBase):
             return True
         except rbd.ImageNotFound as e:
             raise file_system_exceptions.ImageNotFoundException(img_id)
+        # Dont know how to raise this
         except rbd.ImageBusy as e:
             raise file_system_exceptions.ImageBusyException(img_id)
 
@@ -167,4 +175,7 @@ class RBD(CephBase):
         """
            Gets image object for manipulation
         """
-        return self.init_image(img_id)
+        try:
+            return self.init_image(img_id)
+        except rbd.ImageNotFound as e:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
