@@ -1,6 +1,6 @@
 from abc import ABCMeta
 
-from bmi_exceptions import FileSystemException
+from exception import FileSystemException
 
 
 # This exception should be raised when Image is not found in file system

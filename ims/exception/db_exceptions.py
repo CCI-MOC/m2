@@ -1,4 +1,4 @@
-from bmi_exceptions import DBException
+from exception import DBException
 
 
 # this exception should be raised when a project is not found in the db

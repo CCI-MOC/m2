@@ -1,4 +1,4 @@
-from bmi_exceptions import HaaSException
+from exception import HaaSException
 
 
 # this exception should be raised when haas reports an authorization failure

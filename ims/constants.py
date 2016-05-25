@@ -1,0 +1,19 @@
+
+FILESYSTEM_CONFIG_SECTION_NAME = 'filesystem'
+HAAS_CONFIG_SECTION_NAME = 'haas'
+HAAS_CONFIG_URL_KEY = 'url'
+ISCSI_CONFIG_SECTION_NAME = 'iscsi'
+ISCSI_CONFIG_URL_KEY = 'update_shell_url'
+
+ISCSI_UPDATE_SUCCESS = 'successfully'
+ISCSI_UPDATE_FAILURE = 'already'
+
+ISCSI_CREATE_COMMAND = 'create'
+ISCSI_DELETE_COMMAND = 'delete'
+
+CEPH_CONFIG_SECTION_NAME = 'ceph'
+
+STATUS_CODE_KEY = 'status_code'
+RETURN_VALUE_KEY = 'retval'
+MESSAGE_KEY = 'msg'
+

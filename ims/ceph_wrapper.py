@@ -3,14 +3,15 @@ import os
 
 import rados
 import rbd
+from filesystem import FileSystem
 from exception import *
 
 
 # Need to define abstract class for Filesystem in a seperate file.
 
 
-class CephBase(object):
-    def __init__(self, rid, r_conf, pool, debug=None):
+class CephBase:
+    def __init__(self, rid, r_conf, pool):
         if not rid or not r_conf or not pool:
             raise file_system_exceptions.IncorrectConfigArgumentException()
         if not os.path.isfile(r_conf):
@@ -22,8 +23,6 @@ class CephBase(object):
         self.ctx = self.__init_context()
         self.rbd = self.__init_rbd()
         self.is_debug = False
-        if debug:
-            self.is_debug = debug
 
     def __repr__(self):
         return str([self.rid, self.r_conf, self.pool, self.is_debug])
@@ -34,7 +33,7 @@ class CephBase(object):
     def __str__(self):
         return 'rid = {0}, conf_file = {1}, pool = {2},' \
                'is_debug? = {3}, current images {4}' \
-            .format(self.rid, self.r_conf, \
+            .format(self.rid, self.r_conf,
                     self.pool, self.is_debug)
 
     def __init_context(self):
@@ -58,9 +57,6 @@ class CephBase(object):
         # define this function in the derivative class
         # to be specific for the call.
 
-    def run(self):
-        pass
-
     # this is the teardown section, we undo things here
     def __td_context(self):
         self.ctx.close()
@@ -74,10 +70,15 @@ class CephBase(object):
 
 
 class RBD(CephBase):
+    def __init__(self, config):
+        super(RBD, self).__init__(config['id'],
+                       config['conf_file'],
+                       config['pool'])
+
     def list_n(self):
         return self.rbd.list(self.ctx)
 
-    def clone(self, p_name, p_snap, c_nm,p_ctx=None, c_ctx=None):
+    def clone(self, p_name, p_snap, c_nm, p_ctx=None, c_ctx=None):
         try:
             if not p_ctx:
                 p_ctx = self.ctx
@@ -106,7 +107,7 @@ class RBD(CephBase):
         try:
             if not ctx:
                 ctx = self.ctx
-            self._remove(img_id, ctx)
+            self.rbd.remove(ctx, img_id)
             return True
         except rbd.ImageNotFound as e:
             raise file_system_exceptions.ImageNotFoundException(img_id)
@@ -114,11 +115,6 @@ class RBD(CephBase):
             raise file_system_exceptions.ImageBusyException(img_id)
         except rbd.ImageHasSnapshots as e:
             raise file_system_exceptions.ImageHasSnapshotException(img_id)
-
-    def _remove(self, iname, ctx=None):
-        if not ctx:
-            ctx = self.ctx
-        self.rbd.remove(ctx, iname)
 
     def write(self, img_id, data, offset):
         try:
@@ -130,14 +126,20 @@ class RBD(CephBase):
 
     def snap_image(self, img_id, name):
         try:
+
+            snaps = self.list_snapshots(img_id)
+
+            if name in snaps:
+                raise file_system_exceptions.ImageExistsException(name)
+
             img = self.init_image(name=img_id)
             img.create_snap(name)
             img.close()
             return True
-        # Was having issue ceph implemented work around in method which calls this
-        except rbd.ImageExists as e:
+        # Was having issue ceph implemented work around
+        except rbd.ImageExists:
             raise file_system_exceptions.ImageExistsException(img_id)
-        except rbd.ImageNotFound as e:
+        except rbd.ImageNotFound:
             raise file_system_exceptions.ImageNotFoundException(img_id)
 
     def list_snapshots(self, img_id):
@@ -146,7 +148,7 @@ class RBD(CephBase):
             snap_list_iter = img.list_snaps()
             snap_list = [snap['name'] for snap in snap_list_iter]
             return snap_list
-        except rbd.ImageNotFound as e:
+        except rbd.ImageNotFound:
             raise file_system_exceptions.ImageNotFoundException(img_id)
 
     def remove_snapshots(self, img_id, name):
@@ -155,10 +157,10 @@ class RBD(CephBase):
             img.remove_snap(name)
             img.close()
             return True
-        except rbd.ImageNotFound as e:
+        except rbd.ImageNotFound:
             raise file_system_exceptions.ImageNotFoundException(img_id)
         # Dont know how to raise this
-        except rbd.ImageBusy as e:
+        except rbd.ImageBusy:
             raise file_system_exceptions.ImageBusyException(img_id)
 
     def create_image(self, img_id, img_size, ctx=None):
@@ -172,9 +174,6 @@ class RBD(CephBase):
             raise file_system_exceptions.FunctionNotSupportedException()
 
     def get_image(self, img_id):
-        """
-           Gets image object for manipulation
-        """
         try:
             return self.init_image(img_id)
         except rbd.ImageNotFound as e:

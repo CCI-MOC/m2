@@ -1,4 +1,4 @@
-from bmi_exceptions import ShellScriptException
+from exception import ShellScriptException
 
 
 # this exception should be raised when the shell script is called on a node that is already in use
