@@ -2,10 +2,14 @@
 
 ### BEGIN INIT INFO
 # Provides:          nameserver daemon
-# 
-# 
-# 
-# 
+# Required-Start:    networking
+# Required-Stop:     networking
+# Default-Start:     2 3 4 5 
+# Default-Stop:      0 1 6
+# Short-Description: This is the nameserver daemon
+# Descritption:      This is the nameserver daemon
+#                    which starts and runs the 
+#                    nameserver python script.
 ### END INIT INFO
 
 
