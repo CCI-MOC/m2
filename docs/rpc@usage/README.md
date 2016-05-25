@@ -21,7 +21,7 @@ over the network.
 3. rpcclient.py - This file is the client program that needs to be run to make a 
                    a request to the main server.
 4. test.py  - This file is the python program that tests the MainSever class
-                   in the mainserver.py file by creating objects of the class, and
+                   in the rpcserver.py file by creating objects of the class, and
                    testing the actual output of the methods against the desired output.  
 5. nameserver-daemon.sh - This file runs the nameserver.py file as a daemon. This allows  
                           the nameserver.py file to run as long as the system is not rebooted.  
@@ -50,11 +50,11 @@ NOTE: This file is now executed by running the nameserver-daemon shell script.
   
 **2. rpcserver.py:**   
   
-The mainserver.py file needs to be executed once the name server is running and listening for
+The rpcserver.py file needs to be executed once the name server is running and listening for
 the server objects. The main server is binded to a IP Address as well. This address is provided
 to the Pyro server through config.HOST variable.  
   
-The IP Address for the main server is to be entered in the mainserver.py file by initializing the 
+The IP Address for the main server is to be entered in the rpcserver.py file by initializing the 
  Pyro4.config.HOST in the __init__().
   
 This IP Address should be reachable by name server and clients.   
@@ -65,7 +65,7 @@ NOTE: The name server and main server can be run on the same system as well. Sti
   
 **3. rpcclient.py:**  
   
-The mainclient.py file needs to be executed with the appropriate arguments everytime a request to
+The rpcclient.py file needs to be executed with the appropriate arguments everytime a request to
 the server is to be made.  
   
 The example command looks as follows:  
