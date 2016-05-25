@@ -1,11 +1,15 @@
 #!/bin/sh
 
-### INIT INFO
-# 
-#
-#
-#
-#
+### BEGIN INIT INFO
+# Provides:          rpcserver daemon
+# Required-Start:    networking nameserver-daemon
+# Required-Stop:     networking nameserver-daemon
+# Default-Start:     2 3 4 5 
+# Default-Stop:      0 1 6
+# Short-Description: This is the rpc daemon
+# Descritption:      This is the rpcserver daemon
+#                    which starts and runs the 
+#                    rpcserver python script.
 ### END INIT INFO
 
 
