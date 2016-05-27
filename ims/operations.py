@@ -84,7 +84,7 @@ class BMI:
             img_id = self.__get_image_id(project, img_name)
 
             with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
-                return return_success(fs.snap_image(str(img_id), snap_name))
+                return return_success(fs.snap_image(img_id, snap_name))
 
         except (HaaSException, DBException, FileSystemException) as e:
             return return_error(e)
@@ -99,7 +99,7 @@ class BMI:
             img_id = self.__get_image_id(project, img_name)
 
             with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
-                return return_success(fs.list_snapshots(str(img_id)))
+                return return_success(fs.list_snapshots(img_id))
 
         except (HaaSException, DBException, FileSystemException) as e:
             return return_error(e)
@@ -113,7 +113,7 @@ class BMI:
             img_id = self.__get_image_id(project, img_name)
 
             with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
-                return return_success(fs.remove_snapshots(str(img_id), snap_name))
+                return return_success(fs.remove_snapshots(img_id, snap_name))
 
         except (HaaSException, DBException, FileSystemException) as e:
             return return_error(e)
@@ -140,7 +140,7 @@ class BMI:
         img_id = imgr.fetch_id_with_name_from_project(name, project)
         if img_id is None:
             raise db_exceptions.ImageNotFoundException(name)
-        return img_id
+        return str(img_id)
 
 
 # Calling shell script which executes a iscsi update as we don't have

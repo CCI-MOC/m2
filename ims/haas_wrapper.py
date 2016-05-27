@@ -8,7 +8,7 @@ from exception import *
 
 
 class HaaS:
-    class Request(object):
+    class Request:
         def __init__(self, method, data, auth=None):
             self.method = method
             self.data = json.dumps(data)
