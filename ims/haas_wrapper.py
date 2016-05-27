@@ -2,136 +2,105 @@ import json
 import urlparse
 
 import requests
-import constants
 
+import constants
 from exception import *
 
 
-class HaasRequest(object):
-    def __init__(self, method, data, auth=None):
-        self.method = method
-        self.data = json.dumps(data)
-        self.auth = None
-        if auth:
-            self.auth = auth
+class HaaS:
+    class Request(object):
+        def __init__(self, method, data, auth=None):
+            self.method = method
+            self.data = json.dumps(data)
+            self.auth = None
+            if auth:
+                self.auth = auth
 
-    def __str__(self):
-        return str(
-            {"method": str(self.method), "data": self.data, "auth": self.auth})
+        def __str__(self):
+            return str(
+                {"method": str(self.method), "data": self.data,
+                 "auth": self.auth})
 
+    class Communicator:
+        def __init__(self, url, request):
+            self.url = url
+            self.request = request
 
-def call_haas(url, req):
-    if req.method == "get":
-        return requests.get(url, auth=req.auth)
-    if req.method == "post":
-        ret = requests.post(url, data=req.data, auth=req.auth)
-        return ret
+        def send_request(self):
+            try:
+                if self.request.method == "get":
+                    return self.resp_parse(
+                        requests.get(self.url, auth=self.request.auth))
+                if self.request.method == "post":
+                    return self.resp_parse(
+                        requests.post(self.url, data=self.request.data,
+                                      auth=self.request.auth))
+            except requests.RequestException:
+                raise haas_exceptions.ConnectionException()
 
-def resp_parse(obj, resptype=1):
-    if obj.status_code == 200 and resptype is 1:
-        return {constants.STATUS_CODE_KEY: obj.status_code, constants.RETURN_VALUE_KEY: obj.json()}
+        def resp_parse(self, obj):
+            if obj.status_code == 200:
+                try:
+                    return {constants.STATUS_CODE_KEY: obj.status_code,
+                            constants.RETURN_VALUE_KEY: obj.json()}
+                except ValueError:
+                    return {constants.STATUS_CODE_KEY: obj.status_code}
+            elif obj.status_code == 401:
+                raise haas_exceptions.AuthenticationFailedException()
+            elif obj.status_code == 403:
+                raise haas_exceptions.AuthorizationFailedException()
+            elif obj.status_code != 200:
+                raise haas_exceptions.UnknownException(obj.status_code,
+                                                       obj.json()[
+                                                           constants.MESSAGE_KEY])
 
-    elif obj.status_code == 200 and resptype is not 1:
-        return {constants.STATUS_CODE_KEY: obj.status_code}
+    def __init__(self, base_url, usr, passwd):
+        self.base_url = base_url
+        self.usr = usr
+        self.passwd = passwd
 
-    elif obj.status_code != 200 and obj.status_code < 400:
-        return {constants.STATUS_CODE_KEY: obj.status_code}
-    elif obj.status_code == 401:
-        raise haas_exceptions.AuthenticationFailedException()
-    elif obj.status_code == 403:
-        raise haas_exceptions.AuthorizationFailedException()
-    elif obj.status_code > 399:
-        raise haas_exceptions.UnknownException(obj.status_code,
-                                               obj.json()[constants.MESSAGE_KEY])
+    def __call_rest_api(self, api):
+        link = urlparse.urljoin(self.base_url, api)
+        request = HaaS.Request('get', None, auth=(self.usr, self.passwd))
+        return HaaS.Communicator(link, request).send_request()
 
+    def __call_rest_api_with_body(self, api, body):
+        link = urlparse.urljoin(self.base_url, api)
+        request = HaaS.Request('post', body, auth=(self.usr, self.passwd))
+        return HaaS.Communicator(link, request).send_request()
 
-def list_free_nodes(haas_url, usr, passwd, debug=None):
-    try:
+    def list_free_nodes(self):
         api = 'free_nodes'
-        c_api = urlparse.urljoin(haas_url, api)
-        haas_req = HaasRequest('get', None, auth=(usr, passwd))
-        if debug:
-            print c_api
-        haas_call_ret = call_haas(c_api, haas_req)
-        return resp_parse(haas_call_ret)
+        return self.__call_rest_api(api=api)
 
-    except requests.RequestException as e:
-        raise haas_exceptions.ConnectionException()
+    def query_project_nodes(self, project):
+        api = '/project/' + project + '/nodes'
+        return self.__call_rest_api(api=api)
 
-
-def query_project_nodes(haas_url, project, usr, passwd):
-    try:
-        api = '/nodes'
-        c_api = urlparse.urljoin(haas_url, '/project/' + project + api)
-        haas_req = HaasRequest('get', None, auth=(usr, passwd))
-        haas_call_ret = call_haas(c_api, haas_req)
-        return resp_parse(haas_call_ret)
-    except requests.RequestException as e:
-        raise haas_exceptions.ConnectionException()
-
-
-def detach_node_from_project(haas_url, project, node, usr, passwd, debug=None):
-    try:
-        api = '/detach_node'
-        c_api = urlparse.urljoin(haas_url, 'project/' + project + api)
+    def detach_node_from_project(self, project, node):
+        api = 'project/' + project + '/detach_node'
         body = {"node": node}
-        haas_req = HaasRequest('post', body, auth=(usr, passwd))
-        t_ret = call_haas(c_api, haas_req, debug)
-        if debug:
-            print {"url": c_api, "node": node}
-        return resp_parse(t_ret, resptype=2)
-    except requests.RequestException as e:
-        raise haas_exceptions.ConnectionException()
+        return self.__call_rest_api_with_body(api=api, body=body)
 
-
-def attach_node_to_project_network(haas_url, node, \
-                                   network, usr, passwd, channel="vlan/native", \
-                                   nic='eno1'):
-    try:
+    def attach_node_to_project_network(self, node,
+                                       network,
+                                       channel="vlan/native",
+                                       nic='eno1'):
         api = '/node/' + node + '/nic/' + nic + '/connect_network'
-        c_api = urlparse.urljoin(haas_url, api)
         body = {"network": network, "channel": channel}
-        haas_req = HaasRequest('post', body, auth=(usr, passwd))
-        t_ret = call_haas(c_api, haas_req)
-        return resp_parse(t_ret, resptype=2)
-    except requests.RequestException as e:
-        raise haas_exceptions.ConnectionException()
+        return self.__call_rest_api_with_body(api=api, body=body)
 
-
-def attach_node_haas_project(haas_url, project, node, usr, passwd):
-    try:
-        api = '/connect_node'
-        c_api = urlparse.urljoin(haas_url, 'project/' + project + api)
+    def attach_node_haas_project(self, project, node):
+        api = 'project/' + project + '/connect_node'
         body = {"node": node}
-        haas_req = HaasRequest('post', body, auth=(usr, passwd))
-        t_ret = call_haas(c_api, haas_req)
-        return resp_parse(t_ret, resptype=2)
-    except requests.RequestException as e:
-        raise haas_exceptions.ConnectionException()
+        return self.__call_rest_api_with_body(api=api, body=body)
 
-
-def detach_node_from_project_network(haas_url, node, \
-                                     network, usr, passwd, nic='eno1'):
-    try:
+    def detach_node_from_project_network(self, node,
+                                         network, nic='eno1'):
         api = '/node/' + node + '/nic/' + nic + '/detach_network'
-        c_api = urlparse.urljoin(haas_url, api)
         body = {"network": network}
-        haas_req = HaasRequest('post', body, auth=(usr, passwd))
-        t_ret = call_haas(c_api, haas_req)
-        return resp_parse(t_ret, resptype=2)
-    except requests.RequestException as e:
-        raise haas_exceptions.ConnectionException()
+        return self.__call_rest_api_with_body(api=api, body=body)
 
-
-def check_auth(haas_url, usr, passwd, project):
-    api = '/nodes'
-    c_api = urlparse.urljoin(haas_url, '/project/' + project + api)
-    haas_req = HaasRequest('get', None, auth=(usr, passwd))
-    ret = call_haas(c_api, haas_req)
-    code = ret.status_code
-    if code == 401:
-        raise haas_exceptions.AuthenticationFailedException()
-    elif code == 403:
-        raise haas_exceptions.AuthorizationFailedException()
-    elif not code == 200:
-        raise haas_exceptions.UnknownException(code, ret.content)
+    def validate_project(self, project):
+        api = '/project/' + project + '/nodes'
+        return self.__call_rest_api(api=api)

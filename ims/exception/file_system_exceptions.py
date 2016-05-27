@@ -67,15 +67,23 @@ class ArgumentsOutOfRangeException(FileSystemException):
 
 
 # this exception should be raised when the config file passed is invalid
-class InvalidConfigFileException(FileSystemException):
+class InvalidConfigArgumentException(FileSystemException):
+
+    def __init__(self,arg):
+        self.arg = arg
+
     def __str__(self):
-        return "Invalid Config File"
+        return "Invalid "+self.arg+" argument in config file"
 
 
 # this exception should be raised when the config file contains an invalid argument
-class IncorrectConfigArgumentException(FileSystemException):
+class MissingConfigArgumentException(FileSystemException):
+
+    def __init__(self,arg):
+        self.arg = arg
+
     def __str__(self):
-        return "Incorrect Config Argument"
+        return self.arg+" is incorrect in config file"
 
 
 # this exception class is the abstract class for any ceph specific exceptions

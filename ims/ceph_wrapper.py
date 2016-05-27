@@ -1,40 +1,69 @@
 #! /bin/python
 import os
+from contextlib import contextmanager
 
+import constants
 import rados
 import rbd
-from filesystem import FileSystem
 from exception import *
 
 
-# Need to define abstract class for Filesystem in a seperate file.
+# Written to use 'with' for opening and closing images
+# Passing context as it is outside class
+# Need to see if it is ok to put it inside the class
+@contextmanager
+def open_image(ctx, img_name):
+    img = None
+    try:
+        img = rbd.Image(ctx, img_name)
+        yield (img)
+    finally:
+        if img is not None:
+            img.close()
 
 
-class CephBase:
-    def __init__(self, rid, r_conf, pool):
-        if not rid or not r_conf or not pool:
-            raise file_system_exceptions.IncorrectConfigArgumentException()
-        if not os.path.isfile(r_conf):
-            raise file_system_exceptions.InvalidConfigFileException()
-        self.rid = rid
-        self.r_conf = r_conf
-        self.pool = pool
+# Need to think if there is a better way to reduce boilerplate exception
+# handling code in methods
+
+class RBD:
+    # Validates the config arguments passed
+    # If all are present then the values are copied to variables
+    def __validate(self, config):
+        try:
+            self.rid = config[constants.CEPH_ID_KEY]
+            self.r_conf = config[constants.CEPH_CONFIG_FILE_KEY]
+            self.pool = config[constants.CEPH_POOL_KEY]
+        except KeyError as e:
+            raise file_system_exceptions.MissingConfigArgumentException(
+                e.args[0])
+
+        if not os.path.isfile(self.r_conf):
+            raise file_system_exceptions.InvalidConfigArgumentException(
+                constants.CEPH_CONFIG_FILE_KEY)
+
+    def __enter__(self,config):
+        self.__validate(config)
         self.cluster = self.__init_cluster()
-        self.ctx = self.__init_context()
-        self.rbd = self.__init_rbd()
-        self.is_debug = False
+        self.context = self.__init_context()
+        self.rbd = rbd.RBD()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.tear_down()
+
+    def __init__(self, config):
+        self.__validate(config)
+        self.cluster = self.__init_cluster()
+        self.context = self.__init_context()
+        self.rbd = rbd.RBD()
 
     def __repr__(self):
-        return str([self.rid, self.r_conf, self.pool, self.is_debug])
+        return str([self.rid, self.r_conf, self.pool])
 
-    #
-    # log in case of debug
-    #
     def __str__(self):
         return 'rid = {0}, conf_file = {1}, pool = {2},' \
-               'is_debug? = {3}, current images {4}' \
+               'current images {3}' \
             .format(self.rid, self.r_conf,
-                    self.pool, self.is_debug)
+                    self.pool)
 
     def __init_context(self):
         return self.cluster.open_ioctx(self.pool.encode('utf-8'))
@@ -44,99 +73,76 @@ class CephBase:
         cluster.connect()
         return cluster
 
-    def __init_rbd(self):
-        return rbd.RBD()
-
-    def init_image(self, name, ctx=None, snapshot=None, read_only=False):
-        if not ctx:
-            ctx = self.ctx
-        image_instance = rbd.Image(ctx, name, snapshot, read_only)
-        ##return True We return True because we can already reference the image
-        ##using the name as the key to the dict. The worklflos is something like
-        return image_instance
-        # define this function in the derivative class
-        # to be specific for the call.
-
-    # this is the teardown section, we undo things here
-    def __td_context(self):
-        self.ctx.close()
-
-    def __td_cluster(self):
+    def tear_down(self):
+        self.context.close()
         self.cluster.shutdown()
 
-    def tear_down(self):
-        self.__td_context()
-        self.__td_cluster()
+    # RBD Operations Section
+    def list_images(self):
+        return self.rbd.list(self.context)
 
-
-class RBD(CephBase):
-    def __init__(self, config):
-        super(RBD, self).__init__(config['id'],
-                       config['conf_file'],
-                       config['pool'])
-
-    def list_n(self):
-        return self.rbd.list(self.ctx)
-
-    def clone(self, p_name, p_snap, c_nm, p_ctx=None, c_ctx=None):
+    def create_image(self, img_id, img_size):
         try:
-            if not p_ctx:
-                p_ctx = self.ctx
-            if not c_ctx:
-                c_ctx = self.ctx
-            self.rbd.clone(p_ctx, p_name, p_snap, c_ctx, c_nm, features=1)
+            self.rbd.create(self.context, img_id, img_size)
             return True
-        # Need to test whether image not found is raised for parent image
-        except rbd.ImageNotFound as e:
-            images = self.list_n()
-            if p_name not in images:
-                img_name = p_name
+        except rbd.ImageExists:
+            raise file_system_exceptions.ImageExistsException(img_id)
+        except rbd.FunctionNotSupported:
+            raise file_system_exceptions.FunctionNotSupportedException()
+
+    def clone(self, parent_img_name, parent_snap_name, clone_img_name):
+        try:
+            parent_context = child_context = self.context
+            self.rbd.clone(parent_context, parent_img_name, parent_snap_name,
+                           child_context, clone_img_name, features=1)
+            return True
+        except rbd.ImageNotFound:
+            # Can be raised if the img or snap is not found
+            if parent_img_name not in self.list_images():
+                img_name = parent_img_name
             else:
-                img_name = p_snap
+                img_name = parent_snap_name
             raise file_system_exceptions.ImageNotFoundException(img_name)
-        except rbd.ImageExists as e:
-            raise file_system_exceptions.ImageExistsException(c_nm)
+        except rbd.ImageExists:
+            raise file_system_exceptions.ImageExistsException(clone_img_name)
         # No Clue when will this be raised so not testing
-        except rbd.FunctionNotSupported as e:
+        except rbd.FunctionNotSupported:
             raise file_system_exceptions.FunctionNotSupportedException()
         # No Clue when will this be raised so not testing
-        except rbd.ArgumentOutOfRange as e:
+        except rbd.ArgumentOutOfRange:
             raise file_system_exceptions.ArgumentsOutOfRangeException()
 
-    def remove(self, img_id, ctx=None):
+    def remove(self, img_id):
         try:
-            if not ctx:
-                ctx = self.ctx
-            self.rbd.remove(ctx, img_id)
+            self.rbd.remove(self.context, img_id)
             return True
-        except rbd.ImageNotFound as e:
+        except rbd.ImageNotFound:
             raise file_system_exceptions.ImageNotFoundException(img_id)
-        except rbd.ImageBusy as e:
+        # Don't know how to raise this
+        except rbd.ImageBusy:
             raise file_system_exceptions.ImageBusyException(img_id)
-        except rbd.ImageHasSnapshots as e:
+        # Forgot to test this
+        except rbd.ImageHasSnapshots:
             raise file_system_exceptions.ImageHasSnapshotException(img_id)
 
     def write(self, img_id, data, offset):
         try:
-            img = self.init_image(name=img_id)
-            img.write(data, offset)
-            img.close()
-        except rbd.ImageNotFound as e:
+            with open_image(self.context, img_id) as img:
+                img.write(data, offset)
+        except rbd.ImageNotFound:
             raise file_system_exceptions.ImageNotFoundException(img_id)
 
     def snap_image(self, img_id, name):
         try:
-
+            # Work around for Ceph problem
             snaps = self.list_snapshots(img_id)
-
             if name in snaps:
                 raise file_system_exceptions.ImageExistsException(name)
 
-            img = self.init_image(name=img_id)
-            img.create_snap(name)
-            img.close()
-            return True
-        # Was having issue ceph implemented work around
+            with open_image(self.context, img_id) as img:
+                img.create_snap(name)
+                return True
+        # Was having issue with ceph implemented work around (stack dump issue)
         except rbd.ImageExists:
             raise file_system_exceptions.ImageExistsException(img_id)
         except rbd.ImageNotFound:
@@ -144,37 +150,24 @@ class RBD(CephBase):
 
     def list_snapshots(self, img_id):
         try:
-            img = self.init_image(img_id)
-            snap_list_iter = img.list_snaps()
-            snap_list = [snap['name'] for snap in snap_list_iter]
-            return snap_list
+            with open_image(self.context, img_id) as img:
+                return [snap['name'] for snap in img.list_snaps()]
         except rbd.ImageNotFound:
             raise file_system_exceptions.ImageNotFoundException(img_id)
 
     def remove_snapshots(self, img_id, name):
         try:
-            img = self.init_image(name=img_id)
-            img.remove_snap(name)
-            img.close()
-            return True
+            with open_image(self.context, img_id) as img:
+                img.remove_snap(name)
+                return True
         except rbd.ImageNotFound:
             raise file_system_exceptions.ImageNotFoundException(img_id)
-        # Dont know how to raise this
+        # Don't know how to raise this
         except rbd.ImageBusy:
             raise file_system_exceptions.ImageBusyException(img_id)
 
-    def create_image(self, img_id, img_size, ctx=None):
-        try:
-            ctx = self.ctx
-            self.rbd.create(ctx, img_id, img_size)
-            return True
-        except rbd.ImageExists as e:
-            raise file_system_exceptions.ImageExistsException(img_id)
-        except rbd.FunctionNotSupported as e:
-            raise file_system_exceptions.FunctionNotSupportedException()
-
     def get_image(self, img_id):
         try:
-            return self.init_image(img_id)
-        except rbd.ImageNotFound as e:
+            return rbd.Image(self.context, img_id)
+        except rbd.ImageNotFound:
             raise file_system_exceptions.ImageNotFoundException(img_id)

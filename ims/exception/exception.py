@@ -22,6 +22,11 @@ class DBException(BMIException):
     __metaclass__ = ABCMeta
 
 
-# The base class for all exceptions related to Shell Script Execution
-class ShellScriptException(BMIException):
+# The base class for all exceptions related to ISCSI
+class ISCSIException(BMIException):
+    __metaclass__ = ABCMeta
+
+
+# The base class for all exceptions related to the BMI Config Parser
+class ConfigException(BMIException):
     __metaclass__ = ABCMeta
