@@ -45,11 +45,13 @@ class HaaS:
                             constants.RETURN_VALUE_KEY: obj.json()}
                 except ValueError:
                     return {constants.STATUS_CODE_KEY: obj.status_code}
+            elif obj.status_code > 200 and obj.status_code < 400:
+                return {constants.STATUS_CODE_KEY:obj.status_code}
             elif obj.status_code == 401:
                 raise haas_exceptions.AuthenticationFailedException()
             elif obj.status_code == 403:
                 raise haas_exceptions.AuthorizationFailedException()
-            elif obj.status_code != 200:
+            elif obj.status_code >= 400:
                 raise haas_exceptions.UnknownException(obj.status_code,
                                                        obj.json()[
                                                            constants.MESSAGE_KEY])

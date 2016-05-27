@@ -9,73 +9,13 @@ from haas_wrapper import *
 
 # logging will be submitted later
 
-
-# Decorator for snapshot methods
-def validation_decorator(func):
-    def caller(*args, **kwargs):
-        fs_obj = None
-
-        try:
-
-            usr = args[0]
-            pwd = args[1]
-            project = args[2]
-
-            config = create_config()
-            fs_obj = init_fs(config)
-
-            check_auth(config.haas_url, usr, pwd, project)
-            img_name = args[3]
-
-            pr = ProjectRepository()
-            pid = pr.fetch_id_with_name(project)
-            # None as a query result implies that the project does not exist.
-            if pid is None:
-                raise db_exceptions.ProjectNotFoundException(project)
-            imgr = ImageRepository()
-            img_id = imgr.fetch_id_with_name_from_project(img_name,
-                                                          project)
-            if img_id is None:
-                raise db_exceptions.ImageNotFoundException(img_name)
-
-            args = list(args)
-            args[3] = str(img_id)
-            args = tuple(args)
-
-            kwargs['fs_obj'] = fs_obj
-
-            return return_success(
-                func(*args, **kwargs))
-
-        except (HaaSException, DBException, FileSystemException) as e:
-            return return_error(e)
-        except ConfigException:  # Should be logged
-            pass
-
-        finally:
-            if fs_obj is not None:
-                fs_obj.tear_down()
-
-    return caller
-
-
-# Calling shell script which executes a iscsi update as we don't have
-# rbd map in documentation.
-def call_shellscript(*args):
-    arglist = list(args)
-    proc = subprocess.Popen(arglist, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    return proc.communicate()
-
-
 class BMI:
-
     def __init__(self, usr, passwd):
         self.config = create_config()
         self.haas = HaaS(base_url=self.config.haas_url, usr=usr, passwd=passwd)
 
     # Provisions from HaaS and Boots the given node with given image
-    def provision(self,node_name, img_name="hadoopMaster.img",
+    def provision(self, node_name, img_name="hadoopMaster.img",
                   snap_name="HadoopMasterGoldenImage",
                   network="bmi-provision"):
         try:
@@ -88,11 +28,14 @@ class BMI:
                 ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
                 # Should be changed to python script
                 iscsi_output = call_shellscript(self.config.iscsi_update,
-                                            [ceph_config['keyring'],
-                                             ceph_config['id'],
-                                             ceph_config['pool'],
-                                             node_name,
-                                             constants.ISCSI_CREATE_COMMAND])
+                                                ceph_config[
+                                                    constants.CEPH_KEY_RING_KEY],
+                                                ceph_config[
+                                                    constants.CEPH_ID_KEY],
+                                                ceph_config[
+                                                    constants.CEPH_POOL_KEY],
+                                                node_name,
+                                                constants.ISCSI_CREATE_COMMAND)
                 if constants.ISCSI_UPDATE_SUCCESS in iscsi_output[0]:
                     return return_success(True)
                 elif constants.ISCSI_UPDATE_FAILURE in iscsi_output[0]:
@@ -105,23 +48,26 @@ class BMI:
         except (HaaSException, ISCSIException, FileSystemException) as e:
             return return_error(e)
 
-
     # This is for detach a node and removing it from iscsi
     # and destroying its image
-    def detach_node(self,node_name, network="bmi-provision"):
+    def detach_node(self, node_name, network="bmi-provision"):
         try:
 
             self.haas.detach_node_from_project_network(node_name,
-                                             network)
+                                                       network)
 
             with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
                 ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
 
                 iscsi_output = call_shellscript(self.config.iscsi_update,
-                                            [ceph_config['keyring'],
-                                             ceph_config['id'], ceph_config['pool'],
-                                             node_name,
-                                             constants.ISCSI_DELETE_COMMAND])
+                                                ceph_config[
+                                                    constants.CEPH_KEY_RING_KEY],
+                                                ceph_config[
+                                                    constants.CEPH_ID_KEY],
+                                                ceph_config[
+                                                    constants.CEPH_POOL_KEY],
+                                                node_name,
+                                                constants.ISCSI_DELETE_COMMAND)
                 if constants.ISCSI_UPDATE_SUCCESS in iscsi_output[0]:
                     return return_success(fs.remove(node_name.encode("utf-8")))
                 elif constants.ISCSI_UPDATE_FAILURE in iscsi_output[0]:
@@ -129,48 +75,81 @@ class BMI:
         except (HaaSException, ISCSIException, FileSystemException) as e:
             return return_error(e)
 
+    # Creates snapshot for the given image with snap_name as given name
+    # fs_obj will be populated by decorator
+    def create_snapshot(self, project, img_name, snap_name):
+        try:
+            self.haas.validate_project(project)
+            self.__does_project_exist(project)
+            img_id = self.__get_image_id(project, img_name)
 
-# Creates snapshot for the given image with snap_name as given name
-# fs_obj will be populated by decorator
-@validation_decorator
-def create_snapshot(usr, passwd, project, img_name, snap_name, fs_obj=None):
-    return fs_obj.snap_image(img_name, snap_name)
+            with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
+                return return_success(fs.snap_image(str(img_id), snap_name))
 
+        except (HaaSException, DBException, FileSystemException) as e:
+            return return_error(e)
 
-# Lists snapshot for the given image img_name
-# URL's have to be read from BMI config file
-# fs_obj will be populated by decorator
-@validation_decorator
-def list_snaps(usr, passwd, project, img_name, fs_obj=None):
-    return fs_obj.list_snapshots(img_name)
+    # Lists snapshot for the given image img_name
+    # URL's have to be read from BMI config file
+    # fs_obj will be populated by decorator
+    def list_snaps(self, project, img_name):
+        try:
+            self.haas.validate_project(project)
+            self.__does_project_exist(project)
+            img_id = self.__get_image_id(project, img_name)
 
+            with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
+                return return_success(fs.list_snapshots(str(img_id)))
 
-# Removes snapshot snap_name for the given image img_name
-# fs_obj will be populated by decorator
-@validation_decorator
-def remove_snaps(usr, passwd, project, img_name, snap_name, fs_obj=None):
-    return fs_obj.remove_snapshots(img_name, snap_name)
+        except (HaaSException, DBException, FileSystemException) as e:
+            return return_error(e)
 
+    # Removes snapshot snap_name for the given image img_name
+    # fs_obj will be populated by decorator
+    def remove_snaps(self, project, img_name, snap_name):
+        try:
+            self.haas.validate_project(project)
+            self.__does_project_exist(project)
+            img_id = self.__get_image_id(project, img_name)
 
-# Lists the images for the project which includes the snapshot
-def list_all_images(usr, passwd, project):
-    try:
-        config = create_config()
+            with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
+                return return_success(fs.remove_snapshots(str(img_id), snap_name))
 
-        check_auth(config.haas_url, usr, passwd, project)
+        except (HaaSException, DBException, FileSystemException) as e:
+            return return_error(e)
 
+    # Lists the images for the project which includes the snapshot
+    def list_all_images(self, project):
+        try:
+            self.haas.validate_project(project)
+            self.__does_project_exist(project)
+            imgr = ImageRepository()
+            return return_success(imgr.fetch_names_from_project(project))
+        except (HaaSException, DBException) as e:
+            return return_error(e)
+
+    def __does_project_exist(self, name):
         pr = ProjectRepository()
-        pid = pr.fetch_id_with_name(project)
+        pid = pr.fetch_id_with_name(name)
         # None as a query result implies that the project does not exist.
         if pid is None:
-            raise db_exceptions.ProjectNotFoundException(project)
+            raise db_exceptions.ProjectNotFoundException(name)
 
+    def __get_image_id(self, project, name):
         imgr = ImageRepository()
-        return return_success(imgr.fetch_names_from_project(project))
-    except (HaaSException, DBException) as e:
-        return return_error(e)
-    except ConfigException:  # Should be logged
-        pass
+        img_id = imgr.fetch_id_with_name_from_project(name, project)
+        if img_id is None:
+            raise db_exceptions.ImageNotFoundException(name)
+        return img_id
+
+
+# Calling shell script which executes a iscsi update as we don't have
+# rbd map in documentation.
+def call_shellscript(*args):
+    arglist = list(args)
+    proc = subprocess.Popen(arglist, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    return proc.communicate()
 
 
 # Creates a filesystem configuration object
@@ -181,17 +160,6 @@ def create_config():
         return config
     except ConfigException:  # Should be logged
         raise  # Crashing it for now
-
-
-# This function initializes files system object and
-# returns an object for it.
-def init_fs(config):
-    try:
-        # Should be made generic to remove specific dependency on FS
-        if constants.CEPH_CONFIG_SECTION_NAME in config.fs:
-            return RBD(config.fs[constants.CEPH_CONFIG_SECTION_NAME])
-    except FileSystemException as e:
-        return return_error(e)
 
 
 # A custom function which is wrapper around only success code that

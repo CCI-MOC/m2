@@ -41,11 +41,9 @@ class RBD:
             raise file_system_exceptions.InvalidConfigArgumentException(
                 constants.CEPH_CONFIG_FILE_KEY)
 
-    def __enter__(self,config):
-        self.__validate(config)
-        self.cluster = self.__init_cluster()
-        self.context = self.__init_context()
+    def __enter__(self):
         self.rbd = rbd.RBD()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.tear_down()
