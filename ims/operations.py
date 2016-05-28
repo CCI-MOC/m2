@@ -198,6 +198,11 @@ if __name__ == "__main__":
     # print list_snaps('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'bmi_penultimate', 'testimage')
     # print create_snapshot('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'bmi_penultimate','testimage', 'blblb1')
     # print remove_snaps('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'bmi_penultimate', 'testimage', 'blblb1')
+
+    bmi = BMI('haasadmin',"admin123##")
+    met = getattr(BMI,'create_snapshot')
+    met(bmi,'test','test','test')
+
     '''
     print list_free_nodes('http://127.0.0.1:6500/', "haasadmin", "admin1234",  debug = True)['retval']
     time.sleep(5)
