@@ -58,10 +58,10 @@ class TestDatabase(TestCase):
         self.assertEqual(qimg_list[0]['image_name'], "image2")
         self.assertIsNone(qimg)
         self.assertIsNotNone(qimg_names)
-        self.assertEqual(qimg_names.__len__(),3)
-        self.assertEqual(qimg_names[0],"image 1")
+        self.assertEqual(qimg_names.__len__(), 3)
+        self.assertEqual(qimg_names[0], "image 1")
         self.assertIsNotNone(qimg_name)
-        self.assertEqual(qimg_name,"image 1")
+        self.assertEqual(qimg_name, "image 1")
 
         # delete the inserted image
         imgr = ImageRepository()

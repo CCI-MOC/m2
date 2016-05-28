@@ -1,62 +1,55 @@
 from ims.database import DatabaseConnection
 from ims.exception import *
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import relationship
 
 
 # This class is responsible for doing CRUD operations on the Project Table in DB
 # This class was written as per the Repository Model which allows us to change the DB in the future without changing
 # business code
 class ProjectRepository:
-    def __init__(self):
-        self.connection = None
-
     # inserts the arguments into the table
     # commits after insertion otherwise rollback occurs after which exception is bubbled up
-    def insert(self, name, provision_network,id = None):
-        try:
-            self.connection = DatabaseConnection()
-            p = Project()
-            p.name = name
-            p.provision_network = provision_network
-            if id is not None:
-                p.id = id
-            self.connection.session.add(p)
-            self.connection.session.commit()
-        except SQLAlchemyError as e:
-            self.connection.session.rollback()
-            raise db_exceptions.ORMException(e.message)
-        finally:
-            self.connection.close()
+    def insert(self, name, provision_network, id=None):
+        with DatabaseConnection() as connection:
+            try:
+                p = Project()
+                p.name = name
+                p.provision_network = provision_network
+                if id is not None:
+                    p.id = id
+                connection.session.add(p)
+                connection.session.commit()
+            except SQLAlchemyError as e:
+                connection.session.rollback()
+                raise db_exceptions.ORMException(e.message)
 
     # deletes project with name
     # commits after deletion otherwise rollback occurs after which exception is bubbled up
     def delete_with_name(self, name):
-        try:
-            self.connection = DatabaseConnection()
-            project = self.connection.session.query(Project).filter_by(name=name).one_or_none()
-            if project is not None:
-                self.connection.session.delete(project)
-            self.connection.session.commit()
-        except SQLAlchemyError as e:
-            self.connection.session.rollback()
-            raise db_exceptions.ORMException(e.message)
-        finally:
-            self.connection.close()
+        with DatabaseConnection() as connection:
+            try:
+                project = connection.session.query(Project).filter_by(
+                    name=name).one_or_none()
+                if project is not None:
+                    connection.session.delete(project)
+                connection.session.commit()
+            except SQLAlchemyError as e:
+                connection.session.rollback()
+                raise db_exceptions.ORMException(e.message)
 
     # fetch the project id with name
     # only project object is returned as the name is unique
     def fetch_id_with_name(self, name):
-        try:
-            self.connection = DatabaseConnection()
-            project = self.connection.session.query(Project).filter_by(name=name).one_or_none()
-            if project is not None:
-                return project.id
-        except SQLAlchemyError as e:
-            raise db_exceptions.ORMException(e.message)
-        finally:
-            self.connection.close()
+        with DatabaseConnection() as connection:
+            try:
+                project = connection.session.query(Project).filter_by(
+                    name=name).one_or_none()
+                if project is not None:
+                    return project.id
+            except SQLAlchemyError as e:
+                raise db_exceptions.ORMException(e.message)
 
 
 # This class represents the project table
@@ -74,4 +67,5 @@ class Project(DatabaseConnection.Base):
 
     # Relationships in the table, this one back populates to project in Image Class, eagerly loaded
     # and cascade on delete is enabled
-    images = relationship("Image", back_populates="project", cascade="all, delete, delete-orphan")
+    images = relationship("Image", back_populates="project",
+                          cascade="all, delete, delete-orphan")
