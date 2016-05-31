@@ -136,7 +136,6 @@ class RBD:
             snaps = self.list_snapshots(img_id)
             if name in snaps:
                 raise file_system_exceptions.ImageExistsException(name)
-
             with open_image(self.context, img_id) as img:
                 img.create_snap(name)
                 return True

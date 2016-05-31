@@ -73,7 +73,7 @@ class TestOperations(unittest.TestCase):
         data = {"project":"bmi_penultimat","img":"HadoopMaster.img","snap_name":"blblb1"}
         res = requests.put(url + "snap_image/",data=data)
         print res.content
-        self.assertEqual(res.status_code,404)
+        self.assertEqual(res.status_code,500)
 
         data = {"project":"bmi_penultimate","img":"HadoopMaster","snap_name":"blblb1"}
         res = requests.put(url + "snap_image/",data=data)
@@ -93,22 +93,22 @@ class TestOperations(unittest.TestCase):
         print "list snapshots"
 
         data = {"project":"bmi_penultimat","img":"HadoopMaster.img"}
-        res = requests.put(url + "list_snapshots/",data=data)
+        res = requests.post(url + "list_snapshots/",data=data)
         print res.content
-        self.assertEqual(res.status_code,404)
+        self.assertEqual(res.status_code,500)
 
         data = {"project":"bmi_penultimate","img":"HadoopMaster"}
-        res = requests.put(url + "list_snapshots/",data=data)
+        res = requests.post(url + "list_snapshots/",data=data)
         print res.content
         self.assertEqual(res.status_code,404)
 
         data = {"project":"bmi_penultimate","img":"hadoopMaster.img"}
-        res = requests.put(url + "list_snapshots/",data=data)
+        res = requests.post(url + "list_snapshots/",data=data)
         print res.content
         self.assertEqual(res.status_code,404)
 
         data = {"project":"bmi_penultimate","img":"HadoopMaster.img"}
-        res = requests.put(url + "list_snapshots/",data=data)
+        res = requests.post(url + "list_snapshots/",data=data)
         print res.content
         self.assertEqual(res.status_code,200)
         # self.assertEqual(res.content)
@@ -119,30 +119,30 @@ class TestOperations(unittest.TestCase):
     #     self.assertEqual(output['retval'].__len__(), 5)
     #     self.assertEqual(output['retval'][4], 'blblb1')
 
-        data = {"project":"bmi_penultimate","img":"HadoopMaster.img"}
-        res = requests.put(url + "list_snapshots/",data=data)
+        data = {"project":"bmi_penultimate","img":"HadoopMaster.img","snap_name":"blblb1"}
+        res = requests.put(url + "snap_image/",data=data)
         print res.content
         self.assertEqual(res.status_code,471)
 
         print "remove snapshots"
 
         data = {"project":"bmi_penultimat","img":"HadoopMaster.img","snap_name":"blblb1"}
-        res = requests.put(url + "remove_snapshot/",data=data)
+        res = requests.delete(url + "remove_snapshot/",data=data)
         print res.content
-        self.assertEqual(res.status_code,404)
+        self.assertEqual(res.status_code,500)
 
         data = {"project":"bmi_penultimate","img":"HadoopMaster","snap_name":"blblb1"}
-        res = requests.put(url + "remove_snapshot/",data=data)
+        res = requests.delete(url + "remove_snapshot/",data=data)
         print res.content
         self.assertEqual(res.status_code,404)
 
         data = {"project":"bmi_penultimate","img":"hadoopMaster.img","snap_name":"blblb1"}
-        res = requests.put(url + "remove_snapshot/",data=data)
+        res = requests.delete(url + "remove_snapshot/",data=data)
         print res.content
         self.assertEqual(res.status_code,404)
 
         data = {"project":"bmi_penultimate","img":"HadoopMaster.img","snap_name":"blblb1"}
-        res = requests.put(url + "remove_snapshot/",data=data)
+        res = requests.delete(url + "remove_snapshot/",data=data)
         print res.content
         self.assertEqual(res.status_code,200)
 

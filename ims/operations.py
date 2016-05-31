@@ -84,7 +84,7 @@ class BMI:
             img_id = self.__get_image_id(project, img_name)
 
             with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
-                return return_success(fs.snap_image(img_id, snap_name))
+                return return_success(fs.snap_image(img_id,str(snap_name)))
 
         except (HaaSException, DBException, FileSystemException) as e:
             return return_error(e)
@@ -113,7 +113,7 @@ class BMI:
             img_id = self.__get_image_id(project, img_name)
 
             with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
-                return return_success(fs.remove_snapshots(img_id, snap_name))
+                return return_success(fs.remove_snapshots(img_id, str(snap_name)))
 
         except (HaaSException, DBException, FileSystemException) as e:
             return return_error(e)

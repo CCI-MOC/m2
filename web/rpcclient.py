@@ -8,12 +8,12 @@ class RPCClient(object):
         # Loads the variable dict with the contents of config.json.
         self.dict = {
             "function-list": {
-                "provision": "4",
+                "provision": "3",
                 "detach_node": "1",
-                "create_snapshot": "2",
+                "create_snapshot": "3",
                 "list_all_images": "1",
-                "list_snaps": "1",
-                "remove_snaps": "2"
+                "list_snaps": "2",
+                "remove_snaps": "3"
             }
         }
         self.func_list = self.dict[
@@ -44,13 +44,18 @@ class RPCClient(object):
     def client_function(self, main_obj, list_of_commands, debug=False):
         # print(main_obj)
         # print(self.func_list.has_key(list_of_commands[0]))
+        print self.func_list
         if (self.func_list.has_key(list_of_commands[0])):
+            print "after func list"
             concatenated_command = self.concatenate_command(list_of_commands)
+            print concatenated_command
             if ((not self.escape_characters_present(
                     concatenated_command)) and self.correct_argument_list_length(
                     list_of_commands)):
+                print "in concatenated"
                 # print("Entering the object")
                 # main_obj = MainServer()
+                print list_of_commands
                 return main_obj.run_script(list_of_commands)
         elif debug == True:
             print("Invalid argument.")
@@ -66,4 +71,7 @@ def client_rpc(command):
         "example.mainserver")  # Looks up for the registered service in the name server
     main_obj = Pyro4.Proxy(uri)
     print "Done"
+    print client
+    print main_obj
+    print list_of_commands
     return client.client_function(main_obj, list_of_commands)
