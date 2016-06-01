@@ -103,6 +103,15 @@ class HaaS:
         body = {"network": network}
         return self.__call_rest_api_with_body(api=api, body=body)
 
+    def get_node_mac_addr(self, node):
+        '''
+        Checks the current information for the node and returns a tuple consisting of (<project_name>,List of <{"network": network-name}>, NIC name)
+        '''
+        api = "node/" + node
+        node_info = self.__call_rest_api(api)
+        #Assuming the first item in nic list is the one being used.
+        return node_info[constants.RETURN_VALUE_KEY]['nics'][0]['macaddr']
+
     def validate_project(self, project):
         api = '/project/' + project + '/nodes'
         return self.__call_rest_api(api=api)
