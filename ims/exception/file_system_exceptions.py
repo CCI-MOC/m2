@@ -9,7 +9,7 @@ class ImageNotFoundException(FileSystemException):
         self.name = name
 
     def __str__(self):
-        return self.name+" Not Found"
+        return self.name + " Not Found"
 
 
 # This exception should be raised if some connection issues occured when communicating with file system
@@ -24,7 +24,7 @@ class ImageBusyException(FileSystemException):
         self.name = name
 
     def __str__(self):
-        return self.name+" is Busy"
+        return self.name + " is Busy"
 
 
 # this exception should be raised when some operation is called on an image that has snapshots
@@ -33,7 +33,7 @@ class ImageHasSnapshotException(FileSystemException):
         self.name = name
 
     def __str__(self):
-        return self.name+" has Snapshots"
+        return self.name + " has Snapshots"
 
 
 # this exception should be raised when some operation requires that an image not exist in the filesytem
@@ -42,7 +42,7 @@ class ImageExistsException(FileSystemException):
         self.name = name
 
     def __str__(self):
-        return self.name+" Already Exists"
+        return self.name + " Already Exists"
 
 
 # this exception should be raised when the given image is not opened
@@ -51,7 +51,7 @@ class ImageNotOpenedException(FileSystemException):
         self.name = name
 
     def __str__(self):
-        return self.name+" should be opened before operation"
+        return self.name + " should be opened before operation"
 
 
 # this exception should be raised when function that is not supported is called
@@ -68,22 +68,20 @@ class ArgumentsOutOfRangeException(FileSystemException):
 
 # this exception should be raised when the config file passed is invalid
 class InvalidConfigArgumentException(FileSystemException):
-
-    def __init__(self,arg):
+    def __init__(self, arg):
         self.arg = arg
 
     def __str__(self):
-        return "Invalid "+self.arg+" argument in config file"
+        return "Invalid " + self.arg + " argument in config file"
 
 
 # this exception should be raised when the config file contains an invalid argument
 class MissingConfigArgumentException(FileSystemException):
-
-    def __init__(self,arg):
+    def __init__(self, arg):
         self.arg = arg
 
     def __str__(self):
-        return self.arg+" is incorrect in config file"
+        return self.arg + " is incorrect in config file"
 
 
 # this exception class is the abstract class for any ceph specific exceptions
