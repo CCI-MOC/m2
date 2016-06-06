@@ -295,8 +295,12 @@ class BMI:
         self.logger.debug("Exiting Does Project Exist")
 
     def __get_image_id(self, project, name):
+        self.logger.debug("Entering Get Image Id")
+        self.logger.debug("Got parameters = %s %s",project,name)
         imgr = ImageRepository()
+        self.logger.debug("Getting img_id for image %s",name)
         img_id = imgr.fetch_id_with_name_from_project(name, project)
+        self.logger.debug("Got id = %s ")
         if img_id is None:
             raise db_exceptions.ImageNotFoundException(name)
         return str(img_id)
