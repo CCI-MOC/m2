@@ -11,6 +11,7 @@ class BMIConfig:
         self.configfile = 'bmiconfig.cfg'
         self.fs = {}
         self.iscsi_update = None
+        self.iscsi_update_password = None
         self.haas_url = None
 
     def parse_config(self):
@@ -21,6 +22,10 @@ class BMIConfig:
 
             self.iscsi_update = config.get(constants.ISCSI_CONFIG_SECTION_NAME,
                                            constants.ISCSI_URL_KEY)
+
+            self.iscsi_update_password = config.get(
+                constants.ISCSI_CONFIG_SECTION_NAME,
+                constants.ISCSI_PASSWORD_KEY)
 
             self.haas_url = config.get(constants.HAAS_CONFIG_SECTION_NAME,
                                        constants.HAAS_URL_KEY)

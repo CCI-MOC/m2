@@ -7,7 +7,7 @@ key=$1
 id=$2
 pool=$3
 nodeName=$4
-whisper=".bluegit4"
+whisper=$6
 operation=$5
 #rbdev=`echo $whisper |sudo -S rbd --keyring /etc/ceph/client.henn.key \
 #    --id henn map $pool/$nodeName`

@@ -41,18 +41,26 @@ class RBD:
             raise file_system_exceptions.InvalidConfigArgumentException(
                 constants.CEPH_CONFIG_FILE_KEY)
 
-    def __enter__(self):
-        self.rbd = rbd.RBD()
-        return self
+    def __init_context(self):
+        return self.cluster.open_ioctx(self.pool.encode('utf-8'))
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.tear_down()
+    def __init_cluster(self):
+        cluster = rados.Rados(rados_id=self.rid, conffile=self.r_conf)
+        cluster.connect()
+        return cluster
 
     def __init__(self, config):
         self.__validate(config)
         self.cluster = self.__init_cluster()
         self.context = self.__init_context()
         self.rbd = rbd.RBD()
+
+    def __enter__(self):
+        self.rbd = rbd.RBD()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.tear_down()
 
     def __repr__(self):
         return str([self.rid, self.r_conf, self.pool])
@@ -62,14 +70,6 @@ class RBD:
                'current images {3}' \
             .format(self.rid, self.r_conf,
                     self.pool)
-
-    def __init_context(self):
-        return self.cluster.open_ioctx(self.pool.encode('utf-8'))
-
-    def __init_cluster(self):
-        cluster = rados.Rados(rados_id=self.rid, conffile=self.r_conf)
-        cluster.connect()
-        return cluster
 
     def tear_down(self):
         self.context.close()

@@ -14,10 +14,22 @@ class BMI:
         self.config = create_config()
         self.haas = HaaS(base_url=self.config.haas_url, usr=usr, passwd=passwd)
 
+    def __does_project_exist(self, name):
+        pr = ProjectRepository()
+        pid = pr.fetch_id_with_name(name)
+        # None as a query result implies that the project does not exist.
+        if pid is None:
+            raise db_exceptions.ProjectNotFoundException(name)
+
+    def __get_image_id(self, project, name):
+        imgr = ImageRepository()
+        img_id = imgr.fetch_id_with_name_from_project(name, project)
+        if img_id is None:
+            raise db_exceptions.ImageNotFoundException(name)
+        return str(img_id)
+
     # Provisions from HaaS and Boots the given node with given image
-    def provision(self, node_name, img_name="hadoopMaster.img",
-                  snap_name="HadoopMasterGoldenImage",
-                  network="bmi-provision"):
+    def provision(self, node_name, img_name,snap_name,network):
         try:
             self.haas.attach_node_to_project_network(node_name, network)
 
@@ -35,7 +47,8 @@ class BMI:
                                                 ceph_config[
                                                     constants.CEPH_POOL_KEY],
                                                 node_name,
-                                                constants.ISCSI_CREATE_COMMAND)
+                                                constants.ISCSI_CREATE_COMMAND,
+                                                self.config.iscsi_update_password)
                 if constants.ISCSI_UPDATE_SUCCESS in iscsi_output[0]:
                     return return_success(True)
                 elif constants.ISCSI_UPDATE_FAILURE in iscsi_output[0]:
@@ -50,7 +63,7 @@ class BMI:
 
     # This is for detach a node and removing it from iscsi
     # and destroying its image
-    def detach_node(self, node_name, network="bmi-provision"):
+    def detach_node(self, node_name, network):
         try:
 
             self.haas.detach_node_from_project_network(node_name,
@@ -128,20 +141,6 @@ class BMI:
         except (HaaSException, DBException) as e:
             return return_error(e)
 
-    def __does_project_exist(self, name):
-        pr = ProjectRepository()
-        pid = pr.fetch_id_with_name(name)
-        # None as a query result implies that the project does not exist.
-        if pid is None:
-            raise db_exceptions.ProjectNotFoundException(name)
-
-    def __get_image_id(self, project, name):
-        imgr = ImageRepository()
-        img_id = imgr.fetch_id_with_name_from_project(name, project)
-        if img_id is None:
-            raise db_exceptions.ImageNotFoundException(name)
-        return str(img_id)
-
 
 # Calling shell script which executes a iscsi update as we don't have
 # rbd map in documentation.
@@ -186,48 +185,3 @@ def swap_id_with_name(err_str):
     if name is not None:
         parts[0] = name
     return " ".join(parts)
-
-
-if __name__ == "__main__":
-    # print check_auth('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'bmipenultimate')
-    # print list_all_images('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'test')
-    # print list_all_images('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'bmipenultimate')
-    # print provision("http://127.0.0.1:6500/", "haasadmin", "admin1234",
-    #                 "super-37")
-    # print detach_node("http://127.0.0.1:6500/", "haasadmin", "admin1234", "super-37")
-    # print list_snaps('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'bmi_penultimate', 'testimage')
-    # print create_snapshot('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'bmi_penultimate','testimage', 'blblb1')
-    # print remove_snaps('http://127.0.0.1:6500/', "haasadmin", "admin1234", 'bmi_penultimate', 'testimage', 'blblb1')
-    '''
-    print list_free_nodes('http://127.0.0.1:6500/', "haasadmin", "admin1234",  debug = True)['retval']
-    time.sleep(5)
-
-    print attach_node_haas_project('http://127.0.0.1:6500/', "bmi_penultimate", 'sun-12',\
-            usr = "haasadmin", passwd = "admin1234", debug = True)
-    print "above is attach node to a proj"
-
-    print query_project_nodes('http://127.0.0.1:6500/',  "bmi_penultimate", "haasadmin", "admin1234")
-    time.sleep(5)
-
-    print attach_node_to_project_network('http://127.0.0.1:7000/', 'cisco-27',\
-            "enp130s0f0", "bmi-provision","test", "test",  debug = True)
-    time.sleep(5)
-    print "above is attach network"
-
-    print detach_node_from_project_network('http://127.0.0.1:7000/','cisco-27',\
-            'bmi-provision', "test", "test", "enp130s0f0", debug = True)
-    time.sleep(5)
-
-
-    print "above is detach from net"
-    print detach_node_from_project('http://127.0.0.1:6500/',\
-              "bmi_penultimate", 'sun-12',  usr = "haasadmin", passwd = "admin1234",  debug = True)
-    time.sleep(5)
-    print "above is detach from the proj"
-    print query_project_nodes('http://127.0.0.1:6500/', "bmi_penultimate", "haasadmin", "admin1234")
-    time.sleep(5)
-    try:
-        raise ShellScriptException("lljl")
-    except Exception as e:
-        print ResponseException(e).parse_curr_err()
-    '''
