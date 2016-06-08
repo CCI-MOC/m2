@@ -11,6 +11,28 @@ from exception import *
 # handling code in methods
 
 class RBD:
+    def __init__(self, config):
+        self.__validate(config)
+        self.cluster = self.__init_cluster()
+        self.context = self.__init_context()
+        self.rbd = rbd.RBD()
+
+    def __enter__(self):
+        self.rbd = rbd.RBD()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.tear_down()
+
+    def __repr__(self):
+        return str([self.rid, self.r_conf, self.pool])
+
+    def __str__(self):
+        return 'rid = {0}, conf_file = {1}, pool = {2},' \
+               'current images {3}' \
+            .format(self.rid, self.r_conf,
+                    self.pool)
+
     # Validates the config arguments passed
     # If all are present then the values are copied to variables
     def __validate(self, config):
@@ -46,28 +68,6 @@ class RBD:
         finally:
             if img is not None:
                 img.close()
-
-    def __init__(self, config):
-        self.__validate(config)
-        self.cluster = self.__init_cluster()
-        self.context = self.__init_context()
-        self.rbd = rbd.RBD()
-
-    def __enter__(self):
-        self.rbd = rbd.RBD()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.tear_down()
-
-    def __repr__(self):
-        return str([self.rid, self.r_conf, self.pool])
-
-    def __str__(self):
-        return 'rid = {0}, conf_file = {1}, pool = {2},' \
-               'current images {3}' \
-            .format(self.rid, self.r_conf,
-                    self.pool)
 
     def tear_down(self):
         self.context.close()
