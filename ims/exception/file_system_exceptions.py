@@ -5,6 +5,10 @@ from exception import FileSystemException
 
 # This exception should be raised when Image is not found in file system
 class ImageNotFoundException(FileSystemException):
+    @property
+    def status_code(self):
+        return 404
+
     def __init__(self, name):
         self.name = name
 
@@ -14,12 +18,20 @@ class ImageNotFoundException(FileSystemException):
 
 # This exception should be raised if some connection issues occured when communicating with file system
 class ConnectionException(FileSystemException):
+    @property
+    def status_code(self):
+        return 500
+
     def __str__(self):
         return "Not Able to Connect to File System"
 
 
 # this exception should be raised when some operation is called on an image which is busy
 class ImageBusyException(FileSystemException):
+    @property
+    def status_code(self):
+        return 473
+
     def __init__(self, name):
         self.name = name
 
@@ -29,6 +41,10 @@ class ImageBusyException(FileSystemException):
 
 # this exception should be raised when some operation is called on an image that has snapshots
 class ImageHasSnapshotException(FileSystemException):
+    @property
+    def status_code(self):
+        return 474
+
     def __init__(self, name):
         self.name = name
 
@@ -38,6 +54,10 @@ class ImageHasSnapshotException(FileSystemException):
 
 # this exception should be raised when some operation requires that an image not exist in the filesytem
 class ImageExistsException(FileSystemException):
+    @property
+    def status_code(self):
+        return 471
+
     def __init__(self, name):
         self.name = name
 
@@ -47,6 +67,10 @@ class ImageExistsException(FileSystemException):
 
 # this exception should be raised when the given image is not opened
 class ImageNotOpenedException(FileSystemException):
+    @property
+    def status_code(self):
+        return 500
+
     def __init__(self, name):
         self.name = name
 
@@ -56,18 +80,30 @@ class ImageNotOpenedException(FileSystemException):
 
 # this exception should be raised when function that is not supported is called
 class FunctionNotSupportedException(FileSystemException):
+    @property
+    def status_code(self):
+        return 476
+
     def __str__(self):
         return "Function is not Supported"
 
 
 # this exception should be raised when the arguments are out of range
 class ArgumentsOutOfRangeException(FileSystemException):
+    @property
+    def status_code(self):
+        return 477
+
     def __str__(self):
         return "Arguments are Out of Range"
 
 
 # this exception should be raised when the config file passed is invalid
 class InvalidConfigArgumentException(FileSystemException):
+    @property
+    def status_code(self):
+        return 500
+
     def __init__(self, arg):
         self.arg = arg
 
@@ -77,6 +113,10 @@ class InvalidConfigArgumentException(FileSystemException):
 
 # this exception should be raised when the config file contains an invalid argument
 class MissingConfigArgumentException(FileSystemException):
+    @property
+    def status_code(self):
+        return 500
+
     def __init__(self, arg):
         self.arg = arg
 

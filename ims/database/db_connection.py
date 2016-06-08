@@ -21,11 +21,12 @@ class DatabaseConnection:
     session_maker = sessionmaker(bind=engine)
 
     # creates all tables if not present
-    # creates a session using the session maker
     def __init__(self):
         DatabaseConnection.Base.metadata.create_all(DatabaseConnection.engine)
-        self.session = DatabaseConnection.session_maker()
 
-    # closes the session to the db
-    def close(self):
+    def __enter__(self):
+        self.session = DatabaseConnection.session_maker()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self.session.close()
