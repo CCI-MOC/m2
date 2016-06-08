@@ -115,7 +115,8 @@ class BMI:
                                                       ceph_config[
                                                           constants.CEPH_POOL_KEY],
                                                       node_name,
-                                                      constants.ISCSI_DELETE_COMMAND)
+                                                      constants.ISCSI_DELETE_COMMAND,
+                                                      self.config.iscsi_update_password)
                 if constants.ISCSI_UPDATE_SUCCESS in iscsi_output[0]:
                     return BMI.__return_success(
                         fs.remove(node_name.encode("utf-8")))
