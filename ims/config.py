@@ -14,6 +14,16 @@ class BMIConfig:
         self.iscsi_update_password = None
         self.haas_url = None
 
+    # Creates a filesystem configuration object
+    @staticmethod
+    def create_config():
+        try:
+            config = BMIConfig()
+            config.parse_config()
+            return config
+        except ConfigException:  # Should be logged
+            raise  # Crashing it for now
+
     def parse_config(self):
         config = ConfigParser.SafeConfigParser()
         try:

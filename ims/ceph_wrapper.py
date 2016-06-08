@@ -7,21 +7,6 @@ import rados
 import rbd
 from exception import *
 
-
-# Written to use 'with' for opening and closing images
-# Passing context as it is outside class
-# Need to see if it is ok to put it inside the class
-@contextmanager
-def open_image(ctx, img_name):
-    img = None
-    try:
-        img = rbd.Image(ctx, img_name)
-        yield (img)
-    finally:
-        if img is not None:
-            img.close()
-
-
 # Need to think if there is a better way to reduce boilerplate exception
 # handling code in methods
 
@@ -48,6 +33,19 @@ class RBD:
         cluster = rados.Rados(rados_id=self.rid, conffile=self.r_conf)
         cluster.connect()
         return cluster
+
+    # Written to use 'with' for opening and closing images
+    # Passing context as it is outside class
+    # Need to see if it is ok to put it inside the class
+    @contextmanager
+    def __open_image(self, img_name):
+        img = None
+        try:
+            img = rbd.Image(self.context, img_name)
+            yield (img)
+        finally:
+            if img is not None:
+                img.close()
 
     def __init__(self, config):
         self.__validate(config)
@@ -125,7 +123,7 @@ class RBD:
 
     def write(self, img_id, data, offset):
         try:
-            with open_image(self.context, img_id) as img:
+            with self.__open_image(img_id) as img:
                 img.write(data, offset)
         except rbd.ImageNotFound:
             raise file_system_exceptions.ImageNotFoundException(img_id)
@@ -137,7 +135,7 @@ class RBD:
             if name in snaps:
                 raise file_system_exceptions.ImageExistsException(name)
 
-            with open_image(self.context, img_id) as img:
+            with self.__open_image(img_id) as img:
                 img.create_snap(name)
                 return True
         # Was having issue with ceph implemented work around (stack dump issue)
@@ -148,14 +146,14 @@ class RBD:
 
     def list_snapshots(self, img_id):
         try:
-            with open_image(self.context, img_id) as img:
+            with self.__open_image(img_id) as img:
                 return [snap['name'] for snap in img.list_snaps()]
         except rbd.ImageNotFound:
             raise file_system_exceptions.ImageNotFoundException(img_id)
 
     def remove_snapshots(self, img_id, name):
         try:
-            with open_image(self.context, img_id) as img:
+            with self.__open_image(img_id) as img:
                 img.remove_snap(name)
                 return True
         except rbd.ImageNotFound:
