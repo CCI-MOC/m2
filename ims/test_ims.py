@@ -1,5 +1,6 @@
 import time
 import unittest
+
 from operations import *
 
 CORRECT_HAAS_USERNAME = "haasadmin"
@@ -32,45 +33,45 @@ class TestOperations(unittest.TestCase):
         # self.assertEqual(output[constants.STATUS_CODE_KEY], 401)
 
         output = good_bmi.provision(NODE_NAME, NOT_EXIST_IMG_NAME,
-                                    EXIST_SNAP_NAME, NETWORK,CHANNEL,NIC)
+                                    EXIST_SNAP_NAME, NETWORK, CHANNEL, NIC)
         print output
         self.assertEqual(output[constants.STATUS_CODE_KEY], 404)
 
         time.sleep(30)
 
-        output = good_bmi.detach_node(NODE_NAME, NETWORK,NIC)
+        output = good_bmi.detach_node(NODE_NAME, NETWORK, NIC)
         print output
         self.assertEqual(output[constants.STATUS_CODE_KEY], 500)
 
         time.sleep(30)
 
         output = good_bmi.provision(NODE_NAME, EXIST_IMG_NAME,
-                                    NOT_EXIST_SNAP_NAME, NETWORK,CHANNEL,NIC)
+                                    NOT_EXIST_SNAP_NAME, NETWORK, CHANNEL, NIC)
         print output
         self.assertEqual(output[constants.STATUS_CODE_KEY], 404)
 
         time.sleep(30)
 
-        output = good_bmi.detach_node(NODE_NAME, NETWORK,NIC)
+        output = good_bmi.detach_node(NODE_NAME, NETWORK, NIC)
         print output
         self.assertEqual(output[constants.STATUS_CODE_KEY], 500)
 
         time.sleep(30)
 
         output = good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, EXIST_SNAP_NAME,
-                                    NETWORK,CHANNEL,NIC)
+                                    NETWORK, CHANNEL, NIC)
         print output
         self.assertEqual(output[constants.STATUS_CODE_KEY], 200)
 
         output = good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, EXIST_SNAP_NAME,
-                                    NETWORK,CHANNEL,NIC)
+                                    NETWORK, CHANNEL, NIC)
         print output
         self.assertEqual(output[constants.STATUS_CODE_KEY], 500)
 
         time.sleep(30)
 
         output = good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, EXIST_SNAP_NAME,
-                                    NETWORK,CHANNEL,NIC)
+                                    NETWORK, CHANNEL, NIC)
         print output
         self.assertEqual(output[constants.STATUS_CODE_KEY], 500)
 
@@ -78,11 +79,11 @@ class TestOperations(unittest.TestCase):
         # print output
         # self.assertEqual(output[constants.STATUS_CODE_KEY], 401)
 
-        output = good_bmi.detach_node(NODE_NAME, NETWORK,NIC)
+        output = good_bmi.detach_node(NODE_NAME, NETWORK, NIC)
         print output
         self.assertEqual(output[constants.STATUS_CODE_KEY], 200)
 
-        output = good_bmi.detach_node(NODE_NAME, NETWORK,NIC)
+        output = good_bmi.detach_node(NODE_NAME, NETWORK, NIC)
         print output
         self.assertEqual(output[constants.STATUS_CODE_KEY], 500)
 

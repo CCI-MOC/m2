@@ -56,11 +56,10 @@ class BMI:
                 parts[0] = name
             return " ".join(parts)
 
-        ex_parser = ExceptionParser()
         if FileSystemException in ex.__class__.__bases__:
-            return {constants.STATUS_CODE_KEY: ex_parser.parse(ex),
+            return {constants.STATUS_CODE_KEY: ex.status_code,
                     constants.MESSAGE_KEY: swap_id_with_name(str(ex))}
-        return {constants.STATUS_CODE_KEY: ex_parser.parse(ex),
+        return {constants.STATUS_CODE_KEY: ex.status_code,
                 constants.MESSAGE_KEY: str(ex)}
 
     # Provisions from HaaS and Boots the given node with given image
