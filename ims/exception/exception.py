@@ -1,10 +1,15 @@
 from abc import ABCMeta
+from abc import abstractproperty
 
 
 # The base class for all BMI Exceptions
 # Made abstract since it is recommended to raise the specific subclass
 class BMIException(Exception):
     __metaclass__ = ABCMeta
+
+    @abstractproperty
+    def status_code(self):
+        pass
 
 
 # The base class for all exceptions related to the file system like ceph

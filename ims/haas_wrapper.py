@@ -46,7 +46,7 @@ class HaaS:
                 except ValueError:
                     return {constants.STATUS_CODE_KEY: obj.status_code}
             elif obj.status_code > 200 and obj.status_code < 400:
-                return {constants.STATUS_CODE_KEY:obj.status_code}
+                return {constants.STATUS_CODE_KEY: obj.status_code}
             elif obj.status_code == 401:
                 raise haas_exceptions.AuthenticationFailedException()
             elif obj.status_code == 403:
@@ -86,8 +86,8 @@ class HaaS:
 
     def attach_node_to_project_network(self, node,
                                        network,
-                                       channel="vlan/native",
-                                       nic='eno1'):
+                                       channel,
+                                       nic):
         api = '/node/' + node + '/nic/' + nic + '/connect_network'
         body = {"network": network, "channel": channel}
         return self.__call_rest_api_with_body(api=api, body=body)
@@ -98,7 +98,7 @@ class HaaS:
         return self.__call_rest_api_with_body(api=api, body=body)
 
     def detach_node_from_project_network(self, node,
-                                         network, nic='eno1'):
+                                         network, nic):
         api = '/node/' + node + '/nic/' + nic + '/detach_network'
         body = {"network": network}
         return self.__call_rest_api_with_body(api=api, body=body)

@@ -7,6 +7,7 @@ ISCSI_CONFIG_SECTION_NAME = 'iscsi'
 # Non FS Keys in Config File
 HAAS_URL_KEY = 'url'
 ISCSI_URL_KEY = 'update_shell_url'
+ISCSI_PASSWORD_KEY = 'password'
 
 # Ceph Keys in Config File
 CEPH_ID_KEY = 'id'
@@ -24,4 +25,3 @@ ISCSI_DELETE_COMMAND = 'delete'
 STATUS_CODE_KEY = 'status_code'
 RETURN_VALUE_KEY = 'retval'
 MESSAGE_KEY = 'msg'
-
