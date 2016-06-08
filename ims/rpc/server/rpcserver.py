@@ -12,8 +12,6 @@ class MainServer(object):
     #First argument is always the name of the method that is to be run.
     #The commandline arguments following that are the arguments to the method.
     def run_script(self, list_of_commands):
-        print '\n###hello script'
-        print list_of_commands
         try:
             list_of_commands[0].decode('utf-8')
             print "in utf-8"
@@ -21,12 +19,10 @@ class MainServer(object):
             print "Not utf-8"
         bmi = BMI('haasadmin',"admin1234")
         methodToCall = getattr(BMI, list_of_commands[0])
-        print methodToCall
         list_of_commands[0] = bmi
         args = tuple(list_of_commands)
         try:
             output = methodToCall(*args)
-            print "output = "+str(output)
             return output
         except Exception as e:
             import traceback

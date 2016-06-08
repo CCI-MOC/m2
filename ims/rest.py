@@ -17,6 +17,7 @@ def list_images():
     '''List the images for a project.
     '''
     if request.env.request_method == "POST":
+        print request.env.authorization
         project = request.vars["project"]
         print project
         try:

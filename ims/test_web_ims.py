@@ -5,7 +5,7 @@ from operations import *
 
 class TestOperations(unittest.TestCase):
     def test_provision(self):
-        url = "http://192.168.122.125:8000/BMI/default/"
+        url = "http://192.168.122.125:8000/BMI/rest/"
 
         data = {"node": "super-37", "img": "i12",
                 "snap_name": "HadoopGoldenImage"}
