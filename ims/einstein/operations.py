@@ -1,18 +1,24 @@
 #!/usr/bin/python
+import base64
 import subprocess
 
-from ceph_wrapper import *
-from config import BMIConfig
-from database import *
-from haas_wrapper import *
+from ims.einstein.ceph_wrapper import *
+from ims.database import *
+from ims.einstein.haas_wrapper import *
+from ims.exception import *
 
+import ims.common.config as config
+import ims.exception.db_exceptions as db_exceptions
+import ims.exception.iscsi_exceptions as iscsi_exceptions
 
 # logging will be submitted later
 
 class BMI:
-    def __init__(self, usr, passwd):
-        self.config = BMIConfig.create_config()
-        self.haas = HaaS(base_url=self.config.haas_url, usr=usr, passwd=passwd)
+    def __init__(self, credentials):
+        self.__process_credentials(credentials)
+        self.config = config.load()
+        self.haas = HaaS(base_url=self.config.haas_url, usr=self.username,
+                         passwd=self.password)
 
     def __does_project_exist(self, name):
         pr = ProjectRepository()
@@ -27,6 +33,11 @@ class BMI:
         if img_id is None:
             raise db_exceptions.ImageNotFoundException(name)
         return str(img_id)
+
+    def __process_credentials(self, credentials):
+        base64_str, self.project = credentials
+        self.username, self.password = tuple(
+            base64.b64decode(base64_str).split(':'))
 
     # Calling shell script which executes a iscsi update as we don't have
     # rbd map in documentation.
@@ -127,11 +138,11 @@ class BMI:
 
     # Creates snapshot for the given image with snap_name as given name
     # fs_obj will be populated by decorator
-    def create_snapshot(self, project, img_name, snap_name):
+    def create_snapshot(self,img_name, snap_name):
         try:
             self.haas.validate_project(project)
             self.__does_project_exist(project)
-            img_id = self.__get_image_id(project, img_name)
+            img_id = self.__get_image_id(self.project, img_name)
 
             with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
                 return BMI.__return_success(fs.snap_image(img_id, snap_name))
@@ -142,11 +153,11 @@ class BMI:
     # Lists snapshot for the given image img_name
     # URL's have to be read from BMI config file
     # fs_obj will be populated by decorator
-    def list_snaps(self, project, img_name):
+    def list_snaps(self, img_name):
         try:
-            self.haas.validate_project(project)
-            self.__does_project_exist(project)
-            img_id = self.__get_image_id(project, img_name)
+            self.haas.validate_project(self.project)
+            self.__does_project_exist(self.project)
+            img_id = self.__get_image_id(self.project, img_name)
 
             with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
                 return BMI.__return_success(fs.list_snapshots(img_id))
@@ -156,7 +167,7 @@ class BMI:
 
     # Removes snapshot snap_name for the given image img_name
     # fs_obj will be populated by decorator
-    def remove_snaps(self, project, img_name, snap_name):
+    def remove_snaps(self,img_name, snap_name):
         try:
             self.haas.validate_project(project)
             self.__does_project_exist(project)

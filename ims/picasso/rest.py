@@ -9,19 +9,21 @@
 #########################################################################
 import json
 import traceback
+from flask import Flask
+from flask import request
+from ims.rpc.client.rpcclient import *
 
-from rpcclient import *
+app = Flask(__name__)
 
 
+@app.route("/list_images")
 def list_images():
     '''List the images for a project.
     '''
     if request.env.request_method == "POST":
-        print request.env.authorization
-        project = request.vars["project"]
-        print project
         try:
-            list_return = client_rpc(['list_all_images', project])
+            credentials = extract_credentials(request)
+            list_return = client_rpc(['list_all_images', credentials])
             status_code = list_return['status_code']
             if status_code == 200:
                 image_list = list_return['retval']
@@ -149,6 +151,12 @@ def remove_snapshot():
         return 'Please use a DELETE'
 
 
+def extract_credentials(request):
+    base64_str = request.env.http_authorization.split(' ')[1]
+    project = request.vars['project']
+    return (base64_str, project)
+
+
 def user():
     """
     exposes:
@@ -168,20 +176,23 @@ def user():
     return dict(form=auth())
 
 
-@cache.action()
-def download():
-    """
-    allows downloading of uploaded files
-    http://..../[app]/default/download/[filename]
-    """
-    return response.download(request, db)
+# @cache.action()
+# def download():
+#     """
+#     allows downloading of uploaded files
+#     http://..../[app]/default/download/[filename]
+#     """
+#     return response.download(request, db)
+#
+#
+# def call():
+#     """
+#     exposes services. for example:
+#     http://..../[app]/default/call/jsonrpc
+#     decorate with @services.jsonrpc the functions to expose
+#     supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
+#     """
+#     return service()
 
-
-def call():
-    """
-    exposes services. for example:
-    http://..../[app]/default/call/jsonrpc
-    decorate with @services.jsonrpc the functions to expose
-    supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
-    """
-    return service()
+if __name__ == "__main__":
+    app.run(host="168.122.0.134")

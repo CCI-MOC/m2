@@ -1,6 +1,8 @@
 import Pyro4
-import json
 
-name_server_address = '192.168.122.34'
-#Starting the NameServer
-Pyro4.naming.startNSloop(host=name_server_address,port=9092)
+import ims.common.config as config
+
+
+def start_name_server():
+    cfg = config.load()
+    Pyro4.naming.startNSloop(host=cfg.nameserver_ip, port=cfg.nameserver_port)

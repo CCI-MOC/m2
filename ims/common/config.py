@@ -1,14 +1,23 @@
 import ConfigParser
 
 import constants
-from exception import *
+from ims.exception import *
+
+__config = None
 
 
-class BMIConfig:
+def load(filename='bmiconfig.cfg'):
+    global __config
+    if __config is None:
+        __config = __BMIConfig.create_config(filename)
+    return __config
+
+
+class __BMIConfig:
     # the config file is hardcoded for now
     # other instance variables are initialized as to not get AttributeErrors
-    def __init__(self):
-        self.configfile = 'bmiconfig.cfg'
+    def __init__(self, filename):
+        self.configfile = filename
         self.fs = {}
         self.iscsi_update = None
         self.iscsi_update_password = None
@@ -16,9 +25,9 @@ class BMIConfig:
 
     # Creates a filesystem configuration object
     @staticmethod
-    def create_config():
+    def create_config(filename):
         try:
-            config = BMIConfig()
+            config = __BMIConfig(filename)
             config.parse_config()
             return config
         except ConfigException:  # Should be logged
@@ -39,6 +48,15 @@ class BMIConfig:
 
             self.haas_url = config.get(constants.HAAS_CONFIG_SECTION_NAME,
                                        constants.HAAS_URL_KEY)
+
+            self.nameserver_ip = config.get(constants.RPC_CONFIG_SECTION_NAME,
+                                            constants.RPC_NAME_SERVER_IP_KEY)
+            self.nameserver_port = config.get(constants.RPC_CONFIG_SECTION_NAME,
+                                              constants.RPC_NAME_SERVER_PORT_KEY)
+            self.rpcserver_ip = config.get(constants.RPC_CONFIG_SECTION_NAME,
+                                           constants.RPC_RPC_SERVER_IP_KEY)
+            self.rpcserver_port = config.get(constants.RPC_CONFIG_SECTION_NAME,
+                                             constants.RPC_RPC_SERVER_PORT_KEY)
 
             for k, v in config.items(constants.FILESYSTEM_CONFIG_SECTION_NAME):
                 if v == 'True':

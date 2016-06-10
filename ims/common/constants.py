@@ -3,6 +3,7 @@ FILESYSTEM_CONFIG_SECTION_NAME = 'filesystem'
 HAAS_CONFIG_SECTION_NAME = 'haas'
 CEPH_CONFIG_SECTION_NAME = 'ceph'
 ISCSI_CONFIG_SECTION_NAME = 'iscsi'
+RPC_CONFIG_SECTION_NAME = 'rpc'
 
 # Non FS Keys in Config File
 HAAS_URL_KEY = 'url'
@@ -20,6 +21,12 @@ ISCSI_UPDATE_SUCCESS = 'successfully'
 ISCSI_UPDATE_FAILURE = 'already'
 ISCSI_CREATE_COMMAND = 'create'
 ISCSI_DELETE_COMMAND = 'delete'
+
+# RPC
+RPC_NAME_SERVER_IP_KEY = 'name_server_ip'
+RPC_NAME_SERVER_PORT_KEY = 'name_server_port'
+RPC_RPC_SERVER_IP_KEY = 'rpc_server_ip'
+RPC_RPC_SERVER_PORT_KEY = 'rpc_server_port'
 
 # Response Related Keys
 STATUS_CODE_KEY = 'status_code'

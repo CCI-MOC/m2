@@ -4,11 +4,11 @@ from setuptools import setup
 
 args = sys.argv
 
-picasso_install_requires = ["pyro4", "requests"]
-einstein_install_requires = ["sqlachemy>=1.0.13", "requests", "pyro4"]
-picasso_packages = []
-einstein_packages = ['ims', 'ims.database',
-                     'ims.exception', 'ims.rpc.server']
+picasso_install_requires = ["pyro4", "requests","flask"]
+einstein_install_requires = ["sqlalchemy>=1.0.13", "requests", "Pyro4"]
+picasso_packages = ['ims.common','ims.picasso','ims.rpc.client']
+einstein_packages = ['ims.einstein', 'ims.database',
+                     'ims.exception', 'ims.rpc.server','ims.common']
 
 install_requires = []
 packages = []
