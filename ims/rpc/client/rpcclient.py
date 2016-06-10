@@ -1,5 +1,7 @@
 import Pyro4
 
+import ims.common.constants as constants
+
 
 # from rpcserver_backup import *
 
@@ -19,14 +21,14 @@ class RPCClient(object):
         self.func_list = self.dict[
             'function-list']  # The script name and no. of arguments.
 
-    def concatenate_command(self, list_of_commands):
-        concatenated_command = ""
-        concatenated_command += " ".join(list_of_commands[1:])
-        return concatenated_command
+        name_server = Pyro4.locateNS(host="192.168.122.34",
+                                 port=9092)  # Locates the name server
+        uri = name_server.lookup(
+            constants.RPC_SERVER_NAME)  # Looks up for the registered service in the name server
+        main_obj = Pyro4.Proxy(uri)
 
-    def correct_argument_list_length(self, list_of_commands):
-        return (
-        len(list_of_commands) - 1 <= int(self.func_list[list_of_commands[0]]))
+    def correct_argument_list_length(self, command, args):
+        return (len(args) - 1 <= int(self.func_list[command]))
 
     # This method checks for escape characters or injection attacks.
     def escape_characters_present(self, concatenated_command):
@@ -41,37 +43,20 @@ class RPCClient(object):
     # client_function(): This function does all the check required, calls the
     # server program with the method name and arguments passed in as a list
     # and prints the output received from the server.
-    def client_function(self, main_obj, list_of_commands, debug=False):
+    def client_function(self, main_obj, command, args, debug=False):
         # print(main_obj)
         # print(self.func_list.has_key(list_of_commands[0]))
-        print self.func_list
-        if (self.func_list.has_key(list_of_commands[0])):
-            print "after func list"
-            concatenated_command = self.concatenate_command(list_of_commands)
-            print concatenated_command
+        if command in self.func_list:
+            concatenated_command = " ".join(args)
             if ((not self.escape_characters_present(
                     concatenated_command)) and self.correct_argument_list_length(
-                    list_of_commands)):
-                print "in concatenated"
+                args)):
                 # print("Entering the object")
                 # main_obj = MainServer()
-                print list_of_commands
-                return main_obj.run_script(list_of_commands)
-        elif debug == True:
-            print("Invalid argument.")
+                return main_obj.run_script(command, args)
 
 
-# if __name__ == "__main__":
-def client_rpc(command):
+def client_rpc(command, args):
     client = RPCClient()
-    list_of_commands = command
-    name_server = Pyro4.locateNS(host="192.168.122.34",
-                                 port=9092)  # Locates the name server
-    uri = name_server.lookup(
-        "example.mainserver")  # Looks up for the registered service in the name server
-    main_obj = Pyro4.Proxy(uri)
-    print "Done"
-    print client
-    print main_obj
-    print list_of_commands
-    return client.client_function(main_obj, list_of_commands)
+
+    return client.client_function(main_obj, command, args)

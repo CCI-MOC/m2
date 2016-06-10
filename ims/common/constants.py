@@ -28,6 +28,8 @@ RPC_NAME_SERVER_PORT_KEY = 'name_server_port'
 RPC_RPC_SERVER_IP_KEY = 'rpc_server_ip'
 RPC_RPC_SERVER_PORT_KEY = 'rpc_server_port'
 
+RPC_SERVER_NAME = 'example.mainserver'
+
 # Response Related Keys
 STATUS_CODE_KEY = 'status_code'
 RETURN_VALUE_KEY = 'retval'

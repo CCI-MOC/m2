@@ -7,11 +7,14 @@ __config = None
 
 
 def load(filename='bmiconfig.cfg'):
-    global __config
-    if __config is None:
-        __config = __BMIConfig.create_config(filename)
-    return __config
-
+    try:
+        global __config
+        if __config is None:
+            __config = __BMIConfig(filename)
+            __config.parse_config()
+        return __config
+    except ConfigException:
+        raise
 
 class __BMIConfig:
     # the config file is hardcoded for now
@@ -22,16 +25,10 @@ class __BMIConfig:
         self.iscsi_update = None
         self.iscsi_update_password = None
         self.haas_url = None
-
-    # Creates a filesystem configuration object
-    @staticmethod
-    def create_config(filename):
-        try:
-            config = __BMIConfig(filename)
-            config.parse_config()
-            return config
-        except ConfigException:  # Should be logged
-            raise  # Crashing it for now
+        self.nameserver_ip = None
+        self.nameserver_port = None
+        self.rpcserver_ip = None
+        self.rpcserver_port = None
 
     def parse_config(self):
         config = ConfigParser.SafeConfigParser()
@@ -51,12 +48,12 @@ class __BMIConfig:
 
             self.nameserver_ip = config.get(constants.RPC_CONFIG_SECTION_NAME,
                                             constants.RPC_NAME_SERVER_IP_KEY)
-            self.nameserver_port = config.get(constants.RPC_CONFIG_SECTION_NAME,
-                                              constants.RPC_NAME_SERVER_PORT_KEY)
+            self.nameserver_port = int(config.get(constants.RPC_CONFIG_SECTION_NAME,
+                                              constants.RPC_NAME_SERVER_PORT_KEY))
             self.rpcserver_ip = config.get(constants.RPC_CONFIG_SECTION_NAME,
                                            constants.RPC_RPC_SERVER_IP_KEY)
-            self.rpcserver_port = config.get(constants.RPC_CONFIG_SECTION_NAME,
-                                             constants.RPC_RPC_SERVER_PORT_KEY)
+            self.rpcserver_port = int(config.get(constants.RPC_CONFIG_SECTION_NAME,
+                                             constants.RPC_RPC_SERVER_PORT_KEY))
 
             for k, v in config.items(constants.FILESYSTEM_CONFIG_SECTION_NAME):
                 if v == 'True':
