@@ -8,34 +8,37 @@
 ## - download is for downloading files uploaded in the db (does streaming)
 #########################################################################
 import json
-import traceback
-from flask import Flask
-from flask import request
+
 from ims.rpc.client.rpcclient import *
 
-app = Flask(__name__)
+try:
+    import config
+    config.load()
+    rpc_client = RPCClient()
+except Exception as e:
+    import traceback
+    print traceback.print_exc(e)
 
-
-@app.route("/list_images")
 def list_images():
     '''List the images for a project.
     '''
     if request.env.request_method == "POST":
         try:
             credentials = extract_credentials(request)
-            list_return = client_rpc(['list_all_images', credentials])
-            status_code = list_return['status_code']
+            list_return = rpc_client.execute_command(
+                constants.LIST_ALL_IMAGES_COMMAND, credentials, None)
+            status_code = list_return[constants.STATUS_CODE_KEY]
             if status_code == 200:
-                image_list = list_return['retval']
+                image_list = list_return[constants.RETURN_VALUE_KEY]
                 response.body = json.dumps(image_list)
                 return response.body
             else:
-                response.status = list_return['status_code']
-                response.body = json.dumps(list_return['msg'])
+                response.status = list_return[constants.STATUS_CODE_KEY]
+                response.body = json.dumps(list_return[constants.MESSAGE_KEY])
                 return response.body
-        except Exception as e:
-            traceback.print_exc(e)
-
+        except Exception as ex:
+            import traceback
+            traceback.print_exc(ex)
     else:
         response.status = 444
         return 'Please use a POST'
@@ -46,17 +49,24 @@ def provision_node():
     Node is the physical node name that we get from HaaS
     '''
     if request.env.request_method == "PUT":
-        node_name = request.vars["node"]
-        img_name = request.vars["img"]
-        snap_name = request.vars["snap_name"]
-        ret = client_rpc(['provision', node_name, img_name, snap_name])
-        if ret['status_code'] == 200:
-            response.body = ret['retval']
+        credentials = extract_credentials(request)
+        node_name = request.vars[constants.NODE_NAME_PARAMETER]
+        img_name = request.vars[constants.IMAGE_NAME_PARAMETER]
+        snap_name = request.vars[constants.SNAP_NAME_PARAMETER]
+        network = request.vars[constants.NETWORK_PARAMETER]
+        channel = request.vars[constants.CHANNEL_PARAMETER]
+        nic = request.vars[constants.NIC_PARAMETER]
+        ret = rpc_client.execute_command(constants.PROVISION_COMMAND,
+                                         credentials,
+                                         [node_name, img_name, snap_name,
+                                          network, channel, nic])
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            response.body = ret[constants.RETURN_VALUE_KEY]
             response.status = 200
             return response.status
         else:
-            response.status = ret['status_code']
-            response.body = ret['msg']
+            response.status = ret[constants.STATUS_CODE_KEY]
+            response.body = ret[constants.MESSAGE_KEY]
             return response.body
     else:
         response.status = 444
@@ -68,15 +78,19 @@ def remove_node():
     Node is the physical node that you want to dissociate
     '''
     if request.env.request_method == "DELETE":
-        node_name = request.vars["node"]
-        ret = client_rpc(['detach_node', node_name])
-        if ret['status_code'] == 200:
-            response.body = ret['retval']
+        credentials = extract_credentials(request)
+        node_name = request.vars[constants.NODE_NAME_PARAMETER]
+        network = request.vars[constants.NETWORK_PARAMETER]
+        nic = request.vars[constants.NIC_PARAMETER]
+        ret = rpc_client.execute_command(constants.DETACH_NODE_COMMAND,
+                                         credentials, [node_name, network, nic])
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            response.body = ret[constants.RETURN_VALUE_KEY]
             response.status = 200
             return response.status
         else:
-            response.status = ret['status_code']
-            response.body = ret['msg']
+            response.status = ret[constants.STATUS_CODE_KEY]
+            response.body = ret[constants.MESSAGE_KEY]
             return response.body
     else:
         response.status = 444
@@ -88,21 +102,20 @@ def snap_image():
     Node is the physical node that you want to dissociate
     '''
     if request.env.request_method == "PUT":
-        try:
-            img_name = request.vars["img"]
-            snap_name = request.vars["snap_name"]
-            project = request.vars["project"]
-            ret = client_rpc(['create_snapshot', project, img_name, snap_name])
-            if ret['status_code'] == 200:
-                response.body = ret['retval']
-                response.status = 200
-                return response.status
-            else:
-                response.status = ret['status_code']
-                response.body = ret['msg']
-                return response.body
-        except Exception as e:
-            traceback.print_exc(e)
+        credentials = extract_credentials(request)
+        img_name = request.vars[constants.IMAGE_NAME_PARAMETER]
+        snap_name = request.vars[constants.SNAP_NAME_PARAMETER]
+        ret = rpc_client.execute_command(constants.CREATE_SNAPSHOT_COMMAND,
+                                         credentials, [img_name,
+                                                       snap_name])
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            response.body = ret[constants.RETURN_VALUE_KEY]
+            response.status = 200
+            return response.status
+        else:
+            response.status = ret[constants.STATUS_CODE_KEY]
+            response.body = ret[constants.MESSAGE_KEY]
+            return response.body
     else:
         response.status = 444
         return 'Please use a PUT'
@@ -113,16 +126,17 @@ def list_snapshots():
     List all snapshots for the given image
     '''
     if request.env.request_method == "POST":
-        img_name = request.vars["img"]
-        project = request.vars["project"]
-        ret = client_rpc(["list_snaps", project, img_name])
-        if ret['status_code'] == 200:
-            response.body = ret['retval']
+        credentials = extract_credentials(request)
+        img_name = request.vars[constants.IMAGE_NAME_PARAMETER]
+        ret = rpc_client.execute_command(constants.LIST_SNAPSHOTS_COMMAND,
+                                         credentials, [img_name])
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            response.body = ret[constants.RETURN_VALUE_KEY]
             response.status = 200
             return json.dumps(response.body)
         else:
-            response.status = ret['status_code']
-            response.body = ret['msg']
+            response.status = ret[constants.STATUS_CODE_KEY]
+            response.body = ret[constants.MESSAGE_KEY]
             return response.body
     else:
         response.status = 444
@@ -134,17 +148,19 @@ def remove_snapshot():
     Removes the given snapshot for the given image
     '''
     if request.env.request_method == "DELETE":
-        img_name = request.vars["img"]
-        project = request.vars["project"]
-        snap_name = request.vars["snap_name"]
-        ret = client_rpc(["remove_snaps", project, img_name, snap_name])
-        if ret['status_code'] == 200:
-            response.body = ret['retval']
+        credentials = extract_credentials(request)
+        img_name = request.vars[constants.IMAGE_NAME_PARAMETER]
+        snap_name = request.vars[constants.SNAP_NAME_PARAMETER]
+        ret = rpc_client.execute_command(constants.REMOVE_SNAPSHOTS_COMMAND,
+                                         credentials,
+                                         [img_name, snap_name])
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            response.body = ret[constants.RETURN_VALUE_KEY]
             response.status = 200
             return response.status
         else:
-            response.status = ret['status_code']
-            response.body = ret['msg']
+            response.status = ret[constants.STATUS_CODE_KEY]
+            response.body = ret[constants.MESSAGE_KEY]
             return response.body
     else:
         response.status = 444
@@ -153,46 +169,5 @@ def remove_snapshot():
 
 def extract_credentials(request):
     base64_str = request.env.http_authorization.split(' ')[1]
-    project = request.vars['project']
-    return (base64_str, project)
-
-
-def user():
-    """
-    exposes:
-    http://..../[app]/default/user/login
-    http://..../[app]/default/user/logout
-    http://..../[app]/default/user/register
-    http://..../[app]/default/user/profile
-    http://..../[app]/default/user/retrieve_password
-    http://..../[app]/default/user/change_password
-    http://..../[app]/default/user/bulk_register
-    use @auth.requires_login()
-        @auth.requires_membership('group name')
-        @auth.requires_permission('read','table name',record_id)
-    to decorate functions that need access control
-    also notice there is http://..../[app]/appadmin/manage/auth to allow administrator to manage users
-    """
-    return dict(form=auth())
-
-
-# @cache.action()
-# def download():
-#     """
-#     allows downloading of uploaded files
-#     http://..../[app]/default/download/[filename]
-#     """
-#     return response.download(request, db)
-#
-#
-# def call():
-#     """
-#     exposes services. for example:
-#     http://..../[app]/default/call/jsonrpc
-#     decorate with @services.jsonrpc the functions to expose
-#     supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
-#     """
-#     return service()
-
-if __name__ == "__main__":
-    app.run(host="168.122.0.134")
+    project = request.vars[constants.PROJECT_PARAMETER]
+    return base64_str, project

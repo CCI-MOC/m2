@@ -34,3 +34,20 @@ RPC_SERVER_NAME = 'example.mainserver'
 STATUS_CODE_KEY = 'status_code'
 RETURN_VALUE_KEY = 'retval'
 MESSAGE_KEY = 'msg'
+
+# Commands
+LIST_ALL_IMAGES_COMMAND = "list_all_images"
+CREATE_SNAPSHOT_COMMAND = "create_snapshot"
+PROVISION_COMMAND = "provision"
+DETACH_NODE_COMMAND = "detach_node"
+LIST_SNAPSHOTS_COMMAND = "list_snaps"
+REMOVE_SNAPSHOTS_COMMAND = "remove_snaps"
+
+#Parameters
+NODE_NAME_PARAMETER = 'node'
+IMAGE_NAME_PARAMETER = "img"
+SNAP_NAME_PARAMETER = "snap_name"
+PROJECT_PARAMETER = "project"
+NETWORK_PARAMETER = "network"
+NIC_PARAMETER = "nic"
+CHANNEL_PARAMETER = "channel"

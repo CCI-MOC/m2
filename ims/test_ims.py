@@ -1,7 +1,8 @@
 import time
 import unittest
 
-from operations import *
+from ims.einstein.operations import BMI
+import ims.common.constants as constants
 
 CORRECT_HAAS_USERNAME = "haasadmin"
 CORRECT_HAAS_PASSWORD = "admin1234"

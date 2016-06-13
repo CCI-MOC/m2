@@ -105,8 +105,8 @@ class Image(DatabaseConnection.Base):
 
     # Users should not be able to create images with same name in a given
     # project. So we are creating a unique constraint.
-    UniqueConstraint("project_id", "name",
-                     "Project_id_image_name_unique_constraint")
+    __table_args__ = (UniqueConstraint("project_id","name",
+                     name="_project_id_image_name_unique_constraint"),)
 
     # Removed snapshot class for now
     # snapshots = relationship("Snapshot", back_populates="image", lazy="joined", cascade="all, delete, delete-orphan")

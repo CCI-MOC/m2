@@ -9,12 +9,21 @@ __config = None
 def load(filename='bmiconfig.cfg'):
     try:
         global __config
-        if __config is None:
-            __config = __BMIConfig(filename)
-            __config.parse_config()
-        return __config
-    except ConfigException:
+        __config = __BMIConfig(filename)
+        __config.parse_config()
+    except ConfigException as ex:
+        import traceback
+        traceback.print_exc(ex)
         raise
+    except Exception as ex:
+        import traceback
+        traceback.print_exc(ex)
+
+
+def get():
+    global __config
+    return __config
+
 
 class __BMIConfig:
     # the config file is hardcoded for now
@@ -48,12 +57,14 @@ class __BMIConfig:
 
             self.nameserver_ip = config.get(constants.RPC_CONFIG_SECTION_NAME,
                                             constants.RPC_NAME_SERVER_IP_KEY)
-            self.nameserver_port = int(config.get(constants.RPC_CONFIG_SECTION_NAME,
-                                              constants.RPC_NAME_SERVER_PORT_KEY))
+            self.nameserver_port = int(
+                config.get(constants.RPC_CONFIG_SECTION_NAME,
+                           constants.RPC_NAME_SERVER_PORT_KEY))
             self.rpcserver_ip = config.get(constants.RPC_CONFIG_SECTION_NAME,
                                            constants.RPC_RPC_SERVER_IP_KEY)
-            self.rpcserver_port = int(config.get(constants.RPC_CONFIG_SECTION_NAME,
-                                             constants.RPC_RPC_SERVER_PORT_KEY))
+            self.rpcserver_port = int(
+                config.get(constants.RPC_CONFIG_SECTION_NAME,
+                           constants.RPC_RPC_SERVER_PORT_KEY))
 
             for k, v in config.items(constants.FILESYSTEM_CONFIG_SECTION_NAME):
                 if v == 'True':
