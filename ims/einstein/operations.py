@@ -79,7 +79,6 @@ class BMI:
     # Provisions from HaaS and Boots the given node with given image
     def provision(self, node_name, img_name, snap_name, network, channel, nic):
         try:
-            print "provision"
             self.haas.attach_node_to_project_network(node_name, network,
                                                      channel, nic)
 
@@ -138,7 +137,6 @@ class BMI:
     # and destroying its image
     def detach_node(self, node_name, network, nic):
         try:
-            print "detach"
             self.haas.detach_node_from_project_network(node_name,
                                                        network, nic)
 
