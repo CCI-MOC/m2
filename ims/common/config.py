@@ -13,12 +13,7 @@ def load(filename='bmiconfig.cfg'):
             __config = __BMIConfig(filename)
             __config.parse_config()
     except ConfigException as ex:
-        import traceback
-        traceback.print_exc(ex)
         raise
-    except Exception as ex:
-        import traceback
-        traceback.print_exc(ex)
 
 
 def get():
