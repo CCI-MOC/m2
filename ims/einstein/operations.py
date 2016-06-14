@@ -118,16 +118,17 @@ class BMI:
                 fs.remove(img_id)
             imgr.delete_with_name_from_project(node_name, self.project)
             time.sleep(20)
+            time.sleep(30)
             self.haas.detach_node_from_project_network(node_name, network, nic)
             return BMI.return_error(e)
         except FileSystemException as e:
             imgr = ImageRepository()
             imgr.delete_with_name_from_project(node_name, self.project)
-            time.sleep(20)
+            time.sleep(30)
             self.haas.detach_node_from_project_network(node_name, network, nic)
             return BMI.return_error(e)
         except DBException as e:
-            time.sleep(20)
+            time.sleep(30)
             self.haas.detach_node_from_project_network(node_name, network, nic)
             return BMI.return_error(e)
         except HaaSException as e:

@@ -9,8 +9,9 @@ __config = None
 def load(filename='bmiconfig.cfg'):
     try:
         global __config
-        __config = __BMIConfig(filename)
-        __config.parse_config()
+        if __config is None:
+            __config = __BMIConfig(filename)
+            __config.parse_config()
     except ConfigException as ex:
         import traceback
         traceback.print_exc(ex)

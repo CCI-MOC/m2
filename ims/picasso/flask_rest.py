@@ -10,7 +10,7 @@ app = Flask(__name__)
 rpc_client = RPCClient()
 
 
-@app.route('/list_images', methods=['POST'])
+@app.route('/list_images/', methods=['POST'])
 def list_images():
     '''List the images for a project.
     '''
@@ -36,7 +36,7 @@ def list_images():
         return 'Please use a POST', 444
 
 
-@app.route("/provision_node", methods=['PUT'])
+@app.route("/provision_node/", methods=['PUT'])
 def provision_node():
     '''
     Node is the physical node name that we get from HaaS
@@ -64,7 +64,7 @@ def provision_node():
         return 'Please use a PUT', 444
 
 
-@app.route("/remove_node", methods=['DELETE'])
+@app.route("/remove_node/", methods=['DELETE'])
 def remove_node():
     '''
     Node is the physical node that you want to dissociate
@@ -86,7 +86,7 @@ def remove_node():
         return 'Please use a DELETE', 444
 
 
-@app.route("/snap_image", methods=['PUT'])
+@app.route("/snap_image/", methods=['PUT'])
 def snap_image():
     '''
     Node is the physical node that you want to dissociate
@@ -108,7 +108,7 @@ def snap_image():
         return 'Please use a PUT', 444
 
 
-@app.route("/list_snapshots", methods=['POST'])
+@app.route("/list_snapshots/", methods=['POST'])
 def list_snapshots():
     '''
     List all snapshots for the given image
@@ -128,7 +128,7 @@ def list_snapshots():
         return "Please use a POST", 444
 
 
-@app.route("/remove_snapshot", methods=['DELETE'])
+@app.route("/remove_snapshot/", methods=['DELETE'])
 def remove_snapshot():
     '''
     Removes the given snapshot for the given image

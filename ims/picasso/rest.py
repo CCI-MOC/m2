@@ -8,25 +8,27 @@
 ## - download is for downloading files uploaded in the db (does streaming)
 #########################################################################
 import json
+import os
 
 from ims.rpc.client.rpcclient import *
 
-try:
-    import config
-    config.load()
-    rpc_client = RPCClient()
-except Exception as e:
-    import traceback
-    print traceback.print_exc(e)
 
 def list_images():
     '''List the images for a project.
     '''
     if request.env.request_method == "POST":
         try:
+            config.load(os.path.join(os.path.abspath(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')),
+                                     'static/bmiconfig.cfg'))
+            rpc_client = RPCClient()
             credentials = extract_credentials(request)
+            if credentials is None:
+                response.status = 400
+                response.body = "No Authentication Details Given"
+                return response.body
             list_return = rpc_client.execute_command(
-                constants.LIST_ALL_IMAGES_COMMAND, credentials, None)
+                constants.LIST_ALL_IMAGES_COMMAND, credentials, [])
             status_code = list_return[constants.STATUS_CODE_KEY]
             if status_code == 200:
                 image_list = list_return[constants.RETURN_VALUE_KEY]
@@ -49,7 +51,15 @@ def provision_node():
     Node is the physical node name that we get from HaaS
     '''
     if request.env.request_method == "PUT":
+        config.load(os.path.join(os.path.abspath(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')),
+                                     'static/bmiconfig.cfg'))
+        rpc_client = RPCClient()
         credentials = extract_credentials(request)
+        if credentials is None:
+            response.status = 400
+            response.body = "No Authentication Details Given"
+            return response.body
         node_name = request.vars[constants.NODE_NAME_PARAMETER]
         img_name = request.vars[constants.IMAGE_NAME_PARAMETER]
         snap_name = request.vars[constants.SNAP_NAME_PARAMETER]
@@ -78,7 +88,15 @@ def remove_node():
     Node is the physical node that you want to dissociate
     '''
     if request.env.request_method == "DELETE":
+        config.load(os.path.join(os.path.abspath(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')),
+                                     'static/bmiconfig.cfg'))
+        rpc_client = RPCClient()
         credentials = extract_credentials(request)
+        if credentials is None:
+            response.status = 400
+            response.body = "No Authentication Details Given"
+            return response.body
         node_name = request.vars[constants.NODE_NAME_PARAMETER]
         network = request.vars[constants.NETWORK_PARAMETER]
         nic = request.vars[constants.NIC_PARAMETER]
@@ -102,7 +120,15 @@ def snap_image():
     Node is the physical node that you want to dissociate
     '''
     if request.env.request_method == "PUT":
+        config.load(os.path.join(os.path.abspath(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')),
+                                     'static/bmiconfig.cfg'))
+        rpc_client = RPCClient()
         credentials = extract_credentials(request)
+        if credentials is None:
+            response.status = 400
+            response.body = "No Authentication Details Given"
+            return response.body
         img_name = request.vars[constants.IMAGE_NAME_PARAMETER]
         snap_name = request.vars[constants.SNAP_NAME_PARAMETER]
         ret = rpc_client.execute_command(constants.CREATE_SNAPSHOT_COMMAND,
@@ -126,7 +152,15 @@ def list_snapshots():
     List all snapshots for the given image
     '''
     if request.env.request_method == "POST":
+        config.load(os.path.join(os.path.abspath(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')),
+                                     'static/bmiconfig.cfg'))
+        rpc_client = RPCClient()
         credentials = extract_credentials(request)
+        if credentials is None:
+            response.status = 400
+            response.body = "No Authentication Details Given"
+            return response.body
         img_name = request.vars[constants.IMAGE_NAME_PARAMETER]
         ret = rpc_client.execute_command(constants.LIST_SNAPSHOTS_COMMAND,
                                          credentials, [img_name])
@@ -148,7 +182,15 @@ def remove_snapshot():
     Removes the given snapshot for the given image
     '''
     if request.env.request_method == "DELETE":
+        config.load(os.path.join(os.path.abspath(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')),
+                                     'static/bmiconfig.cfg'))
+        rpc_client = RPCClient()
         credentials = extract_credentials(request)
+        if credentials is None:
+            response.status = 400
+            response.body = "No Authentication Details Given"
+            return response.body
         img_name = request.vars[constants.IMAGE_NAME_PARAMETER]
         snap_name = request.vars[constants.SNAP_NAME_PARAMETER]
         ret = rpc_client.execute_command(constants.REMOVE_SNAPSHOTS_COMMAND,
@@ -168,6 +210,10 @@ def remove_snapshot():
 
 
 def extract_credentials(request):
-    base64_str = request.env.http_authorization.split(' ')[1]
-    project = request.vars[constants.PROJECT_PARAMETER]
-    return base64_str, project
+    base64_str = request.env.http_authorization
+    if base64_str is not None:
+        base64_str = base64_str.split(' ')[1]
+        project = request.vars[constants.PROJECT_PARAMETER]
+        return base64_str, project
+    else:
+        return None

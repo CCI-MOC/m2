@@ -5,7 +5,7 @@ import requests
 
 import ims.common.constants as constants
 
-url = "http://192.168.122.34:8000/"
+url = "http://192.168.122.125:8000/BMI/rest/"
 
 CORRECT_HAAS_USERNAME = "haasadmin"
 CORRECT_HAAS_PASSWORD = "admin1234"
@@ -27,6 +27,7 @@ NOT_EXIST_SNAP_NAME = "hello"
 NEW_SNAP_NAME = "blblb1"  # for creating snapshot
 
 
+
 class TestOperations(unittest.TestCase):
     def test_provision(self):
         data = {constants.PROJECT_PARAMETER: PROJECT,
@@ -36,7 +37,7 @@ class TestOperations(unittest.TestCase):
                 constants.NETWORK_PARAMETER: NETWORK,
                 constants.CHANNEL_PARAMETER: CHANNEL,
                 constants.NIC_PARAMETER: NIC}
-        res = requests.put(url + "provision_node", data=data,
+        res = requests.put(url + "provision_node/", data=data,
                            auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         self.assertEqual(res.status_code, 404)
@@ -50,7 +51,7 @@ class TestOperations(unittest.TestCase):
                 constants.NETWORK_PARAMETER: NETWORK,
                 constants.CHANNEL_PARAMETER: CHANNEL,
                 constants.NIC_PARAMETER: NIC}
-        res = requests.put(url + "provision_node", data=data,
+        res = requests.put(url + "provision_node/", data=data,
                            auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         self.assertEqual(res.status_code, 404)
@@ -64,7 +65,7 @@ class TestOperations(unittest.TestCase):
                 constants.NETWORK_PARAMETER: NETWORK,
                 constants.CHANNEL_PARAMETER: CHANNEL,
                 constants.NIC_PARAMETER: NIC}
-        res = requests.put(url + "provision_node", data=data,
+        res = requests.put(url + "provision_node/", data=data,
                            auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         self.assertEqual(res.status_code, 200)
@@ -76,7 +77,7 @@ class TestOperations(unittest.TestCase):
                 constants.NETWORK_PARAMETER: NETWORK,
                 constants.CHANNEL_PARAMETER: CHANNEL,
                 constants.NIC_PARAMETER: NIC}
-        res = requests.put(url + "provision_node", data=data,
+        res = requests.put(url + "provision_node/", data=data,
                            auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         self.assertEqual(res.status_code, 500)
@@ -90,7 +91,7 @@ class TestOperations(unittest.TestCase):
                 constants.NETWORK_PARAMETER: NETWORK,
                 constants.CHANNEL_PARAMETER: CHANNEL,
                 constants.NIC_PARAMETER: NIC}
-        res = requests.put(url + "provision_node", data=data,
+        res = requests.put(url + "provision_node/", data=data,
                            auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         self.assertEqual(res.status_code, 500)
@@ -99,16 +100,17 @@ class TestOperations(unittest.TestCase):
                 constants.NODE_NAME_PARAMETER: NODE_NAME,
                 constants.NETWORK_PARAMETER: NETWORK,
                 constants.NIC_PARAMETER: NIC}
-        res = requests.delete(url + "remove_node", data=data, auth=(
+        res = requests.delete(url + "remove_node/", data=data, auth=(
             CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         self.assertEqual(res.status_code, 200)
 
+        print ""
         data = {constants.PROJECT_PARAMETER: PROJECT,
                 constants.NODE_NAME_PARAMETER: NODE_NAME,
                 constants.NETWORK_PARAMETER: NETWORK,
                 constants.NIC_PARAMETER: NIC}
-        res = requests.delete(url + "remove_node", data=data, auth=(
+        res = requests.delete(url + "remove_node/", data=data, auth=(
             CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         self.assertEqual(res.status_code, 500)
@@ -119,7 +121,7 @@ class TestOperations(unittest.TestCase):
         data = {constants.PROJECT_PARAMETER: WRONG_PROJECT,
                 constants.IMAGE_NAME_PARAMETER: EXIST_IMG_NAME,
                 constants.SNAP_NAME_PARAMETER: NEW_SNAP_NAME}
-        res = requests.put(url + "snap_image", data=data,
+        res = requests.put(url + "snap_image/", data=data,
                            auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         self.assertEqual(res.status_code, 404)
@@ -127,7 +129,7 @@ class TestOperations(unittest.TestCase):
         data = {constants.PROJECT_PARAMETER: PROJECT,
                 constants.IMAGE_NAME_PARAMETER: NOT_EXIST_IMG_NAME,
                 constants.SNAP_NAME_PARAMETER: NEW_SNAP_NAME}
-        res = requests.put(url + "snap_image", data=data,
+        res = requests.put(url + "snap_image/", data=data,
                            auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         self.assertEqual(res.status_code, 404)
@@ -135,7 +137,7 @@ class TestOperations(unittest.TestCase):
         data = {constants.PROJECT_PARAMETER: PROJECT,
                 constants.IMAGE_NAME_PARAMETER: EXIST_IMG_NAME,
                 constants.SNAP_NAME_PARAMETER: NEW_SNAP_NAME}
-        res = requests.put(url + "snap_image", data=data,
+        res = requests.put(url + "snap_image/", data=data,
                            auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         self.assertEqual(res.status_code, 200)
@@ -144,21 +146,21 @@ class TestOperations(unittest.TestCase):
 
         data = {constants.PROJECT_PARAMETER: WRONG_PROJECT,
                 constants.IMAGE_NAME_PARAMETER: EXIST_IMG_NAME}
-        res = requests.post(url + "list_snapshots", data=data,
+        res = requests.post(url + "list_snapshots/", data=data,
                             auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         self.assertEqual(res.status_code, 404)
 
         data = {constants.PROJECT_PARAMETER: PROJECT,
                 constants.IMAGE_NAME_PARAMETER: NOT_EXIST_IMG_NAME}
-        res = requests.post(url + "list_snapshots", data=data,
+        res = requests.post(url + "list_snapshots/", data=data,
                             auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         self.assertEqual(res.status_code, 404)
 
         data = {constants.PROJECT_PARAMETER: PROJECT,
                 constants.IMAGE_NAME_PARAMETER: EXIST_IMG_NAME}
-        res = requests.post(url + "list_snapshots", data=data,
+        res = requests.post(url + "list_snapshots/", data=data,
                             auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         js = res.json()
@@ -168,7 +170,7 @@ class TestOperations(unittest.TestCase):
         data = {constants.PROJECT_PARAMETER: PROJECT,
                 constants.IMAGE_NAME_PARAMETER: EXIST_IMG_NAME,
                 constants.SNAP_NAME_PARAMETER: NEW_SNAP_NAME}
-        res = requests.put(url + "snap_image", data=data,
+        res = requests.put(url + "snap_image/", data=data,
                            auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         self.assertEqual(res.status_code, 471)
@@ -178,7 +180,7 @@ class TestOperations(unittest.TestCase):
         data = {constants.PROJECT_PARAMETER: WRONG_PROJECT,
                 constants.IMAGE_NAME_PARAMETER: EXIST_IMG_NAME,
                 constants.SNAP_NAME_PARAMETER: NEW_SNAP_NAME}
-        res = requests.delete(url + "remove_snapshot", data=data, auth=(
+        res = requests.delete(url + "remove_snapshot/", data=data, auth=(
             CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         self.assertEqual(res.status_code, 404)
@@ -186,7 +188,7 @@ class TestOperations(unittest.TestCase):
         data = {constants.PROJECT_PARAMETER: PROJECT,
                 constants.IMAGE_NAME_PARAMETER: NOT_EXIST_IMG_NAME,
                 constants.SNAP_NAME_PARAMETER: NEW_SNAP_NAME}
-        res = requests.delete(url + "remove_snapshot", data=data, auth=(
+        res = requests.delete(url + "remove_snapshot/", data=data, auth=(
             CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         self.assertEqual(res.status_code, 404)
@@ -194,20 +196,20 @@ class TestOperations(unittest.TestCase):
         data = {constants.PROJECT_PARAMETER: PROJECT,
                 constants.IMAGE_NAME_PARAMETER: EXIST_IMG_NAME,
                 constants.SNAP_NAME_PARAMETER: NEW_SNAP_NAME}
-        res = requests.delete(url + "remove_snapshot", data=data, auth=(
+        res = requests.delete(url + "remove_snapshot/", data=data, auth=(
             CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         self.assertEqual(res.status_code, 200)
 
     def test_list_all_images(self):
         data = {constants.PROJECT_PARAMETER: WRONG_PROJECT}
-        res = requests.post(url + "list_images", data=data,
+        res = requests.post(url + "list_images/", data=data,
                             auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         self.assertEqual(res.status_code, 404)
 
         data = {constants.PROJECT_PARAMETER: PROJECT}
-        res = requests.post(url + "list_images", data=data,
+        res = requests.post(url + "list_images/", data=data,
                             auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
         print res.content
         js = res.json()

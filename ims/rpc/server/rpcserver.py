@@ -13,7 +13,6 @@ class MainServer:
     def execute_command(self, credentials, command, args):
         try:
             # command.decode('utf-8')
-            print "Here"
             try:
                 bmi = BMI(credentials)
             except BMIException as ex:
