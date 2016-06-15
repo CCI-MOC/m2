@@ -1,8 +1,10 @@
+#!/usr/bin/python
 # Should be used when changed to Flask
 
 import ims.common.config as config
-
-config.load()
-
+import ims.common.constants as constants
 import ims.picasso.flask_rest as rest
-rest.app.run(host="192.168.122.125",port="8000")
+
+config.load(constants.PICASSO_CONFIG_FLAG)
+
+rest.start()

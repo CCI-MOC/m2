@@ -8,7 +8,7 @@ from ims.rpc.server.rpcserver import *
 import ims.common.config as config
 
 
-config.load()
+config.load(constants.EINSTEIN_CONFIG_FLAG)
 
 p1 = multiprocessing.Process(target=start_name_server)
 p2 = multiprocessing.Process(target=start_rpc_server)

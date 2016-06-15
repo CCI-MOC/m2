@@ -7,7 +7,14 @@ from ims.rpc.client.rpcclient import *
 
 app = Flask(__name__)
 
-rpc_client = RPCClient()
+rpc_client = None
+
+
+def start():
+    global rpc_client
+    rpc_client = RPCClient()
+    cfg = config.get()
+    app.run(host=cfg.bind_ip,port=cfg.bind_port)
 
 
 @app.route('/list_images/', methods=['POST'])
@@ -145,7 +152,7 @@ def remove_snapshot():
         if ret[constants.STATUS_CODE_KEY] == 200:
             return "Success", 200
         else:
-             return ret[constants.MESSAGE_KEY], ret[constants.STATUS_CODE_KEY]
+            return ret[constants.MESSAGE_KEY], ret[constants.STATUS_CODE_KEY]
     else:
         return 'Please use a DELETE', 444
 
