@@ -1,16 +1,30 @@
 import ConfigParser
+import os
 
-import constants
+import ims.common.constants as constants
 from ims.exception import *
 
 __config = None
 
 
-def load(filename='bmiconfig.cfg'):
+def load(ep_flag):
     try:
         global __config
         if __config is None:
-            __config = __BMIConfig(filename)
+            if ep_flag == constants.PICASSO_CONFIG_FLAG:
+                try:
+                    path = os.environ[
+                        constants.CONFIG_LOCATION_ENV_VARIABLE]
+                except KeyError:
+                    path = constants.CONFIG_DEFAULT_LOCATION
+                __config = __PicassoConfig(path)
+            elif ep_flag == constants.EINSTEIN_CONFIG_FLAG:
+                try:
+                    path = os.environ[
+                        constants.CONFIG_LOCATION_ENV_VARIABLE]
+                except KeyError:
+                    path = constants.CONFIG_DEFAULT_LOCATION
+                __config = __EinsteinConfig(path)
             __config.parse_config()
     except ConfigException as ex:
         raise
@@ -21,7 +35,7 @@ def get():
     return __config
 
 
-class __BMIConfig:
+class __EinsteinConfig:
     # the config file is hardcoded for now
     # other instance variables are initialized as to not get AttributeErrors
     def __init__(self, filename):
@@ -69,5 +83,34 @@ class __BMIConfig:
                     for key, value in config.items(k):
                         self.fs[k][key] = value
         # Didn't Test
+        except ConfigParser.NoOptionError as e:
+            raise config_exceptions.MissingOptionInConfigException(e.args[0])
+
+
+class __PicassoConfig:
+    def __init__(self, filename):
+        self.configfile = filename
+        self.nameserver_ip = None
+        self.nameserver_port = None
+        self.bind_ip = None
+        self.bind_port = None
+
+    def parse_config(self):
+        config = ConfigParser.SafeConfigParser()
+        try:
+            if not config.read(self.configfile):
+                raise IOError('cannot load ' + self.configfile)
+
+            self.bind_ip = config.get(constants.HTTP_CONFIG_SECTION_NAME,
+                                      constants.BIND_IP_KEY)
+            self.bind_port = config.get(constants.HTTP_CONFIG_SECTION_NAME,
+                                        constants.BIND_PORT_KEY)
+
+            self.nameserver_ip = config.get(constants.RPC_CONFIG_SECTION_NAME,
+                                            constants.RPC_NAME_SERVER_IP_KEY)
+            self.nameserver_port = int(
+                config.get(constants.RPC_CONFIG_SECTION_NAME,
+                           constants.RPC_NAME_SERVER_PORT_KEY))
+
         except ConfigParser.NoOptionError as e:
             raise config_exceptions.MissingOptionInConfigException(e.args[0])

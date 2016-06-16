@@ -1,9 +1,20 @@
+# Config Flags
+PICASSO_CONFIG_FLAG = 'picasso'
+EINSTEIN_CONFIG_FLAG = 'einstein'
+
+# Config Default Locations
+CONFIG_DEFAULT_LOCATION = 'bmiconfig.cfg'
+
+# Environment Variable Names
+CONFIG_LOCATION_ENV_VARIABLE = 'BMI_CONFIG'
+
 # Config section names
 FILESYSTEM_CONFIG_SECTION_NAME = 'filesystem'
 HAAS_CONFIG_SECTION_NAME = 'haas'
 CEPH_CONFIG_SECTION_NAME = 'ceph'
 ISCSI_CONFIG_SECTION_NAME = 'iscsi'
 RPC_CONFIG_SECTION_NAME = 'rpc'
+HTTP_CONFIG_SECTION_NAME = 'http'
 
 # Non FS Keys in Config File
 HAAS_URL_KEY = 'url'
@@ -30,6 +41,10 @@ RPC_RPC_SERVER_PORT_KEY = 'rpc_server_port'
 
 RPC_SERVER_NAME = 'example.mainserver'
 
+# HTTP
+BIND_IP_KEY = 'bind_ip'
+BIND_PORT_KEY = 'bind_port'
+
 # Response Related Keys
 STATUS_CODE_KEY = 'status_code'
 RETURN_VALUE_KEY = 'retval'
@@ -43,7 +58,7 @@ DETACH_NODE_COMMAND = "detach_node"
 LIST_SNAPSHOTS_COMMAND = "list_snaps"
 REMOVE_SNAPSHOTS_COMMAND = "remove_snaps"
 
-#Parameters
+# Parameters
 NODE_NAME_PARAMETER = 'node'
 IMAGE_NAME_PARAMETER = "img"
 SNAP_NAME_PARAMETER = "snap_name"
