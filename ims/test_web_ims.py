@@ -5,7 +5,7 @@ import requests
 
 import ims.common.constants as constants
 
-url = "http://192.168.122.125:8000/BMI/rest/"
+url = "http://192.168.122.125:8000/"
 
 CORRECT_HAAS_USERNAME = "haasadmin"
 CORRECT_HAAS_PASSWORD = "admin1234"
