@@ -5,7 +5,7 @@ from setuptools import setup
 args = sys.argv
 
 picasso_install_requires = ["pyro4==4.41", "requests","flask"]
-einstein_install_requires = ["sqlalchemy>=1.0.13", "requests", "Pyro4==4.41"]
+einstein_install_requires = ["sqlalchemy>=1.0.13", "requests", "pyro4==4.41"]
 einstein_scripts = ['scripts/einstein_server.py']
 picasso_scripts = ['scripts/picasso_server.py']
 picasso_packages = ['ims.common','ims.picasso','ims.rpc.client']
