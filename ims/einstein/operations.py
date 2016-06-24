@@ -9,18 +9,16 @@ from ims.database import *
 from ims.einstein.ceph_wrapper import *
 from ims.einstein.haas_wrapper import *
 from ims.exception import *
-from log import *
+from ims.common.log import *
 
-
-# logging will be submitted later
 
 class BMI:
-    def __init__(self, usr, passwd, debug=False, verbose=False):
-        self.__process_credentials(credentials)
+    def __init__(self, credentials):
         self.config = config.get()
+        self.logger = create_logger(self.config.logs_url,__name__, self.config.logs_debug, self.config.logs_verbose)
+        self.__process_credentials(credentials)
         self.haas = HaaS(base_url=self.config.haas_url, usr=self.username,
                          passwd=self.password)
-        self.logger = create_logger("ims.einstein.operations", debug, verbose)
 
     def __does_project_exist(self):
         pr = ProjectRepository()
@@ -46,13 +44,19 @@ class BMI:
 
     # Calling shell script which executes a iscsi update as we don't have
     # rbd map in documentation.
-    @staticmethod
-    def __call_shellscript(*args):
+    def __call_shellscript(self,*args):
+        self.logger.debug("Entering call_shellscript")
         arglist = list(args)
-        print arglist
+        self.logger.debug("Got parameters = %s",arglist)
+        self.logger.debug("Creating process")
         proc = subprocess.Popen(arglist, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        return proc.communicate()
+        self.logger.debug("Created Process")
+        self.logger.debug("Calling Communicate")
+        ret = proc.communicate()
+        self.logger.debug("Got output = %s after communicate",ret)
+        self.logger.debug("Exiting call_shell_script")
+        return ret
 
     # A custom function which is wrapper around only success code that
     # we are creating.
@@ -98,16 +102,17 @@ class BMI:
                 imgr.insert(node_name, self.pid)
                 img_id = imgr.fetch_id_with_name_from_project(node_name,
                                                               self.project)
+                ceph_img_name = "img"+str(img_id)
                 self.logger.info(
                     "Cloning snap %s under %s as %s", snap_name, img_name,
-                    node_name)
+                    ceph_img_name)
                 ret = fs.clone(img_name.encode('utf-8'),
                                snap_name.encode('utf-8'),
-                               str(img_id).encode("utf-8"))
+                               ceph_img_name.encode("utf-8"))
                 self.logger.info(
                     "Successfully Finished Cloning snap %s under %s as %s",
                     snap_name, img_name,
-                    node_name)
+                    ceph_img_name)
 
                 ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
                 self.logger.debug("Contents of ceph_config = %s",
@@ -115,16 +120,17 @@ class BMI:
                 # Should be changed to python script
                 self.logger.info(
                     "Calling ISCSI shellscript with create command")
-                iscsi_output = BMI.__call_shellscript(self.config.iscsi_update,
+                iscsi_output = self.__call_shellscript(self.config.iscsi_update,
                                                       ceph_config[
                                                           constants.CEPH_KEY_RING_KEY],
                                                       ceph_config[
                                                           constants.CEPH_ID_KEY],
                                                       ceph_config[
                                                           constants.CEPH_POOL_KEY],
-                                                      str(img_id),
+                                                      ceph_img_name,
                                                       constants.ISCSI_CREATE_COMMAND,
                                                       self.config.iscsi_update_password)
+                self.logger.debug("Got Message from ISCSI Script = %s",iscsi_output)
                 if constants.ISCSI_UPDATE_SUCCESS in iscsi_output[0]:
                     self.logger.info("The create command was done successfully")
                     return BMI.__return_success(True)
@@ -142,10 +148,10 @@ class BMI:
             imgr = ImageRepository()
             img_id = imgr.fetch_id_with_name_from_project(node_name,
                                                           self.project)
+            ceph_img_name = "img"+str(img_id)
             with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
-                fs.remove(img_id)
+                fs.remove(ceph_img_name)
             imgr.delete_with_name_from_project(node_name, self.project)
-            time.sleep(20)
             time.sleep(30)
             self.haas.detach_node_from_project_network(node_name, network, nic)
             return BMI.return_error(e)
@@ -186,29 +192,31 @@ class BMI:
 
             with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
                 img_id = self.__get_image_id(node_name)
+                ceph_img_name = "img"+str(img_id)
                 ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
 
                 self.logger.debug("Contents of ceph+config = %s",
                                   str(ceph_config))
                 self.logger.info(
                     "Calling ISCSI Shellscript with delete command")
-                iscsi_output = BMI.__call_shellscript(self.config.iscsi_update,
+                iscsi_output = self.__call_shellscript(self.config.iscsi_update,
                                                       ceph_config[
                                                           constants.CEPH_KEY_RING_KEY],
                                                       ceph_config[
                                                           constants.CEPH_ID_KEY],
                                                       ceph_config[
                                                           constants.CEPH_POOL_KEY],
-                                                      str(img_id),
+                                                      ceph_img_name,
                                                       constants.ISCSI_DELETE_COMMAND,
                                                       self.config.iscsi_update_password)
+                self.logger.debug("Got Message from ISCSI Script = %s",iscsi_output)
                 if constants.ISCSI_UPDATE_SUCCESS in iscsi_output[0]:
                     self.logger.info(
                         "The delete command was executed successfully")
                     self.logger.info("Removing Image %s", node_name)
                     imgr = ImageRepository()
                     imgr.delete_with_name_from_project(node_name, self.project)
-                    ret = fs.remove(node_name.encode("utf-8"))
+                    ret = fs.remove(ceph_img_name.encode("utf-8"))
                     self.logger.info("Successfully Removed Image %s", node_name)
                     return BMI.__return_success(ret)
 

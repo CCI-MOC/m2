@@ -33,6 +33,7 @@ elif [ $operation == "delete" ]; then
     echo $whisper | sudo -S ls > /dev/null
     #rbdev=`rbd showmapped|grep $nodeName|awk '{print $5;}'`
     target=`rbd showmapped | grep $nodeName | awk '{print $5;}'`
+    #target=`rbd showmapped | awk '{print $3" "$5;}' | grep -w '^$nodename' | awk '{print $2;}''`
     if [ "$target" == '' ]; then
       echo "Node is already unmapped" 
     else

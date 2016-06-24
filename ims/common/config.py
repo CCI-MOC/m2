@@ -48,6 +48,9 @@ class __EinsteinConfig:
         self.nameserver_port = None
         self.rpcserver_ip = None
         self.rpcserver_port = None
+        self.logs_url = None
+        self.logs_debug = None
+        self.logs_verbose = None
 
     def parse_config(self):
         config = ConfigParser.SafeConfigParser()
@@ -76,6 +79,13 @@ class __EinsteinConfig:
                 config.get(constants.RPC_CONFIG_SECTION_NAME,
                            constants.RPC_RPC_SERVER_PORT_KEY))
 
+            self.logs_url = config.get(constants.LOGS_CONFIG_SECTION_NAME,
+                                       constants.LOGS_URL_KEY)
+            self.logs_debug = config.get(constants.LOGS_CONFIG_SECTION_NAME,
+                                         constants.LOGS_DEBUG_KEY) == 'True'
+            self.logs_verbose = config.get(constants.LOGS_CONFIG_SECTION_NAME,
+                                           constants.LOGS_VERBOSE_KEY) == 'True'
+
             for k, v in config.items(constants.FILESYSTEM_CONFIG_SECTION_NAME):
                 if v == 'True':
                     self.fs[k] = {}
@@ -94,6 +104,9 @@ class __PicassoConfig:
         self.nameserver_port = None
         self.bind_ip = None
         self.bind_port = None
+        self.logs_url = None
+        self.logs_debug = None
+        self.logs_verbose = None
 
     def parse_config(self):
         config = ConfigParser.SafeConfigParser()
@@ -111,6 +124,13 @@ class __PicassoConfig:
             self.nameserver_port = int(
                 config.get(constants.RPC_CONFIG_SECTION_NAME,
                            constants.RPC_NAME_SERVER_PORT_KEY))
+
+            self.logs_url = config.get(constants.LOGS_CONFIG_SECTION_NAME,
+                                       constants.LOGS_URL_KEY)
+            self.logs_debug = bool(config.get(constants.LOGS_CONFIG_SECTION_NAME,
+                                         constants.LOGS_DEBUG_KEY))
+            self.logs_verbose = bool(config.get(constants.LOGS_CONFIG_SECTION_NAME,
+                                           constants.LOGS_VERBOSE_KEY))
 
         except ConfigParser.NoOptionError as e:
             raise config_exceptions.MissingOptionInConfigException(e.args[0])

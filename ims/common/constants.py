@@ -15,6 +15,7 @@ CEPH_CONFIG_SECTION_NAME = 'ceph'
 ISCSI_CONFIG_SECTION_NAME = 'iscsi'
 RPC_CONFIG_SECTION_NAME = 'rpc'
 HTTP_CONFIG_SECTION_NAME = 'http'
+LOGS_CONFIG_SECTION_NAME = 'logs'
 
 # Non FS Keys in Config File
 HAAS_URL_KEY = 'url'
@@ -44,6 +45,11 @@ RPC_SERVER_NAME = 'example.mainserver'
 # HTTP
 BIND_IP_KEY = 'bind_ip'
 BIND_PORT_KEY = 'bind_port'
+
+# LOGS
+LOGS_URL_KEY = 'url'
+LOGS_DEBUG_KEY = 'debug'
+LOGS_VERBOSE_KEY = 'verbose'
 
 # Response Related Keys
 STATUS_CODE_KEY = 'status_code'
