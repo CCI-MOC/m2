@@ -22,7 +22,7 @@ The convention that we are following for requests is:
 
 Each possible API call has:
 * an HTTP method and URL path
-* Request body(which will always be a JSON object)
+* Request body(which will always be form encoded parameters)
 * A list of possible responses
 * An example
 
@@ -59,7 +59,7 @@ PUT
 * 444. You used a wrong request method like PUT instead of POST etc.
  
 ####Example:
-Send a PUT Request with following body to https://<BMI_SERVER>:<PORT>/provision_node/
+Send a PUT Request with following body to http://<BMI_SERVER>:<PORT>/provision_node/
 
 ```json
 {
@@ -107,7 +107,7 @@ DELETE
 * 444. You used a wrong request method like PUT instead of POST etc.
 
 ####Example:
-Send a DELETE Request with following body to https://<BMI_SERVER>:<PORT>/delete_node/
+Send a DELETE Request with following body to http://<BMI_SERVER>:<PORT>/delete_node/
 ```json
 {
  "project" : "bmi_infra",
@@ -121,153 +121,165 @@ Send a DELETE Request with following body to https://<BMI_SERVER>:<PORT>/delete_
 
 This should return a 200 or other errors as explained above.
 
-List:
+###List:
 
+Following is the call for API:
 
-http://BMI_SERVER:PORT/list_images
-with POST request type and request body:
+####Link:
+http://BMI_SERVER:PORT/list_images/
 
-body:
+####Request Type:
+POST
 
+####Request Body:
+```json
 {
  "project" : "<project_name>" 
 }
+```
 
-- 200. This means list node call is successful 
-   and it returns list of images available in your project.
-- Internal 500 with some junk characters. This means the request body is not proper.
-- 401. This means unauthorized access to project.
-- 403. This means a ceph connection problem.
-- 444. You used a wrong request method like PUT instead of POST etc.
+####Respones:
+* 200. This means list node call is successful and it returns list of images available in your project.
+* Internal 500 with some junk characters. This means the request body is not proper.
+* 401. This means unauthorized access to project.
+* 403. This means a ceph connection problem.
+* 444. You used a wrong request method like PUT instead of POST etc.
 
 This returns either a list of images in response body along with 200 response or other exceptions. 
 
-Example:
-
-http://BMI_SERVER:PORT/list_images
-with POST request type and request body:
-
-body:
-
+####Example:
+Send a POST Request with following body to http://BMI_SERVER:PORT/list_images/
+```json
 {
  "project" : "bmi_infra"
 }
+```
 
-Response:
-
-[ "img1" , "img2"....
-		...., "img n"] in body
+**Make sure to use HTTP Basic Auth to pass HaaS Credentials**
 
 The list of images which are in your project - if it is successful with a status code of 200.
 
-create snapshot:
-
+###Create Snapshot:
 Snapshot is feature which is available to preserve the state of your image. Using ceph as backend we can preserve the state of your image as a snapshot and use this snapshot for further cloning.
 
-http://BMI_SERVER:PORT/snap_image
-with PUT request type and request body as:
+Following is the call for API:
 
-body:
+####Link:
+http://BMI_SERVER:PORT/snap_image/
 
+####Request Type:
+PUT
+
+####Request Body:
+```json
 {
  "project" : "<project_name>",
  "img" : "<img_name>" ,
  "snap_name" : "<snapshot_name>" 
 }
+```
 
-Response:
-- 200. This means the create snapshot call is successful.
-- Internal 500 with some junk characters. This means the request body is not proper.
-- 401. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
-- 403. This means a ceph connection problem.
-- 409. Image busy exception.
-- 404. Image not found exception.
-- 444. You used a wrong request method like PUT instead of POST etc.
+####Response:
+* 200. This means the create snapshot call is successful.
+* Internal 500 with some junk characters. This means the request body is not proper.
+* 401. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
+* 403. This means a ceph connection problem.
+* 409. Image busy exception.
+* 404. Image not found exception.
+* 444. You used a wrong request method like PUT instead of POST etc.
 
-Example:
-
-http://BMI_SERVER:PORT/snap_image
-with PUT request type and request body as:
-
+####Example:
+Send a PUT Request with following body to http://BMI_SERVER:PORT/snap_image/
+```json
 {
 "project":"bmi_infra", 
 "img": "test.img", 
 "snap_name":"test_snap2016" 
 }
+```
+
+**Make sure to use HTTP Basic Auth to pass HaaS Credentials**
 
 This should return a 200 or other errors as explained above.
 
-List snapshots:
-
+###List snapshots:
 We can have as many snapshots as possible for a particular image. So, using this we can list all the snapshots available for an image.
 
-http://BMI_SERVER:PORT/list_snapshots
-with POST request type and request body as:
+Following is the call for API:
 
-body:
+####Link:
+http://BMI_SERVER:PORT/list_snapshots/
 
+####Request Type:
+POST
+
+####Request Body:
+```json
 {
  "project" : "<project_name>",
  "img" : "<img_name>"
 }
+```
 
-Response:
-- 200. This means the list snapshot call is successful.
-- Internal 500 with some junk characters. This means the request body is not proper.
-- 401. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
-- 403. This means a ceph connection problem.
-- 409. Image busy exception.
-- 404. Image not found exception.
-- 444. You used a wrong request method like PUT instead of POST etc.
+####Response:
+* 200. This means the list snapshot call is successful.
+* Internal 500 with some junk characters. This means the request body is not proper.
+* 401. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
+* 403. This means a ceph connection problem.
+* 409. Image busy exception.
+* 404. Image not found exception.
+* 444. You used a wrong request method like PUT instead of POST etc.
 
-Example:
-
-body:
-
+####Example:
+Send a PUT Request with following body to http://BMI_SERVER:PORT/snap_image/
+```json
 {
  "project" : "bmi_infra",
  "img" : "test.img"
 }
+```
 
-
-Response:
-
-[ "snapshot1" , "snapshot2"....
-		...., "snapshotn"] for image "test.img" in body
+**Make sure to use HTTP Basic Auth to pass HaaS Credentials**
 
 The list of snapshots for given image which is in your project - if it is successful with a status code of 200.
 
-Remove snapshot:
+###Remove snapshot:
+Following is the call for API:
 
-http://BMI_SERVER:PORT/remove_snapshot
-with DELETE request type and request body as:
+####Link:
+http://BMI_SERVER:PORT/remove_snapshot/
 
-body:
+####Request Type:
+DELETE
 
+####Request Body:
+```json
 {
  "project" : "<project_name>" ,
  "img" : "<img_name>" ,
  "snap_name" : "snapshot_name>"
 }
+```
 
-Response:
-- 200. This means the remove snapshot call is successful.
-- Internal 500 with some junk characters. This means the request body is not proper.
-- 401. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
-- 403. This means a ceph connection problem.
-- 409. Image busy exception.
-- 404. Image not found exception.
-- 444. You used a wrong request method like PUT instead of POST etc.
+####Response:
+* 200. This means the remove snapshot call is successful.
+* Internal 500 with some junk characters. This means the request body is not proper.
+* 401. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
+* 403. This means a ceph connection problem.
+* 409. Image busy exception.
+* 404. Image not found exception.
+* 444. You used a wrong request method like PUT instead of POST etc.
 
-Example:
-
-body:
-
+####Example:
+Send a DELETE Request with following body to http://BMI_SERVER:PORT/remove_snapshot/
+```json
 {
  "project" : "bmi_infra",
  "img" : "test.img" ,
  "snap_name" : "test_snap2015"
 }
+```
+
+**Make sure to use HTTP Basic Auth to pass HaaS Credentials**
 
 If the call is successful, we will get a 200 as status code with test_snap2015 snapshot for image test.img will be removed.
-
