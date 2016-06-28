@@ -5,7 +5,6 @@ We have a basic set of API as of now. All of the services as of now are taking t
 BMI API assumes that you know the image which you are interested in. BMI has an driver which can communicate with Ceph(the file storage system that we are using for storing our images). Please make sure that you understand Ceph concepts before you play with the API. 
 
 To have a clear understanding of the API, we wish to provide the following terminology:
-
 * project - A project is the HaaS project that has been allocated to tenant.
 * node - A node that is allocated to project by HaaS. This node should be present in HaaS.
 * img - The name of image which will be used for provisioning.
@@ -15,29 +14,31 @@ To have a clear understanding of the API, we wish to provide the following termi
 * channel - The vlan that should be used to connect the node to provisioning network
 
 The convention that we are following for requests is:
-
 * PUT - for resource creation like node creation 
 * DELETE - for resource deletion for node deletion
 * POST - for rest of operations
 
-** The username and password for HaaS needs to be passed along using HTTP Basic Auth to each possible API call. **
+**The username and password for HaaS needs to be passed along using HTTP Basic Auth to each possible API call.**
 
 Each possible API call has:
-
 * an HTTP method and URL path
 * Request body(which will always be a JSON object)
 * A list of possible responses
 * An example
 
-Provision:
-
+###Provision:
 Provision API is needed for provisioning a node from MOC cluster as of now. Provision operation internally calls a ceph clone operation. Ceph clone operation usually takes a snap_
 
 Following is the call for API:
 
+####Link:
 http://BMI_SERVER:PORT/provision_node 
-with PUT request type and request body as:
 
+####Request Type:
+PUT
+
+####Request Body:
+```json
 {
  "project" : "<project_name>",
  "node" : "<node_name>" , 
@@ -46,40 +47,39 @@ with PUT request type and request body as:
  "network" : "<network_name>" ,
  "channel" : "<channel in haas>" ,
  "nic" : "<nic to connect on>"
-} 
+}
+```
 
-Responses:
-
-- 200. This means the provision call is successful.
-- Internal 500 with some junk characters. This means the request body is not proper.
-- 401. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
-- 403. This means a ceph connection problem.
-- 409. Image busy exception.
-- 444. You used a wrong request method like PUT instead of POST etc.
+####Responses:
+* 200. This means the provision call is successful.
+* Internal 500 with some junk characters. This means the request body is not proper.
+* 401. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
+* 403. This means a ceph connection problem.
+* 409. Image busy exception.
+* 444. You used a wrong request method like PUT instead of POST etc.
  
-Example:
+####Example:
+Send a PUT Request with following body to https://<BMI_SERVER>:<PORT>/provision_node
 
-https://<BMI_SERVER>:<PORT>/provision_node
-with PUT request type and request body as:
-
-body:
-
+```json
 {
  "project" : "bmi_infra",
  "node" : "cisco-2016" , 
  "img" : "hadoopMaster.img" ,  
- "snap_name" : "HadoopMasterGoldenImage"
+ "snap_name" : "HadoopMasterGoldenImage" ,
  "network" : "provision-net" ,
  "channel" : "vlan/native",
  "nic" : "nic01"
 }
+```
+**Make sure to use HTTP Basic Auth to pass HaaS Credentials**
 
 This should return a 200 or other errors as explained above.
 
 
-Remove:
+###Remove:
 
-http://BMI_SERVER:PORT/delete_node
+http://<BMI_SERVER>:<PORT>/delete_node
 with DELETE request type and request body as:
 
 body:
