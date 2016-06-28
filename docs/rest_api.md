@@ -32,7 +32,7 @@ Provision API is needed for provisioning a node from MOC cluster as of now. Prov
 Following is the call for API:
 
 ####Link:
-http://BMI_SERVER:PORT/provision_node 
+http://BMI_SERVER:PORT/provision_node/
 
 ####Request Type:
 PUT
@@ -59,7 +59,7 @@ PUT
 * 444. You used a wrong request method like PUT instead of POST etc.
  
 ####Example:
-Send a PUT Request with following body to https://<BMI_SERVER>:<PORT>/provision_node
+Send a PUT Request with following body to https://<BMI_SERVER>:<PORT>/provision_node/
 
 ```json
 {
@@ -76,47 +76,50 @@ Send a PUT Request with following body to https://<BMI_SERVER>:<PORT>/provision_
 
 This should return a 200 or other errors as explained above.
 
-
 ###Remove:
 
-http://<BMI_SERVER>:<PORT>/delete_node
-with DELETE request type and request body as:
+Following is the call for API:
 
-body:
+####Link:
+http://BMI_SERVER:PORT/delete_node/
 
+####Request Type:
+DELETE
+
+####Request Body:
+```json
 {
  "project" : "<project_name>",
  "node" : "<node_name>" ,
  "network" : "<network_name>" ,
  "nic" : "<nic to connect on>"
 }
+```
 
-Responses:
+####Responses:
+* 200. This means the delete node call is successful.
+* Internal 500 with some junk characters. This means the request body is not proper.
+* 401. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
+* 403. This means a ceph connection problem.
+* 409. Image busy exception.
+* 405. Image has snapshots. (We need to delete them before we delete image).
+* 404. Image not found exception.
+* 444. You used a wrong request method like PUT instead of POST etc.
 
-- 200. This means the delete node call is successful.
-- Internal 500 with some junk characters. This means the request body is not proper.
-- 401. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
-- 403. This means a ceph connection problem.
-- 409. Image busy exception.
-- 405. Image has snapshots. (We need to delete them before we delete image).
-- 404. Image not found exception.
-- 444. You used a wrong request method like PUT instead of POST etc.
-
-Example:
-
-http://BMI_SERVER:PORT/delete_node
-with DELETE request type and request body as:
-body:
-
+####Example:
+Send a DELETE Request with following body to https://<BMI_SERVER>:<PORT>/delete_node/
+```json
 {
  "project" : "bmi_infra",
  "node" : "cisco-2016" ,
  "network" : "provision-net" ,
   "nic" : "nic01"
 }
+```
+
+**Make sure to use HTTP Basic Auth to pass HaaS Credentials**
 
 This should return a 200 or other errors as explained above.
-
 
 List:
 
