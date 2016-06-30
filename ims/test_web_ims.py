@@ -95,7 +95,6 @@ class TestOperations(unittest.TestCase):
         self.assertEqual(res.status_code, 500)
 
     def test_create_snapshot(self):
-
         data = {constants.PROJECT_PARAMETER: PROJECT,
                 constants.NODE_NAME_PARAMETER: NODE_NAME,
                 constants.IMAGE_NAME_PARAMETER: EXIST_IMG_NAME,
@@ -112,7 +111,7 @@ class TestOperations(unittest.TestCase):
         print "create snapshot"
 
         data = {constants.PROJECT_PARAMETER: WRONG_PROJECT,
-                constants.IMAGE_NAME_PARAMETER: NODE_NAME,
+                constants.NODE_NAME_PARAMETER: NODE_NAME,
                 constants.SNAP_NAME_PARAMETER: NEW_SNAP_NAME}
         res = requests.put(url + "create_snapshot/", data=data,
                            auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
@@ -120,7 +119,7 @@ class TestOperations(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
 
         data = {constants.PROJECT_PARAMETER: PROJECT,
-                constants.IMAGE_NAME_PARAMETER: NOT_EXIST_IMG_NAME,
+                constants.NODE_NAME_PARAMETER: NOT_EXIST_IMG_NAME,
                 constants.SNAP_NAME_PARAMETER: NEW_SNAP_NAME}
         res = requests.put(url + "create_snapshot/", data=data,
                            auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
@@ -128,7 +127,7 @@ class TestOperations(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
 
         data = {constants.PROJECT_PARAMETER: PROJECT,
-                constants.IMAGE_NAME_PARAMETER: NODE_NAME,
+                constants.NODE_NAME_PARAMETER: NODE_NAME,
                 constants.SNAP_NAME_PARAMETER: NEW_SNAP_NAME}
         res = requests.put(url + "create_snapshot/", data=data,
                            auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
@@ -182,10 +181,11 @@ class TestOperations(unittest.TestCase):
         print res.content
         js = res.json()
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(js[-1], NEW_SNAP_NAME)
+        self.assertEqual(js.__len__, 1)
+        self.assertEqual(js[0], NEW_SNAP_NAME)
 
         data = {constants.PROJECT_PARAMETER: PROJECT,
-                constants.IMAGE_NAME_PARAMETER: EXIST_IMG_NAME,
+                constants.NODE_NAME_PARAMETER: EXIST_IMG_NAME,
                 constants.SNAP_NAME_PARAMETER: NEW_SNAP_NAME}
         res = requests.put(url + "create_snapshot/", data=data,
                            auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
