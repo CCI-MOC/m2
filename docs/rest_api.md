@@ -32,7 +32,7 @@ Provision API is needed for provisioning a node from MOC cluster as of now. Prov
 Following is the call for API:
 
 ####Link:
-http://BMI_SERVER:PORT/provision_node/
+http://BMI_SERVER:PORT/provision/
 
 ####Request Type:
 PUT
@@ -42,8 +42,7 @@ PUT
 {
  "project" : "<project_name>",
  "node" : "<node_name>" , 
- "img" : "<image_name>" ,  
- "snap_name" : "<snapshot_name>" ,
+ "img" : "<image_name>" ,
  "network" : "<network_name>" ,
  "channel" : "<channel in haas>" ,
  "nic" : "<nic to connect on>"
@@ -59,14 +58,13 @@ PUT
 * 444. You used a wrong request method like PUT instead of POST etc.
  
 ####Example:
-Send a PUT Request with following body to http://<BMI_SERVER>:<PORT>/provision_node/
+Send a PUT Request with following body to http://<BMI_SERVER>:<PORT>/provision/
 
 ```json
 {
  "project" : "bmi_infra",
  "node" : "cisco-2016" , 
  "img" : "hadoopMaster.img" ,  
- "snap_name" : "HadoopMasterGoldenImage" ,
  "network" : "provision-net" ,
  "channel" : "vlan/native",
  "nic" : "nic01"
@@ -76,12 +74,12 @@ Send a PUT Request with following body to http://<BMI_SERVER>:<PORT>/provision_n
 
 This should return a 200 or other errors as explained above.
 
-###Remove:
+###Deprovision:
 
 Following is the call for API:
 
 ####Link:
-http://BMI_SERVER:PORT/delete_node/
+http://BMI_SERVER:PORT/deprovision/
 
 ####Request Type:
 DELETE
@@ -107,13 +105,13 @@ DELETE
 * 444. You used a wrong request method like PUT instead of POST etc.
 
 ####Example:
-Send a DELETE Request with following body to http://<BMI_SERVER>:<PORT>/delete_node/
+Send a DELETE Request with following body to http://<BMI_SERVER>:<PORT>/deprovision/
 ```json
 {
  "project" : "bmi_infra",
  "node" : "cisco-2016" ,
  "network" : "provision-net" ,
-  "nic" : "nic01"
+ "nic" : "nic01"
 }
 ```
 
@@ -165,7 +163,7 @@ Snapshot is feature which is available to preserve the state of your image. Usin
 Following is the call for API:
 
 ####Link:
-http://BMI_SERVER:PORT/snap_image/
+http://BMI_SERVER:PORT/create_snapshot/
 
 ####Request Type:
 PUT
@@ -174,7 +172,7 @@ PUT
 ```json
 {
  "project" : "<project_name>",
- "img" : "<img_name>" ,
+ "node" : "<node_name>" ,
  "snap_name" : "<snapshot_name>" 
 }
 ```
@@ -189,11 +187,11 @@ PUT
 * 444. You used a wrong request method like PUT instead of POST etc.
 
 ####Example:
-Send a PUT Request with following body to http://BMI_SERVER:PORT/snap_image/
+Send a PUT Request with following body to http://BMI_SERVER:PORT/create_snapshot/
 ```json
 {
 "project":"bmi_infra", 
-"img": "test.img", 
+"node": "test.img", 
 "snap_name":"test_snap2016" 
 }
 ```
@@ -203,7 +201,7 @@ Send a PUT Request with following body to http://BMI_SERVER:PORT/snap_image/
 This should return a 200 or other errors as explained above.
 
 ###List snapshots:
-We can have as many snapshots as possible for a particular image. So, using this we can list all the snapshots available for an image.
+This returns all the snapshots associated with a project
 
 Following is the call for API:
 
@@ -216,8 +214,7 @@ POST
 ####Request Body:
 ```json
 {
- "project" : "<project_name>",
- "img" : "<img_name>"
+ "project" : "<project_name>"
 }
 ```
 
@@ -231,11 +228,10 @@ POST
 * 444. You used a wrong request method like PUT instead of POST etc.
 
 ####Example:
-Send a PUT Request with following body to http://BMI_SERVER:PORT/snap_image/
+Send a POST Request with following body to http://BMI_SERVER:PORT/list_snapshots/
 ```json
 {
- "project" : "bmi_infra",
- "img" : "test.img"
+ "project" : "bmi_infra"
 }
 ```
 
@@ -243,11 +239,11 @@ Send a PUT Request with following body to http://BMI_SERVER:PORT/snap_image/
 
 The list of snapshots for given image which is in your project - if it is successful with a status code of 200.
 
-###Remove snapshot:
+###Remove Image:
 Following is the call for API:
 
 ####Link:
-http://BMI_SERVER:PORT/remove_snapshot/
+http://BMI_SERVER:PORT/remove_image/
 
 ####Request Type:
 DELETE
@@ -256,8 +252,7 @@ DELETE
 ```json
 {
  "project" : "<project_name>" ,
- "img" : "<img_name>" ,
- "snap_name" : "snapshot_name>"
+ "img" : "<img_name>"
 }
 ```
 
@@ -271,15 +266,14 @@ DELETE
 * 444. You used a wrong request method like PUT instead of POST etc.
 
 ####Example:
-Send a DELETE Request with following body to http://BMI_SERVER:PORT/remove_snapshot/
+Send a DELETE Request with following body to http://BMI_SERVER:PORT/remove_image/
 ```json
 {
  "project" : "bmi_infra",
- "img" : "test.img" ,
- "snap_name" : "test_snap2015"
+ "img" : "test.img"
 }
 ```
 
 **Make sure to use HTTP Basic Auth to pass HaaS Credentials**
 
-If the call is successful, we will get a 200 as status code with test_snap2015 snapshot for image test.img will be removed.
+If the call is successful, we will get a 200 as status code and test.img should be removed.
