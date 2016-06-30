@@ -162,7 +162,9 @@ The list of images which are in your project - if it is successful with a status
 
 ---
 ###Create Snapshot:
-Snapshot is feature which is available to preserve the state of your image. Using ceph as backend we can preserve the state of your image as a snapshot and use this snapshot for further cloning.
+Snapshot is feature which is available to preserve the state of your node. Using ceph as backend we can preserve the state of your node as a snapshot and use this snapshot for further cloning.
+
+**The Node should be provisioned and powered down before calling this function**
 
 Following is the call for API:
 
