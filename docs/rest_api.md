@@ -26,6 +26,7 @@ Each possible API call has:
 * A list of possible responses
 * An example
 
+---
 ###Provision:
 Provision API is needed for provisioning a node from MOC cluster as of now. Provision operation internally calls a ceph clone operation. Ceph clone operation usually takes a snap_
 
@@ -74,6 +75,7 @@ Send a PUT Request with following body to http://<BMI_SERVER>:<PORT>/provision/
 
 This should return a 200 or other errors as explained above.
 
+---
 ###Deprovision:
 
 Following is the call for API:
@@ -119,7 +121,8 @@ Send a DELETE Request with following body to http://<BMI_SERVER>:<PORT>/deprovis
 
 This should return a 200 or other errors as explained above.
 
-###List:
+---
+###List Images:
 
 Following is the call for API:
 
@@ -157,6 +160,7 @@ Send a POST Request with following body to http://BMI_SERVER:PORT/list_images/
 
 The list of images which are in your project - if it is successful with a status code of 200.
 
+---
 ###Create Snapshot:
 Snapshot is feature which is available to preserve the state of your image. Using ceph as backend we can preserve the state of your image as a snapshot and use this snapshot for further cloning.
 
@@ -200,7 +204,8 @@ Send a PUT Request with following body to http://BMI_SERVER:PORT/create_snapshot
 
 This should return a 200 or other errors as explained above.
 
-###List snapshots:
+---
+###List Snapshots:
 This returns all the snapshots associated with a project
 
 Following is the call for API:
@@ -239,6 +244,7 @@ Send a POST Request with following body to http://BMI_SERVER:PORT/list_snapshots
 
 The list of snapshots for given image which is in your project - if it is successful with a status code of 200.
 
+---
 ###Remove Image:
 Following is the call for API:
 
@@ -277,3 +283,5 @@ Send a DELETE Request with following body to http://BMI_SERVER:PORT/remove_image
 **Make sure to use HTTP Basic Auth to pass HaaS Credentials**
 
 If the call is successful, we will get a 200 as status code and test.img should be removed.
+
+---
