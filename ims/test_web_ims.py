@@ -181,7 +181,7 @@ class TestOperations(unittest.TestCase):
         print res.content
         js = res.json()
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(js.__len__, 1)
+        self.assertEqual(js.__len__(), 1)
         self.assertEqual(js[0], NEW_SNAP_NAME)
 
         data = {constants.PROJECT_PARAMETER: PROJECT,
@@ -222,6 +222,19 @@ class TestOperations(unittest.TestCase):
         print res.content
         self.assertEqual(res.status_code, 404)
 
+        data = {constants.PROJECT_PARAMETER: PROJECT,
+                constants.NODE_NAME_PARAMETER: NODE_NAME,
+                constants.IMAGE_NAME_PARAMETER: EXIST_IMG_NAME,
+                constants.NETWORK_PARAMETER: NETWORK,
+                constants.CHANNEL_PARAMETER: CHANNEL,
+                constants.NIC_PARAMETER: NIC}
+        res = requests.put(url + "provision/", data=data,
+                           auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
+        print res.content
+        self.assertEqual(res.status_code, 200)
+
+        time.sleep(30)
+
         data = {constants.PROJECT_PARAMETER: PROJECT}
         res = requests.post(url + "list_images/", data=data,
                             auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
@@ -231,3 +244,14 @@ class TestOperations(unittest.TestCase):
         self.assertEqual(js.__len__(), 2)
         self.assertEqual(js[0], EXIST_IMG_NAME)
         self.assertEqual(js[1], NOT_EXIST_IMG_NAME)
+
+        data = {constants.PROJECT_PARAMETER: PROJECT,
+                constants.NODE_NAME_PARAMETER: NODE_NAME,
+                constants.NETWORK_PARAMETER: NETWORK,
+                constants.NIC_PARAMETER: NIC}
+        res = requests.delete(url + "deprovision/", data=data, auth=(
+            CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
+        print res.content
+        self.assertEqual(res.status_code, 200)
+
+        time.sleep(30)
