@@ -102,10 +102,10 @@ def create_snapshot():
         credentials = extract_credentials(request)
         if credentials is None:
             return "No Authentication Details Given", 400
-        img_name = request.form[constants.IMAGE_NAME_PARAMETER]
+        node_name = request.form[constants.NODE_NAME_PARAMETER]
         snap_name = request.form[constants.SNAP_NAME_PARAMETER]
         ret = rpc_client.execute_command(constants.CREATE_SNAPSHOT_COMMAND,
-                                         credentials, [img_name,
+                                         credentials, [node_name,
                                                        snap_name])
         if ret[constants.STATUS_CODE_KEY] == 200:
             return "Success", 200
