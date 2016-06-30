@@ -49,25 +49,27 @@ class BMI:
         self.__generate_mac_addr_file(img_name, ipxe, mac_addr)
 
     def __generate_ipxe_file(self, node_name, target_name):
+        template_loc = os.path.abspath(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
         name = node_name + ".ipxe"
         path = self.config.ipxe_loc + name
-        ipxe = io.open(path, 'w')
-        for line in io.open("templates/ipxe.temp", 'r'):
-            line = line.replace(constants.IPXE_TARGET_NAME, target_name)
-            ipxe.write(line)
-        ipxe.close()
-        # os.chmod(path, 0755)
+        with io.open(path, 'w') as ipxe:
+            for line in io.open(template_loc + "ipxe.temp", 'r'):
+                line = line.replace(constants.IPXE_TARGET_NAME, target_name)
+                ipxe.write(line)
+        os.chmod(path, 0755)
         return name
 
     def __generate_mac_addr_file(self, img_name, ipxe, mac_addr):
+        template_loc = os.path.abspath(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
         path = self.config.pxelinux_loc + mac_addr
-        mac = io.open(path, 'w')
-        for line in io.open("templates/mac.temp", 'r'):
-            line = line.replace(constants.MAC_IMG_NAME, img_name)
-            line = line.replace(constants.MAC_IPXE_NAME, ipxe)
-            mac.write(line)
-        mac.close()
-        # os.chmod(path, 0644)
+        with io.open(path, 'w') as mac:
+            for line in io.open(template_loc + "mac.temp", 'r'):
+                line = line.replace(constants.MAC_IMG_NAME, img_name)
+                line = line.replace(constants.MAC_IPXE_NAME, ipxe)
+                mac.write(line)
+        os.chmod(path, 0644)
 
         # Calling shell script which executes a iscsi update as we don't have
         # rbd map in documentation.
@@ -261,8 +263,10 @@ class BMI:
 
             with RBD(self.config.fs[
                          constants.CEPH_CONFIG_SECTION_NAME]) as fs:
-                fs.snap_unprotect(ceph_img_name,constants.DEFAULT_SNAPSHOT_NAME)
-                fs.remove_snapshots(ceph_img_name,constants.DEFAULT_SNAPSHOT_NAME)
+                fs.snap_unprotect(ceph_img_name,
+                                  constants.DEFAULT_SNAPSHOT_NAME)
+                fs.remove_snapshots(ceph_img_name,
+                                    constants.DEFAULT_SNAPSHOT_NAME)
                 fs.remove(ceph_img_name)
                 imgr = ImageRepository()
                 imgr.delete_with_name_from_project(
