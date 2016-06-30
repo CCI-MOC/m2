@@ -11,7 +11,7 @@ from ims.exception import *
 class ImageRepository:
     # inserts the arguments into table
     # Commits if inserted successfully otherwise rollbacks if some issue occured and bubbles the exception
-    def insert(self, image_name, project_id, is_public=False, is_snapshot=None,
+    def insert(self, image_name, project_id, is_public=False, is_snapshot=False, is_provision_clone = False,
                id=None):
         with DatabaseConnection() as connection:
             try:
@@ -20,6 +20,7 @@ class ImageRepository:
                 img.project_id = project_id
                 img.is_public = is_public
                 img.is_snapshot = is_snapshot
+                img.is_provision_clone = is_provision_clone
                 if id is not None:
                     img.id = id
                 connection.session.add(img)

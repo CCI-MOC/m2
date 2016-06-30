@@ -118,7 +118,7 @@ class BMI:
             with RBD(self.config.fs[
                          constants.CEPH_CONFIG_SECTION_NAME]) as fs:
                 imgr = ImageRepository()
-                imgr.insert(node_name, self.pid)
+                imgr.insert(node_name, self.pid, is_provision_clone=True)
                 clone_img_id = self.__get__ceph_image_name(node_name)
 
                 img_id = self.__get__ceph_image_name(img_name)
