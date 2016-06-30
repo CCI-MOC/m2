@@ -78,6 +78,16 @@ class ImageRepository:
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
 
+    def fetch_images_from_project(self, project_name):
+        try:
+            with DatabaseConnection() as connection:
+                images = connection.session.query(Image).filter(
+                    Image.project.has(name=project_name)).filter_by(
+                    is_snapshot=False).filter_by(is_provision_clone=False)
+                return [image.name for image in images]
+        except SQLAlchemyError as e:
+            raise db_exceptions.ORMException(e.message)
+
     def fetch_snapshots_from_project(self, project_name):
         try:
             with DatabaseConnection() as connection:
@@ -111,6 +121,7 @@ class Image(DatabaseConnection.Base):
     name = Column(String, nullable=False)
     is_public = Column(Boolean, nullable=False, default=False)
     is_snapshot = Column(Boolean, nullable=False, default=False)
+    is_provision_clone = Column(Boolean, nullable=False, default=False)
     project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
 
     # Relationships in the table

@@ -184,7 +184,7 @@ class BMI:
 
             with RBD(self.config.fs[
                          constants.CEPH_CONFIG_SECTION_NAME]) as fs:
-                img_id = self.__get__ceph_image_name(node_name)
+                ceph_img_name = self.__get__ceph_image_name(node_name)
                 ceph_config = self.config.fs[
                     constants.CEPH_CONFIG_SECTION_NAME]
 
@@ -196,14 +196,14 @@ class BMI:
                         constants.CEPH_ID_KEY],
                     ceph_config[
                         constants.CEPH_POOL_KEY],
-                    str(img_id),
+                    str(ceph_img_name),
                     constants.ISCSI_DELETE_COMMAND,
                     self.config.iscsi_update_password)
                 if constants.ISCSI_UPDATE_SUCCESS in iscsi_output[0]:
                     imgr = ImageRepository()
                     imgr.delete_with_name_from_project(node_name,
                                                        self.project)
-                    ret = fs.remove(str(img_id).encode("utf-8"))
+                    ret = fs.remove(str(ceph_img_name).encode("utf-8"))
                     return BMI.__return_success(ret)
                 elif constants.ISCSI_UPDATE_FAILURE in iscsi_output[0]:
                     raise iscsi_exceptions.NodeAlreadyUnmappedException()
@@ -214,27 +214,30 @@ class BMI:
 
     # Creates snapshot for the given image with snap_name as given name
     # fs_obj will be populated by decorator
-    def create_snapshot(self, img_name, snap_name):
+    def create_snapshot(self, node_name, snap_name):
         try:
             self.haas.validate_project(self.project)
-            img_id = self.__get__ceph_image_name(img_name)
+            ceph_img_name = self.__get__ceph_image_name(node_name)
 
             with RBD(self.config.fs[
                          constants.CEPH_CONFIG_SECTION_NAME]) as fs:
-                fs.snap_image(img_id, constants.DEFAULT_SNAPSHOT_NAME)
-                fs.snap_protect(img_id, constants.DEFAULT_SNAPSHOT_NAME)
+                fs.snap_image(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
+                fs.snap_protect(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
 
                 imgr = ImageRepository()
                 imgr.insert(snap_name, self.pid, is_snapshot=True)
 
                 snap_img_id = self.__get__ceph_image_name(snap_name)
-                fs.clone(img_id, constants.DEFAULT_SNAPSHOT_NAME, snap_img_id)
+                fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
+                         snap_img_id)
                 fs.flatten(snap_img_id)
                 fs.snap_image(snap_img_id, constants.DEFAULT_SNAPSHOT_NAME)
                 fs.snap_protect(snap_img_id, constants.DEFAULT_SNAPSHOT_NAME)
 
-                fs.snap_unprotect(img_id, constants.DEFAULT_SNAPSHOT_NAME)
-                fs.remove_snapshots(img_id, constants.DEFAULT_SNAPSHOT_NAME)
+                fs.snap_unprotect(ceph_img_name,
+                                  constants.DEFAULT_SNAPSHOT_NAME)
+                fs.remove_snapshots(ceph_img_name,
+                                    constants.DEFAULT_SNAPSHOT_NAME)
                 return BMI.__return_success(True)
 
         except (HaaSException, DBException, FileSystemException) as e:
@@ -282,6 +285,6 @@ class BMI:
             self.haas.validate_project(self.project)
             imgr = ImageRepository()
             return BMI.__return_success(
-                imgr.fetch_names_from_project(self.project))
+                imgr.fetch_images_from_project(self.project))
         except (HaaSException, DBException) as e:
             return BMI.return_error(e)
