@@ -191,7 +191,7 @@ Send a PUT Request with following body to http://BMI_SERVER:PORT/create_snapshot
 ```json
 {
 "project":"bmi_infra", 
-"node": "test.img", 
+"node": "cisco-2016", 
 "snap_name":"test_snap2016" 
 }
 ```
