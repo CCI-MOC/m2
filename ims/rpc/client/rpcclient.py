@@ -9,12 +9,12 @@ class RPCClient:
         # Loads the variable dict with the contents of config.json.
         self.dict = {
             "function-list": {
-                "provision": "6",
-                "detach_node": "3",
+                "provision": "5",
+                "deprovision": "3",
                 "create_snapshot": "2",
-                "list_all_images": "0",
-                "list_snaps": "1",
-                "remove_snaps": "2"
+                "list_images": "0",
+                "list_snapshots": "0",
+                "remove_image": "1"
             }
         }
         # The script name and no. of arguments.

@@ -1,7 +1,8 @@
-from ims.database.project import *
-from ims.exception import *
 from sqlalchemy import Boolean, ForeignKey
 from sqlalchemy import UniqueConstraint
+
+from ims.database.project import *
+from ims.exception import *
 
 
 # This class is responsible for doing CRUD operations on the Image Table in DB
@@ -10,13 +11,15 @@ from sqlalchemy import UniqueConstraint
 class ImageRepository:
     # inserts the arguments into table
     # Commits if inserted successfully otherwise rollbacks if some issue occured and bubbles the exception
-    def insert(self, image_name, project_id, is_public=False, id=None):
+    def insert(self, image_name, project_id, is_public=False, is_snapshot=None,
+               id=None):
         with DatabaseConnection() as connection:
             try:
                 img = Image()
                 img.name = image_name
                 img.project_id = project_id
                 img.is_public = is_public
+                img.is_snapshot = is_snapshot
                 if id is not None:
                     img.id = id
                 connection.session.add(img)
@@ -75,6 +78,16 @@ class ImageRepository:
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
 
+    def fetch_snapshots_from_project(self, project_name):
+        try:
+            with DatabaseConnection() as connection:
+                images = connection.session.query(Image).filter(
+                    Image.project.has(name=project_name)).filter_by(
+                    is_snapshot=True)
+                return [image.name for image in images]
+        except SQLAlchemyError as e:
+            raise db_exceptions.ORMException(e.message)
+
     # fetch name of image with given id
     def fetch_name_with_id(self, id):
         try:
@@ -97,6 +110,7 @@ class Image(DatabaseConnection.Base):
     id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     name = Column(String, nullable=False)
     is_public = Column(Boolean, nullable=False, default=False)
+    is_snapshot = Column(Boolean, nullable=False, default=False)
     project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
 
     # Relationships in the table
@@ -105,8 +119,8 @@ class Image(DatabaseConnection.Base):
 
     # Users should not be able to create images with same name in a given
     # project. So we are creating a unique constraint.
-    __table_args__ = (UniqueConstraint("project_id","name",
-                     name="_project_id_image_name_unique_constraint"),)
+    __table_args__ = (UniqueConstraint("project_id", "name",
+                                       name="_project_id_image_name_unique_constraint"),)
 
     # Removed snapshot class for now
     # snapshots = relationship("Snapshot", back_populates="image", lazy="joined", cascade="all, delete, delete-orphan")

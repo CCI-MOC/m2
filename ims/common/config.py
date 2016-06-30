@@ -48,6 +48,8 @@ class __EinsteinConfig:
         self.nameserver_port = None
         self.rpcserver_ip = None
         self.rpcserver_port = None
+        self.pxelinux_loc = None
+        self.ipxe_loc = None
 
     def parse_config(self):
         config = ConfigParser.SafeConfigParser()
@@ -75,6 +77,11 @@ class __EinsteinConfig:
             self.rpcserver_port = int(
                 config.get(constants.RPC_CONFIG_SECTION_NAME,
                            constants.RPC_RPC_SERVER_PORT_KEY))
+
+            self.pxelinux_loc = config.get(constants.TFTP_CONFIG_SECTION_NAME,
+                                           constants.PXELINUX_URL_KEY)
+            self.ipxe_loc = config.get(constants.TFTP_CONFIG_SECTION_NAME,
+                                       constants.IPXE_URL_KEY)
 
             for k, v in config.items(constants.FILESYSTEM_CONFIG_SECTION_NAME):
                 if v == 'True':
