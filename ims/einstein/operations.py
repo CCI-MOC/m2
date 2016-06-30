@@ -109,8 +109,7 @@ class BMI:
                 constants.MESSAGE_KEY: str(ex)}
 
     # Provisions from HaaS and Boots the given node with given image
-    def provision(self, node_name, img_name, network, channel,
-                  nic):
+    def provision(self, node_name, img_name, network, channel,nic):
         try:
             self.haas.attach_node_to_project_network(node_name, network,
                                                      channel, nic)
