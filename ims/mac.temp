@@ -5,7 +5,7 @@ DEFAULT menu
   ONTIMEOUT ${img_name}
 
 
-LABEL BIGDATACENTOS
+LABEL ${img_name}
      MENU LABEL ${img_name}
      KERNEL ipxe.lkrn
      INITRD ${ipxe.file}

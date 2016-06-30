@@ -54,7 +54,7 @@ class BMI:
         name = node_name + ".ipxe"
         path = self.config.ipxe_loc + name
         with io.open(path, 'w') as ipxe:
-            for line in io.open(template_loc + "ipxe.temp", 'r'):
+            for line in io.open(template_loc + "/ipxe.temp", 'r'):
                 line = line.replace(constants.IPXE_TARGET_NAME, target_name)
                 ipxe.write(line)
         os.chmod(path, 0755)
@@ -65,7 +65,7 @@ class BMI:
             os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
         path = self.config.pxelinux_loc + mac_addr
         with io.open(path, 'w') as mac:
-            for line in io.open(template_loc + "mac.temp", 'r'):
+            for line in io.open(template_loc + "/mac.temp", 'r'):
                 line = line.replace(constants.MAC_IMG_NAME, img_name)
                 line = line.replace(constants.MAC_IPXE_NAME, ipxe)
                 mac.write(line)
@@ -149,12 +149,11 @@ class BMI:
                     # Rare exception
                     raise iscsi_exceptions.NodeAlreadyInUseException()
         except ISCSIException as e:
-            imgr = ImageRepository()
-            clone_img_id = imgr.fetch_id_with_name_from_project(node_name,
-                                                                self.project)
+            clone_img_id = self.__get__ceph_image_name(node_name)
             with RBD(self.config.fs[
                          constants.CEPH_CONFIG_SECTION_NAME]) as fs:
                 fs.remove(clone_img_id)
+            imgr = ImageRepository()
             imgr.delete_with_name_from_project(node_name, self.project)
             time.sleep(30)
             self.haas.detach_node_from_project_network(node_name, network,
@@ -288,3 +287,5 @@ class BMI:
                 imgr.fetch_images_from_project(self.project))
         except (HaaSException, DBException) as e:
             return BMI.return_error(e)
+
+
