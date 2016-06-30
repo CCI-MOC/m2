@@ -16,6 +16,8 @@ ISCSI_CONFIG_SECTION_NAME = 'iscsi'
 RPC_CONFIG_SECTION_NAME = 'rpc'
 HTTP_CONFIG_SECTION_NAME = 'http'
 LOGS_CONFIG_SECTION_NAME = 'logs'
+TFTP_CONFIG_SECTION_NAME = 'tftp'
+
 
 # Non FS Keys in Config File
 HAAS_URL_KEY = 'url'
@@ -51,18 +53,22 @@ LOGS_URL_KEY = 'url'
 LOGS_DEBUG_KEY = 'debug'
 LOGS_VERBOSE_KEY = 'verbose'
 
+#TFTP
+PXELINUX_URL_KEY = 'pxelinux_url'
+IPXE_URL_KEY = 'ipxe_url'
+
 # Response Related Keys
 STATUS_CODE_KEY = 'status_code'
 RETURN_VALUE_KEY = 'retval'
 MESSAGE_KEY = 'msg'
 
 # Commands
-LIST_ALL_IMAGES_COMMAND = "list_all_images"
+LIST_IMAGES_COMMAND = "list_images"
 CREATE_SNAPSHOT_COMMAND = "create_snapshot"
 PROVISION_COMMAND = "provision"
-DETACH_NODE_COMMAND = "detach_node"
-LIST_SNAPSHOTS_COMMAND = "list_snaps"
-REMOVE_SNAPSHOTS_COMMAND = "remove_snaps"
+DEPROVISION_COMMAND = "deprovision"
+LIST_SNAPSHOTS_COMMAND = "list_snapshots"
+REMOVE_IMAGE_COMMAND = "remove_image"
 
 # Parameters
 NODE_NAME_PARAMETER = 'node'
@@ -72,3 +78,10 @@ PROJECT_PARAMETER = "project"
 NETWORK_PARAMETER = "network"
 NIC_PARAMETER = "nic"
 CHANNEL_PARAMETER = "channel"
+
+# Template Parameters
+IPXE_TARGET_NAME = "${target_name}"
+MAC_IMG_NAME = "${img_name}"
+MAC_IPXE_NAME = "${ipxe.file}"
+
+DEFAULT_SNAPSHOT_NAME = "snapshot"

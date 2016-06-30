@@ -109,7 +109,6 @@ class HaaS:
         '''
         api = "node/" + node
         node_info = self.__call_rest_api(api)
-        #Assuming the first item in nic list is the one being used.
         return node_info[constants.RETURN_VALUE_KEY]['nics'][0]['macaddr']
 
     def validate_project(self, project):

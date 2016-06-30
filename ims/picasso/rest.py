@@ -28,7 +28,7 @@ def list_images():
                 response.body = "No Authentication Details Given"
                 return response.body
             list_return = rpc_client.execute_command(
-                constants.LIST_ALL_IMAGES_COMMAND, credentials, [])
+                constants.LIST_IMAGES_COMMAND, credentials, [])
             status_code = list_return[constants.STATUS_CODE_KEY]
             if status_code == 200:
                 image_list = list_return[constants.RETURN_VALUE_KEY]
@@ -100,7 +100,7 @@ def remove_node():
         node_name = request.vars[constants.NODE_NAME_PARAMETER]
         network = request.vars[constants.NETWORK_PARAMETER]
         nic = request.vars[constants.NIC_PARAMETER]
-        ret = rpc_client.execute_command(constants.DETACH_NODE_COMMAND,
+        ret = rpc_client.execute_command(constants.DEPROVISION_COMMAND,
                                          credentials, [node_name, network, nic])
         if ret[constants.STATUS_CODE_KEY] == 200:
             response.body = ret[constants.RETURN_VALUE_KEY]
@@ -193,7 +193,7 @@ def remove_snapshot():
             return response.body
         img_name = request.vars[constants.IMAGE_NAME_PARAMETER]
         snap_name = request.vars[constants.SNAP_NAME_PARAMETER]
-        ret = rpc_client.execute_command(constants.REMOVE_SNAPSHOTS_COMMAND,
+        ret = rpc_client.execute_command(constants.REMOVE_IMAGE_COMMAND,
                                          credentials,
                                          [img_name, snap_name])
         if ret[constants.STATUS_CODE_KEY] == 200:

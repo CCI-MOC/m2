@@ -51,6 +51,8 @@ class __EinsteinConfig:
         self.logs_url = None
         self.logs_debug = None
         self.logs_verbose = None
+        self.pxelinux_loc = None
+        self.ipxe_loc = None
 
     def parse_config(self):
         config = ConfigParser.SafeConfigParser()
@@ -85,6 +87,10 @@ class __EinsteinConfig:
                                          constants.LOGS_DEBUG_KEY) == 'True'
             self.logs_verbose = config.get(constants.LOGS_CONFIG_SECTION_NAME,
                                            constants.LOGS_VERBOSE_KEY) == 'True'
+            self.pxelinux_loc = config.get(constants.TFTP_CONFIG_SECTION_NAME,
+                                           constants.PXELINUX_URL_KEY)
+            self.ipxe_loc = config.get(constants.TFTP_CONFIG_SECTION_NAME,
+                                       constants.IPXE_URL_KEY)
 
             for k, v in config.items(constants.FILESYSTEM_CONFIG_SECTION_NAME):
                 if v == 'True':
