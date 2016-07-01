@@ -29,53 +29,53 @@ NOT_EXIST_SNAP_NAME = "snap2"
 
 class TestOperations(unittest.TestCase):
     def test_provision(self):
-        # data = {constants.PROJECT_PARAMETER: PROJECT,
-        #         constants.NODE_NAME_PARAMETER: NODE_NAME,
-        #         constants.IMAGE_NAME_PARAMETER: NOT_EXIST_IMG_NAME,
-        #         constants.NETWORK_PARAMETER: NETWORK,
-        #         constants.CHANNEL_PARAMETER: CHANNEL,
-        #         constants.NIC_PARAMETER: NIC}
-        # res = requests.put(url + "provision/", data=data,
-        #                    auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
-        # print res.content
-        # self.assertEqual(res.status_code, 404)
-        #
-        # time.sleep(30)
-        #
-        # data = {constants.PROJECT_PARAMETER: PROJECT,
-        #         constants.NODE_NAME_PARAMETER: NODE_NAME,
-        #         constants.IMAGE_NAME_PARAMETER: EXIST_IMG_NAME,
-        #         constants.NETWORK_PARAMETER: NETWORK,
-        #         constants.CHANNEL_PARAMETER: CHANNEL,
-        #         constants.NIC_PARAMETER: NIC}
-        # res = requests.put(url + "provision/", data=data,
-        #                    auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
-        # print res.content
-        # self.assertEqual(res.status_code, 200)
-        #
-        # data = {constants.PROJECT_PARAMETER: PROJECT,
-        #         constants.NODE_NAME_PARAMETER: NODE_NAME,
-        #         constants.IMAGE_NAME_PARAMETER: NOT_EXIST_IMG_NAME,
-        #         constants.NETWORK_PARAMETER: NETWORK,
-        #         constants.CHANNEL_PARAMETER: CHANNEL,
-        #         constants.NIC_PARAMETER: NIC}
-        # res = requests.put(url + "provision/", data=data,
-        #                    auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
-        # print res.content
-        # self.assertEqual(res.status_code, 500)
-        #
-        # time.sleep(30)
-        #
-        # data = {constants.PROJECT_PARAMETER: PROJECT,
-        #         constants.NODE_NAME_PARAMETER: NODE_NAME,
-        #         constants.IMAGE_NAME_PARAMETER: NOT_EXIST_IMG_NAME,
-        #         constants.NETWORK_PARAMETER: NETWORK,
-        #         constants.CHANNEL_PARAMETER: CHANNEL,
-        #         constants.NIC_PARAMETER: NIC}
-        # res = requests.put(url + "provision/", data=data,
-        #                    auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
-        # print res.content
-        # self.assertEqual(res.status_code, 500)
+        data = {constants.PROJECT_PARAMETER: PROJECT,
+                constants.NODE_NAME_PARAMETER: NODE_NAME,
+                constants.IMAGE_NAME_PARAMETER: NOT_EXIST_IMG_NAME,
+                constants.NETWORK_PARAMETER: NETWORK,
+                constants.CHANNEL_PARAMETER: CHANNEL,
+                constants.NIC_PARAMETER: NIC}
+        res = requests.put(url + "provision/", data=data,
+                           auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
+        print res.content
+        self.assertEqual(res.status_code, 404)
+
+        time.sleep(30)
+
+        data = {constants.PROJECT_PARAMETER: PROJECT,
+                constants.NODE_NAME_PARAMETER: NODE_NAME,
+                constants.IMAGE_NAME_PARAMETER: EXIST_IMG_NAME,
+                constants.NETWORK_PARAMETER: NETWORK,
+                constants.CHANNEL_PARAMETER: CHANNEL,
+                constants.NIC_PARAMETER: NIC}
+        res = requests.put(url + "provision/", data=data,
+                           auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
+        print res.content
+        self.assertEqual(res.status_code, 200)
+
+        data = {constants.PROJECT_PARAMETER: PROJECT,
+                constants.NODE_NAME_PARAMETER: NODE_NAME,
+                constants.IMAGE_NAME_PARAMETER: NOT_EXIST_IMG_NAME,
+                constants.NETWORK_PARAMETER: NETWORK,
+                constants.CHANNEL_PARAMETER: CHANNEL,
+                constants.NIC_PARAMETER: NIC}
+        res = requests.put(url + "provision/", data=data,
+                           auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
+        print res.content
+        self.assertEqual(res.status_code, 500)
+
+        time.sleep(30)
+
+        data = {constants.PROJECT_PARAMETER: PROJECT,
+                constants.NODE_NAME_PARAMETER: NODE_NAME,
+                constants.IMAGE_NAME_PARAMETER: NOT_EXIST_IMG_NAME,
+                constants.NETWORK_PARAMETER: NETWORK,
+                constants.CHANNEL_PARAMETER: CHANNEL,
+                constants.NIC_PARAMETER: NIC}
+        res = requests.put(url + "provision/", data=data,
+                           auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
+        print res.content
+        self.assertEqual(res.status_code, 500)
 
         data = {constants.PROJECT_PARAMETER: PROJECT,
                 constants.NODE_NAME_PARAMETER: NODE_NAME,
@@ -86,14 +86,14 @@ class TestOperations(unittest.TestCase):
         print res.content
         self.assertEqual(res.status_code, 200)
 
-        # data = {constants.PROJECT_PARAMETER: PROJECT,
-        #         constants.NODE_NAME_PARAMETER: NODE_NAME,
-        #         constants.NETWORK_PARAMETER: NETWORK,
-        #         constants.NIC_PARAMETER: NIC}
-        # res = requests.delete(url + "deprovision/", data=data, auth=(
-        #     CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
-        # print res.content
-        # self.assertEqual(res.status_code, 500)
+        data = {constants.PROJECT_PARAMETER: PROJECT,
+                constants.NODE_NAME_PARAMETER: NODE_NAME,
+                constants.NETWORK_PARAMETER: NETWORK,
+                constants.NIC_PARAMETER: NIC}
+        res = requests.delete(url + "deprovision/", data=data, auth=(
+            CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
+        print res.content
+        self.assertEqual(res.status_code, 500)
 
     def test_create_snapshot(self):
         data = {constants.PROJECT_PARAMETER: PROJECT,

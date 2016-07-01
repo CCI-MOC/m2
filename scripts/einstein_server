@@ -2,8 +2,8 @@
 
 import multiprocessing
 
-from ims.rpc.server.nameserver import *
-from ims.rpc.server.rpcserver import *
+from ims.rpc.server.name_server import *
+from ims.rpc.server.rpc_server import *
 
 import ims.common.config as config
 

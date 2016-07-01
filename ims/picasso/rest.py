@@ -3,7 +3,7 @@ import json
 from flask import Flask
 from flask import request
 
-from ims.rpc.client.rpcclient import *
+from ims.rpc.client.rpc_client import *
 
 app = Flask(__name__)
 

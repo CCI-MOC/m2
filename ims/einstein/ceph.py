@@ -181,7 +181,7 @@ class RBD:
         except rbd.ImageNotFound:
             raise file_system_exceptions.ImageNotFoundException(img_id)
 
-    def remove_snapshots(self, img_id, name):
+    def remove_snapshot(self, img_id, name):
         try:
             with self.__open_image(img_id) as img:
                 img.remove_snap(name)
