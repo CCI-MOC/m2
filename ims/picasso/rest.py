@@ -1,219 +1,160 @@
-# -*- coding: utf-8 -*-
-# this file is released under public domain and you can use without limitations
-
-#########################################################################
-## This is a sample controller
-## - index is the default action of any application
-## - user is required for authentication and authorization
-## - download is for downloading files uploaded in the db (does streaming)
-#########################################################################
 import json
-import os
+
+from flask import Flask
+from flask import request
 
 from ims.rpc.client.rpcclient import *
 
+app = Flask(__name__)
 
+rpc_client = None
+
+def start():
+    global rpc_client
+    rpc_client = RPCClient()
+    cfg = config.get()
+    app.run(host=cfg.bind_ip, port=cfg.bind_port)
+
+
+@app.route('/list_images/', methods=['POST'])
 def list_images():
     '''List the images for a project.
     '''
-    if request.env.request_method == "POST":
-        try:
-            config.load(os.path.join(os.path.abspath(
-                os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')),
-                                     'static/bmiconfig.cfg'))
-            rpc_client = RPCClient()
+    if request.method == "POST":
             credentials = extract_credentials(request)
             if credentials is None:
-                response.status = 400
-                response.body = "No Authentication Details Given"
-                return response.body
+                return "No Authentication Details Given", 400
             list_return = rpc_client.execute_command(
                 constants.LIST_IMAGES_COMMAND, credentials, [])
             status_code = list_return[constants.STATUS_CODE_KEY]
             if status_code == 200:
                 image_list = list_return[constants.RETURN_VALUE_KEY]
-                response.body = json.dumps(image_list)
-                return response.body
+                return json.dumps(image_list), 200
             else:
-                response.status = list_return[constants.STATUS_CODE_KEY]
-                response.body = json.dumps(list_return[constants.MESSAGE_KEY])
-                return response.body
-        except Exception as ex:
-            import traceback
-            traceback.print_exc(ex)
+                return json.dumps(list_return[constants.MESSAGE_KEY]), \
+                       list_return[constants.STATUS_CODE_KEY]
     else:
-        response.status = 444
-        return 'Please use a POST'
+        return 'Please use a POST', 444
 
 
-def provision_node():
+@app.route("/provision/", methods=['PUT'])
+def provision():
     '''
     Node is the physical node name that we get from HaaS
     '''
-    if request.env.request_method == "PUT":
-        config.load(os.path.join(os.path.abspath(
-                os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')),
-                                     'static/bmiconfig.cfg'))
-        rpc_client = RPCClient()
+    print "Got provision"
+    if request.method == "PUT":
         credentials = extract_credentials(request)
         if credentials is None:
-            response.status = 400
-            response.body = "No Authentication Details Given"
-            return response.body
-        node_name = request.vars[constants.NODE_NAME_PARAMETER]
-        img_name = request.vars[constants.IMAGE_NAME_PARAMETER]
-        snap_name = request.vars[constants.SNAP_NAME_PARAMETER]
-        network = request.vars[constants.NETWORK_PARAMETER]
-        channel = request.vars[constants.CHANNEL_PARAMETER]
-        nic = request.vars[constants.NIC_PARAMETER]
+            return "No Authentication Details Given", 400
+        node_name = request.form[constants.NODE_NAME_PARAMETER]
+        img_name = request.form[constants.IMAGE_NAME_PARAMETER]
+        network = request.form[constants.NETWORK_PARAMETER]
+        channel = request.form[constants.CHANNEL_PARAMETER]
+        nic = request.form[constants.NIC_PARAMETER]
         ret = rpc_client.execute_command(constants.PROVISION_COMMAND,
                                          credentials,
-                                         [node_name, img_name, snap_name,
+                                         [node_name, img_name,
                                           network, channel, nic])
         if ret[constants.STATUS_CODE_KEY] == 200:
-            response.body = ret[constants.RETURN_VALUE_KEY]
-            response.status = 200
-            return response.status
+            return "Success", 200
         else:
-            response.status = ret[constants.STATUS_CODE_KEY]
-            response.body = ret[constants.MESSAGE_KEY]
-            return response.body
+            return ret[constants.MESSAGE_KEY], ret[constants.STATUS_CODE_KEY]
     else:
-        response.status = 444
-        return 'Please use a PUT'
+        return 'Please use a PUT', 444
 
 
-def remove_node():
+@app.route("/deprovision/", methods=['DELETE'])
+def deprovision():
     '''
     Node is the physical node that you want to dissociate
     '''
-    if request.env.request_method == "DELETE":
-        config.load(os.path.join(os.path.abspath(
-                os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')),
-                                     'static/bmiconfig.cfg'))
-        rpc_client = RPCClient()
+    if request.method == "DELETE":
         credentials = extract_credentials(request)
         if credentials is None:
-            response.status = 400
-            response.body = "No Authentication Details Given"
-            return response.body
-        node_name = request.vars[constants.NODE_NAME_PARAMETER]
-        network = request.vars[constants.NETWORK_PARAMETER]
-        nic = request.vars[constants.NIC_PARAMETER]
+            return "No Authentication Details Given", 400
+        node_name = request.form[constants.NODE_NAME_PARAMETER]
+        network = request.form[constants.NETWORK_PARAMETER]
+        nic = request.form[constants.NIC_PARAMETER]
         ret = rpc_client.execute_command(constants.DEPROVISION_COMMAND,
                                          credentials, [node_name, network, nic])
+        print ret
         if ret[constants.STATUS_CODE_KEY] == 200:
-            response.body = ret[constants.RETURN_VALUE_KEY]
-            response.status = 200
-            return response.status
+            return "Success", 200
         else:
-            response.status = ret[constants.STATUS_CODE_KEY]
-            response.body = ret[constants.MESSAGE_KEY]
-            return response.body
+            return ret[constants.MESSAGE_KEY], ret[constants.STATUS_CODE_KEY]
     else:
-        response.status = 444
-        return 'Please use a DELETE'
+        return 'Please use a DELETE', 444
 
 
-def snap_image():
+@app.route("/create_snapshot/", methods=['PUT'])
+def create_snapshot():
     '''
     Node is the physical node that you want to dissociate
     '''
-    if request.env.request_method == "PUT":
-        config.load(os.path.join(os.path.abspath(
-                os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')),
-                                     'static/bmiconfig.cfg'))
-        rpc_client = RPCClient()
+    if request.method == "PUT":
         credentials = extract_credentials(request)
         if credentials is None:
-            response.status = 400
-            response.body = "No Authentication Details Given"
-            return response.body
-        img_name = request.vars[constants.IMAGE_NAME_PARAMETER]
-        snap_name = request.vars[constants.SNAP_NAME_PARAMETER]
+            return "No Authentication Details Given", 400
+        node_name = request.form[constants.NODE_NAME_PARAMETER]
+        snap_name = request.form[constants.SNAP_NAME_PARAMETER]
         ret = rpc_client.execute_command(constants.CREATE_SNAPSHOT_COMMAND,
-                                         credentials, [img_name,
+                                         credentials, [node_name,
                                                        snap_name])
         if ret[constants.STATUS_CODE_KEY] == 200:
-            response.body = ret[constants.RETURN_VALUE_KEY]
-            response.status = 200
-            return response.status
+            return "Success", 200
         else:
-            response.status = ret[constants.STATUS_CODE_KEY]
-            response.body = ret[constants.MESSAGE_KEY]
-            return response.body
+            return ret[constants.MESSAGE_KEY], ret[constants.STATUS_CODE_KEY]
     else:
-        response.status = 444
-        return 'Please use a PUT'
+        return 'Please use a PUT', 444
 
 
+@app.route("/list_snapshots/", methods=['POST'])
 def list_snapshots():
     '''
     List all snapshots for the given image
     '''
-    if request.env.request_method == "POST":
-        config.load(os.path.join(os.path.abspath(
-                os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')),
-                                     'static/bmiconfig.cfg'))
-        rpc_client = RPCClient()
+    if request.method == "POST":
         credentials = extract_credentials(request)
         if credentials is None:
-            response.status = 400
-            response.body = "No Authentication Details Given"
-            return response.body
-        img_name = request.vars[constants.IMAGE_NAME_PARAMETER]
+            return "No Authentication Details Given", 400
         ret = rpc_client.execute_command(constants.LIST_SNAPSHOTS_COMMAND,
-                                         credentials, [img_name])
+                                         credentials, [])
         if ret[constants.STATUS_CODE_KEY] == 200:
-            response.body = ret[constants.RETURN_VALUE_KEY]
-            response.status = 200
-            return json.dumps(response.body)
+            return json.dumps(ret[constants.RETURN_VALUE_KEY]), 200
         else:
-            response.status = ret[constants.STATUS_CODE_KEY]
-            response.body = ret[constants.MESSAGE_KEY]
-            return response.body
+            return ret[constants.MESSAGE_KEY], ret[constants.STATUS_CODE_KEY]
     else:
-        response.status = 444
-        return "Please use a POST"
+        return "Please use a POST", 444
 
 
-def remove_snapshot():
+@app.route("/remove_snapshot/", methods=['DELETE'])
+@app.route("/remove_image/", methods=['DELETE'])
+def remove_image():
     '''
     Removes the given snapshot for the given image
     '''
-    if request.env.request_method == "DELETE":
-        config.load(os.path.join(os.path.abspath(
-                os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')),
-                                     'static/bmiconfig.cfg'))
-        rpc_client = RPCClient()
+    if request.method == "DELETE":
         credentials = extract_credentials(request)
         if credentials is None:
-            response.status = 400
-            response.body = "No Authentication Details Given"
-            return response.body
-        img_name = request.vars[constants.IMAGE_NAME_PARAMETER]
-        snap_name = request.vars[constants.SNAP_NAME_PARAMETER]
+            return "No Authentication Details Given", 400
+        img_name = request.form[constants.IMAGE_NAME_PARAMETER]
         ret = rpc_client.execute_command(constants.REMOVE_IMAGE_COMMAND,
                                          credentials,
-                                         [img_name, snap_name])
+                                         [img_name])
         if ret[constants.STATUS_CODE_KEY] == 200:
-            response.body = ret[constants.RETURN_VALUE_KEY]
-            response.status = 200
-            return response.status
+            return "Success", 200
         else:
-            response.status = ret[constants.STATUS_CODE_KEY]
-            response.body = ret[constants.MESSAGE_KEY]
-            return response.body
+            return ret[constants.MESSAGE_KEY], ret[constants.STATUS_CODE_KEY]
     else:
-        response.status = 444
-        return 'Please use a DELETE'
+        return 'Please use a DELETE', 444
 
 
 def extract_credentials(request):
-    base64_str = request.env.http_authorization
+    base64_str = request.headers.get('Authorization')
     if base64_str is not None:
         base64_str = base64_str.split(' ')[1]
-        project = request.vars[constants.PROJECT_PARAMETER]
+        project = request.form[constants.PROJECT_PARAMETER]
         return base64_str, project
     else:
         return None

@@ -17,6 +17,7 @@ RPC_CONFIG_SECTION_NAME = 'rpc'
 HTTP_CONFIG_SECTION_NAME = 'http'
 LOGS_CONFIG_SECTION_NAME = 'logs'
 TFTP_CONFIG_SECTION_NAME = 'tftp'
+IDENTITY_CONFIG_SECTION_NAME = 'identity'
 
 
 # Non FS Keys in Config File
@@ -56,6 +57,9 @@ LOGS_VERBOSE_KEY = 'verbose'
 #TFTP
 PXELINUX_URL_KEY = 'pxelinux_url'
 IPXE_URL_KEY = 'ipxe_url'
+
+#Identity
+UID_KEY = 'uid'
 
 # Response Related Keys
 STATUS_CODE_KEY = 'status_code'

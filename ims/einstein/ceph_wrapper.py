@@ -2,10 +2,11 @@
 import os
 from contextlib import contextmanager
 
-import ims.common.constants as constants
-import ims.exception.file_system_exceptions as file_system_exceptions
 import rados
 import rbd
+
+import ims.common.constants as constants
+import ims.exception.file_system_exceptions as file_system_exceptions
 
 
 # Need to think if there is a better way to reduce boilerplate exception
@@ -17,13 +18,6 @@ class RBD:
         self.cluster = self.__init_cluster()
         self.context = self.__init_context()
         self.rbd = rbd.RBD()
-
-    def __enter__(self):
-        self.rbd = rbd.RBD()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.tear_down()
 
     def __repr__(self):
         return str([self.rid, self.r_conf, self.pool])
@@ -171,7 +165,7 @@ class RBD:
         except rbd.ImageNotFound:
             raise file_system_exceptions.ImageNotFoundException(img_id)
 
-    def flatten(self,img_id):
+    def flatten(self, img_id):
         try:
 
             with self.__open_image(img_id) as img:

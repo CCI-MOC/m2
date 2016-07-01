@@ -3,9 +3,10 @@ from setuptools import setup, find_packages
 setup(
     name='ims',
     version='0.3',
-    install_requires=["pyro4==4.41", "requests", "flask", "sqlalchemy>=1.0.13"],
+    install_requires=["pyro4==4.41", "requests", "flask", "sqlalchemy>=1.0.13",
+                      "click"],
     packages=find_packages(),
-    scripts=['scripts/einstein_server.py', 'scripts/picasso_server.py'],
+    scripts=['scripts/einstein_server', 'scripts/picasso_server'],
     include_package_data=True,
     package_data={'ims': ['*.temp']},
     url='',

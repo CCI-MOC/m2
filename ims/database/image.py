@@ -9,49 +9,50 @@ from ims.exception import *
 # This class was written as per the Repository Model which allows us to change the DB in the future without changing
 # business code
 class ImageRepository:
+    def __init__(self, connection):
+        self.connection = connection
+
     # inserts the arguments into table
     # Commits if inserted successfully otherwise rollbacks if some issue occured and bubbles the exception
-    def insert(self, image_name, project_id, is_public=False, is_snapshot=False, is_provision_clone = False,
+    def insert(self, image_name, project_id, is_public=False, is_snapshot=False,
+               is_provision_clone=False,
                id=None):
-        with DatabaseConnection() as connection:
-            try:
-                img = Image()
-                img.name = image_name
-                img.project_id = project_id
-                img.is_public = is_public
-                img.is_snapshot = is_snapshot
-                img.is_provision_clone = is_provision_clone
-                if id is not None:
-                    img.id = id
-                connection.session.add(img)
-                connection.session.commit()
-            except SQLAlchemyError as e:
-                connection.session.rollback()
-                raise db_exceptions.ORMException(e.message)
+        try:
+            img = Image()
+            img.name = image_name
+            img.project_id = project_id
+            img.is_public = is_public
+            img.is_snapshot = is_snapshot
+            img.is_provision_clone = is_provision_clone
+            if id is not None:
+                img.id = id
+            self.connection.session.add(img)
+            self.connection.session.commit()
+        except SQLAlchemyError as e:
+            self.connection.session.rollback()
+            raise db_exceptions.ORMException(e.message)
 
     # deletes images with name under the given project name
     # commits if deletion was successful otherwise rollback occurs and exception is bubbled up
     def delete_with_name_from_project(self, name, project_name):
-        with DatabaseConnection() as connection:
-            try:
-                connection.session.query(Image). \
-                    filter(Image.project.has(name=project_name)).filter_by(
-                    name=name).delete(synchronize_session=False)
-                connection.session.commit()
-            except SQLAlchemyError as e:
-                connection.session.rollback()
-                raise db_exceptions.ORMException(e.message)
+        try:
+            self.connection.session.query(Image). \
+                filter(Image.project.has(name=project_name)).filter_by(
+                name=name).delete(synchronize_session=False)
+            self.connection.session.commit()
+        except SQLAlchemyError as e:
+            self.connection.session.rollback()
+            raise db_exceptions.ORMException(e.message)
 
     # fetch image ids with name in project with name
     # returns a array of image ids of the images which have the given name
     def fetch_id_with_name_from_project(self, name, project_name):
         try:
-            with DatabaseConnection() as connection:
-                image = connection.session.query(Image). \
-                    filter(Image.project.has(name=project_name)).filter_by(
-                    name=name).one_or_none()
-                if image is not None:
-                    return image.id
+            image = self.connection.session.query(Image). \
+                filter(Image.project.has(name=project_name)).filter_by(
+                name=name).one_or_none()
+            if image is not None:
+                return image.id
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
 
@@ -59,12 +60,11 @@ class ImageRepository:
     # We are returning a dictionary of format {image_name : <img_name> , project_name : <proj_name>}
     def fetch_names_with_public(self):
         try:
-            with DatabaseConnection() as connection:
-                img_list = connection.session.query(Image).filter_by(
-                    is_public=True)
-                return [{'image_name': image.name,
-                         'project_name': image.project.name}
-                        for image in img_list]
+            img_list = self.connection.session.query(Image).filter_by(
+                is_public=True)
+            return [{'image_name': image.name,
+                     'project_name': image.project.name}
+                    for image in img_list]
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
 
@@ -72,39 +72,37 @@ class ImageRepository:
     # returning a list of strings
     def fetch_names_from_project(self, project_name):
         try:
-            with DatabaseConnection() as connection:
-                images = connection.session.query(Image).filter(
-                    Image.project.has(name=project_name))
-                return [image.name for image in images]
+            images = self.connection.session.query(Image).filter(
+                Image.project.has(name=project_name))
+            return [image.name for image in images]
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
 
     def fetch_images_from_project(self, project_name):
         try:
-            with DatabaseConnection() as connection:
-                images = connection.session.query(Image).filter(
-                    Image.project.has(name=project_name)).filter_by(
-                    is_snapshot=False).filter_by(is_provision_clone=False)
-                return [image.name for image in images]
+            images = self.connection.session.query(Image).filter(
+                Image.project.has(name=project_name)).filter_by(
+                is_snapshot=False).filter_by(is_provision_clone=False)
+            return [image.name for image in images]
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
 
     def fetch_snapshots_from_project(self, project_name):
         try:
-            with DatabaseConnection() as connection:
-                images = connection.session.query(Image).filter(
-                    Image.project.has(name=project_name)).filter_by(
-                    is_snapshot=True)
-                return [image.name for image in images]
+            images = self.connection.session.query(Image).filter(
+                Image.project.has(name=project_name)).filter_by(
+                is_snapshot=True)
+            return [image.name for image in images]
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
 
     # fetch name of image with given id
     def fetch_name_with_id(self, id):
         try:
-            with DatabaseConnection() as connection:
-                for image in connection.session.query(Image).filter_by(id=id):
-                    return image.name
+            image = self.connection.session.query(Image).filter_by(
+                id=id).one_or_none()
+            if image is not None:
+                return image.name
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
 

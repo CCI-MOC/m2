@@ -60,6 +60,9 @@ class __EinsteinConfig:
             if not config.read(self.configfile):
                 raise IOError('cannot load ' + self.configfile)
 
+            self.uid = config.get(constants.IDENTITY_CONFIG_SECTION_NAME,
+                                  constants.UID_KEY)
+
             self.iscsi_update = config.get(constants.ISCSI_CONFIG_SECTION_NAME,
                                            constants.ISCSI_URL_KEY)
 
@@ -133,10 +136,12 @@ class __PicassoConfig:
 
             self.logs_url = config.get(constants.LOGS_CONFIG_SECTION_NAME,
                                        constants.LOGS_URL_KEY)
-            self.logs_debug = bool(config.get(constants.LOGS_CONFIG_SECTION_NAME,
-                                         constants.LOGS_DEBUG_KEY))
-            self.logs_verbose = bool(config.get(constants.LOGS_CONFIG_SECTION_NAME,
-                                           constants.LOGS_VERBOSE_KEY))
+            self.logs_debug = bool(
+                config.get(constants.LOGS_CONFIG_SECTION_NAME,
+                           constants.LOGS_DEBUG_KEY))
+            self.logs_verbose = bool(
+                config.get(constants.LOGS_CONFIG_SECTION_NAME,
+                           constants.LOGS_VERBOSE_KEY))
 
         except ConfigParser.NoOptionError as e:
             raise config_exceptions.MissingOptionInConfigException(e.args[0])

@@ -23,10 +23,7 @@ class DatabaseConnection:
     # creates all tables if not present
     def __init__(self):
         DatabaseConnection.Base.metadata.create_all(DatabaseConnection.engine)
-
-    def __enter__(self):
         self.session = DatabaseConnection.session_maker()
-        return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def close(self):
         self.session.close()

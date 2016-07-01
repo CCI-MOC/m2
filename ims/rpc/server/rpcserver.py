@@ -12,19 +12,16 @@ class MainServer:
     # The commandline arguments following that are the arguments to the method.
     def execute_command(self, credentials, command, args):
         try:
-            # command.decode('utf-8')
-            try:
-                bmi = BMI(credentials)
-            except BMIException as ex:
-                return BMI.return_error(ex)
-            method_to_call = getattr(BMI, command)
-            args.insert(0, bmi)
-            args = tuple(args)
-            output = method_to_call(*args)
-            return output
-        except Exception as e:
-            import traceback
-            traceback.print_exc(e)
+            print "In Server"
+            with BMI(credentials) as bmi:
+                print "In with"
+                method_to_call = getattr(BMI, command)
+                args.insert(0, bmi)
+                args = tuple(args)
+                output = method_to_call(*args)
+                return output
+        except BMIException as ex:
+            return ex
 
 
 def start_rpc_server():

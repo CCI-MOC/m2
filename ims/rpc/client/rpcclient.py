@@ -47,6 +47,8 @@ class RPCClient:
             if ((not self.__escape_characters_present(
                     concatenated_command)) and self.__correct_argument_list_length(
                 command, args)):
+                print "Before"
                 execute_command = self.main_obj.execute_command(credentials,
                                                                 command, args)
+                print "After"
                 return execute_command
