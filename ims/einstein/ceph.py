@@ -23,8 +23,7 @@ class RBD:
         return str([self.rid, self.r_conf, self.pool])
 
     def __str__(self):
-        return 'rid = {0}, conf_file = {1}, pool = {2},' \
-               'current images {3}' \
+        return 'rid = {0}, conf_file = {1}, pool = {2}' \
             .format(self.rid, self.r_conf,
                     self.pool)
 

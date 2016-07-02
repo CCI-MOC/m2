@@ -12,9 +12,7 @@ class MainServer:
     # The commandline arguments following that are the arguments to the method.
     def execute_command(self, credentials, command, args):
         try:
-            print "In Server"
             with BMI(credentials) as bmi:
-                print "In with"
                 method_to_call = getattr(BMI, command)
                 args.insert(0, bmi)
                 args = tuple(args)
