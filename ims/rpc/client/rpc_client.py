@@ -1,10 +1,13 @@
 import Pyro4
 
+from ims.common.log import *
 import ims.common.config as config
 import ims.common.constants as constants
 
+logger = create_logger(__name__)
 
 class RPCClient:
+    @log
     def __init__(self):
         # Loads the variable dict with the contents of config.json.
         self.dict = {
@@ -27,10 +30,12 @@ class RPCClient:
         uri = name_server.lookup(constants.RPC_SERVER_NAME)
         self.main_obj = Pyro4.Proxy(uri)
 
+    @trace
     def __correct_argument_list_length(self, command, args):
         return len(args) == int(self.func_list[command])
 
     # This method checks for escape characters or injection attacks.
+    @trace
     def __escape_characters_present(self, concatenated_command):
         escape_chars = set(';<>&|\'')
         if any((c in escape_chars) for c in concatenated_command):
@@ -41,14 +46,13 @@ class RPCClient:
     # client_function(): This function does all the check required, calls the
     # server program with the method name and arguments passed in as a list
     # and prints the output received from the server.
+    @log
     def execute_command(self, command, credentials, args):
         if command in self.func_list:
             concatenated_command = command + (" ".join(args))
             if ((not self.__escape_characters_present(
                     concatenated_command)) and self.__correct_argument_list_length(
                 command, args)):
-                print "Before"
                 execute_command = self.main_obj.execute_command(credentials,
                                                                 command, args)
-                print "After"
                 return execute_command

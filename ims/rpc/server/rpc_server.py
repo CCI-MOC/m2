@@ -1,15 +1,17 @@
 import Pyro4
-
+from ims.common.log import *
 import ims.common.config as config
 import ims.common.constants as constants
 from ims.einstein.operations import BMI
 from ims.exception import *
 
+logger = create_logger(__name__)
 
 class MainServer:
     # This method takes in the commandline arguments from the client program.
     # First argument is always the name of the method that is to be run.
     # The commandline arguments following that are the arguments to the method.
+    @log
     def execute_command(self, credentials, command, args):
         try:
             with BMI(credentials) as bmi:
@@ -19,9 +21,11 @@ class MainServer:
                 output = method_to_call(*args)
                 return output
         except BMIException as ex:
-            return ex
+            logger.exception('')
+            return {constants.STATUS_CODE_KEY: ex.status_code,
+                    constants.MESSAGE_KEY: str(ex)}
 
-
+@log
 def start_rpc_server():
     cfg = config.get()
     Pyro4.config.HOST = cfg.rpcserver_ip
@@ -33,5 +37,4 @@ def start_rpc_server():
     uri = daemon.register(MainServer)
     # register the object with a name in the name server
     ns.register(constants.RPC_SERVER_NAME, uri)
-    print("Ready.")
     daemon.requestLoop()  # start the event loop of the server to wait for calls

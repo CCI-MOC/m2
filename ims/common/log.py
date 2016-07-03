@@ -1,24 +1,28 @@
 import inspect
 import logging
 import logging.handlers
+import os
 import traceback
 
 import ims.common.config as config
 
 loggers = {}
 
+_cfg = config.get()
+_base_url = _cfg.logs_url
+_debug = _cfg.logs_debug
+_verbose = _cfg.logs_verbose
+
 
 def log(func):
     def func_wrapper(*args, **kwargs):
         name = inspect.getmodule(func).__name__
-        cfg = config.get()
-        logger = create_logger(cfg.logs_url, name, cfg.logs_debug,
-                               cfg.logs_verbose)
+        logger = create_logger(name)
         rec = inspect.stack()[1]
-        file = rec[1]
+        file_path = rec[1]
         line = rec[2]
         func_name = rec[3]
-        base_msg = str.format("File '{0}', line {1} in {2}\n", file, line,
+        base_msg = str.format("File '{0}', line {1} in {2}\n", file_path, line,
                               func_name)
         logger.debug(base_msg + "Entering %s with Parameters\n%s",
                      func.__name__, format_args(*args, **kwargs),
@@ -32,6 +36,28 @@ def log(func):
                         func.__name__, extra={'special': True})
         logger.debug(base_msg + "Exiting %s with return value = %s",
                      func.__name__, ret, extra={'special': True})
+        return ret
+
+    return func_wrapper
+
+
+def trace(func):
+    def func_wrapper(*args, **kwargs):
+        name = inspect.getmodule(func).__name__
+        logger = create_logger(name)
+        rec = inspect.stack()[1]
+        file_path = rec[1]
+        line = rec[2]
+        func_name = rec[3]
+        base_msg = str.format("File '{0}', line {1} in {2}\n", file_path, line,
+                              func_name)
+        logger.debug(base_msg + "Entering %s with Parameters\n%s",
+                     func.__name__, format_args(*args, **kwargs),
+                     extra={'special': True})
+        ret = func(*args, **kwargs)
+        logger.debug(base_msg + "Exiting %s with return value = %s",
+                     func.__name__, ret, extra={'special': True})
+        return ret
 
     return func_wrapper
 
@@ -50,21 +76,24 @@ def format_args(*args, **kwargs):
     return string.rstrip('\n')
 
 
-def create_logger(base_url, name, debug=False, verbose=False):
+def create_logger(name):
     if name in loggers:
         return loggers[name]
 
     logger = logging.getLogger(name)
-    if debug:
+    if _debug:
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
 
+    if not os.path.isdir(_base_url):
+        os.makedirs(_base_url)
+
     formatter = BMIFormatter()
-    specific_file_handler = logging.FileHandler(base_url + name + ".log",
+    specific_file_handler = logging.FileHandler(_base_url + name + ".log",
                                                 mode='a')
     all_file_handler = logging.handlers.RotatingFileHandler(
-        base_url + "ims.log", mode='a', maxBytes=10000000, backupCount=10)
+        _base_url + "ims.log", mode='a', maxBytes=10000000, backupCount=10)
 
     specific_file_handler.setFormatter(formatter)
     all_file_handler.setFormatter(formatter)
@@ -72,7 +101,7 @@ def create_logger(base_url, name, debug=False, verbose=False):
     logger.addHandler(specific_file_handler)
     logger.addHandler(all_file_handler)
 
-    if verbose:
+    if _verbose:
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(formatter)
         logger.addHandler(console_handler)

@@ -1,20 +1,23 @@
+from ims.common.log import *
 from ims.database import DatabaseConnection
 from ims.exception import *
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import relationship
 
+logger = create_logger(__name__)
 
 # This class is responsible for doing CRUD operations on the Project Table in DB
 # This class was written as per the Repository Model which allows us to change the DB in the future without changing
 # business code
 class ProjectRepository:
-
+    @trace
     def __init__(self,connection):
         self.connection = connection
 
     # inserts the arguments into the table
     # commits after insertion otherwise rollback occurs after which exception is bubbled up
+    @log
     def insert(self, name, provision_network, id=None):
         try:
             p = Project()
@@ -30,6 +33,7 @@ class ProjectRepository:
 
     # deletes project with name
     # commits after deletion otherwise rollback occurs after which exception is bubbled up
+    @log
     def delete_with_name(self, name):
         try:
             project = self.connection.session.query(Project).filter_by(
@@ -43,6 +47,7 @@ class ProjectRepository:
 
     # fetch the project id with name
     # only project object is returned as the name is unique
+    @log
     def fetch_id_with_name(self, name):
         try:
             project = self.connection.session.query(Project).filter_by(

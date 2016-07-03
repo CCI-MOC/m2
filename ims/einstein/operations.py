@@ -4,20 +4,18 @@ import io
 import subprocess
 import time
 
-from ims.common.log import *
 from ims.database import *
 from ims.einstein.ceph import *
 from ims.einstein.haas import *
 from ims.exception import *
 
-cfg = config.get()
-logger = create_logger(cfg.logs_url, __name__, cfg.logs_debug, cfg.logs_verbose)
+logger = create_logger(__name__)
 
 
 class BMI:
     @log
     def __init__(self, credentials):
-        self.config = cfg
+        self.config = config.get()
         self.db = Database()
         self.__process_credentials(credentials)
         self.haas = HaaS(base_url=self.config.haas_url, usr=self.username,
@@ -30,7 +28,7 @@ class BMI:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.shutdown()
 
-    @log
+    @trace
     def __does_project_exist(self):
         pid = self.db.project.fetch_id_with_name(self.project)
         # None as a query result implies that the project does not exist.
@@ -41,7 +39,7 @@ class BMI:
 
         self.pid = pid
 
-    @log
+    @trace
     def __get__ceph_image_name(self, name):
         img_id = self.db.image.fetch_id_with_name_from_project(name,
                                                                self.project)
@@ -51,7 +49,7 @@ class BMI:
 
         return str(self.config.uid) + "img" + str(img_id)
 
-    @log
+    @trace
     def __process_credentials(self, credentials):
         base64_str, self.project = credentials
         self.__does_project_exist()
@@ -115,13 +113,16 @@ class BMI:
     def __return_error(self, ex):
 
         # Replaces the image name with id in error string
-        @log()
+        @log
         def swap_id_with_name(err_str):
             parts = err_str.split(" ")
-            name = self.db.image.fetch_name_with_id(
-                parts[0][parts[0].index("img") + 3:])
-            if name is not None:
-                parts[0] = name
+            start_index = parts[0].find("img")
+            if start_index != -1:
+                start_index += 3
+                img_id = parts[0][start_index:]
+                name = self.db.image.fetch_name_with_id(img_id)
+                if name is not None:
+                    parts[0] = name
             return " ".join(parts)
 
         logger.debug("Checking if FileSystemException")
@@ -311,6 +312,7 @@ class BMI:
     # Lists snapshot for the given image img_name
     # URL's have to be read from BMI config file
     # fs_obj will be populated by decorator
+    @log
     def list_snapshots(self):
         try:
             self.haas.validate_project(self.project)
@@ -323,6 +325,7 @@ class BMI:
 
     # Removes snapshot snap_name for the given image img_name
     # fs_obj will be populated by decorator
+    @log
     def remove_image(self, img_name):
         try:
             self.haas.validate_project(self.project)
@@ -340,6 +343,7 @@ class BMI:
             return self.__return_error(e)
 
     # Lists the images for the project which includes the snapshot
+    @log
     def list_images(self):
         try:
             self.haas.validate_project(self.project)

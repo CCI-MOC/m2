@@ -9,14 +9,16 @@ config.load(constants.EINSTEIN_CONFIG_FLAG)
 from ims.rpc.server.name_server import *
 from ims.rpc.server.rpc_server import *
 
+logger = create_logger(__name__)
+
 p1 = multiprocessing.Process(target=start_name_server)
 p2 = multiprocessing.Process(target=start_rpc_server)
 
 p1.start()
 p2.start()
 
-print "Nameserver Process ID = "+str(p1.pid)
-print "RPC Server Process ID = "+str(p2.pid)
+logger.info("Nameserver Process ID = %s",p1.pid)
+logger.info("RPC Server Process ID = %s",p2.pid)
 
 p1.join()
 p2.join()

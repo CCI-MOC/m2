@@ -1,19 +1,24 @@
 from sqlalchemy import Boolean, ForeignKey
 from sqlalchemy import UniqueConstraint
 
+from ims.common.log import *
 from ims.database.project import *
 from ims.exception import *
 
 
+
+logger = create_logger(__name__)
 # This class is responsible for doing CRUD operations on the Image Table in DB
 # This class was written as per the Repository Model which allows us to change the DB in the future without changing
 # business code
 class ImageRepository:
+    @trace
     def __init__(self, connection):
         self.connection = connection
 
     # inserts the arguments into table
     # Commits if inserted successfully otherwise rollbacks if some issue occured and bubbles the exception
+    @log
     def insert(self, image_name, project_id, is_public=False, is_snapshot=False,
                is_provision_clone=False,
                id=None):
@@ -34,6 +39,7 @@ class ImageRepository:
 
     # deletes images with name under the given project name
     # commits if deletion was successful otherwise rollback occurs and exception is bubbled up
+    @log
     def delete_with_name_from_project(self, name, project_name):
         try:
             self.connection.session.query(Image). \
@@ -46,6 +52,7 @@ class ImageRepository:
 
     # fetch image ids with name in project with name
     # returns a array of image ids of the images which have the given name
+    @log
     def fetch_id_with_name_from_project(self, name, project_name):
         try:
             image = self.connection.session.query(Image). \
@@ -58,6 +65,7 @@ class ImageRepository:
 
     # Fetch the list of images which are public
     # We are returning a dictionary of format {image_name : <img_name> , project_name : <proj_name>}
+    @log
     def fetch_names_with_public(self):
         try:
             img_list = self.connection.session.query(Image).filter_by(
@@ -70,6 +78,7 @@ class ImageRepository:
 
     # fetch the image names which are under the given project name
     # returning a list of strings
+    @log
     def fetch_names_from_project(self, project_name):
         try:
             images = self.connection.session.query(Image).filter(
@@ -78,6 +87,7 @@ class ImageRepository:
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
 
+    @log
     def fetch_images_from_project(self, project_name):
         try:
             images = self.connection.session.query(Image).filter(
@@ -87,6 +97,7 @@ class ImageRepository:
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
 
+    @log
     def fetch_snapshots_from_project(self, project_name):
         try:
             images = self.connection.session.query(Image).filter(
@@ -97,6 +108,7 @@ class ImageRepository:
             raise db_exceptions.ORMException(e.message)
 
     # fetch name of image with given id
+    @log
     def fetch_name_with_id(self, id):
         try:
             image = self.connection.session.query(Image).filter_by(

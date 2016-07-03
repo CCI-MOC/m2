@@ -3,8 +3,9 @@
 
 import ims.common.config as config
 import ims.common.constants as constants
-import ims.picasso.rest as rest
 
 config.load(constants.PICASSO_CONFIG_FLAG)
+
+import ims.picasso.rest as rest
 
 rest.start()
