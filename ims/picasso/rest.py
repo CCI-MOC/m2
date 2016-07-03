@@ -55,7 +55,7 @@ def _rest_wrapper(method, command, parameters):
             ret = rpc_client.execute_command(command, credentials,
                                              extracted_parameters)
             if ret[constants.STATUS_CODE_KEY] == 200:
-                ret = json.dumps(ret[constants.RETURN_VALUE_KEY]), 200
+                ret = json.dumps(ret[constants.RETURN_VALUE_KEY])
                 if ret == 'true':
                     return "Success", 200
                 else:
