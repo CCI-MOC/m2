@@ -2,9 +2,8 @@
 # Should be used when changed to Flask
 
 import ims.common.config as config
-import ims.common.constants as constants
 
-config.load(constants.PICASSO_CONFIG_FLAG)
+config.load()
 
 import ims.picasso.rest as rest
 

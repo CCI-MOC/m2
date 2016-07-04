@@ -9,6 +9,11 @@ setup(
     scripts=['scripts/einstein_server', 'scripts/picasso_server'],
     include_package_data=True,
     package_data={'ims': ['*.temp']},
+    entry_points={
+        'console_scripts': [
+            'bmi = ims.cli.cli:cli'
+        ]
+    },
     url='',
     license='',
     author='chemistry_sourabh',
