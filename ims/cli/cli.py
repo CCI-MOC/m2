@@ -47,25 +47,43 @@ def provision(node, image, network, channel, nic):
 @click.argument(constants.NETWORK_PARAMETER)
 @click.argument(constants.NIC_PARAMETER)
 def deprovision(node, network, nic):
-    pass
+    data = {constants.PROJECT_PARAMETER: _project,
+            constants.NODE_NAME_PARAMETER: node,
+            constants.NETWORK_PARAMETER: network,
+            constants.NIC_PARAMETER: nic}
+    res = requests.delete(_url + "deprovision/", data=data, auth=(
+        _username, _password))
+    print res.content
 
 
 @click.command(help='Create Snapshot of <NODE> as <SNAP_NAME>')
 @click.argument(constants.NODE_NAME_PARAMETER)
 @click.argument(constants.SNAP_NAME_PARAMETER)
 def create_snapshot(node, snap_name):
-    pass
+    data = {constants.PROJECT_PARAMETER: _project,
+            constants.NODE_NAME_PARAMETER: node,
+            constants.SNAP_NAME_PARAMETER: snap_name}
+    res = requests.put(_url + "create_snapshot/", data=data,
+                       auth=(_username, _password))
+    print res.content
 
 
 @click.command(help='List All Snapshots Stored')
 def list_snapshots():
-    pass
+    data = {constants.PROJECT_PARAMETER: _project}
+    res = requests.post(_url + "list_snapshots/", data=data,
+                        auth=(_username, _password))
+    print res.content
 
 
 @click.command(help='Remove <IMAGE>')
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 def remove_image(image):
-    pass
+    data = {constants.PROJECT_PARAMETER: _project,
+            constants.IMAGE_NAME_PARAMETER: image}
+    res = requests.delete(_url + "remove_image/", data=data, auth=(
+        _username, _password))
+    print res.content
 
 
 @click.command(help='List All Images Stored')
