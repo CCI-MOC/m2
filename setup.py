@@ -4,7 +4,7 @@ setup(
     name='ims',
     version='0.3',
     install_requires=["pyro4==4.41", "requests", "flask", "sqlalchemy>=1.0.13",
-                      "click"],
+                      "click","prettytable"],
     packages=find_packages(),
     scripts=['scripts/einstein_server', 'scripts/picasso_server'],
     include_package_data=True,

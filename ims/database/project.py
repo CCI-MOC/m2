@@ -1,18 +1,20 @@
-from ims.common.log import *
-from ims.database import DatabaseConnection
-from ims.exception import *
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import relationship
 
+from ims.common.log import *
+from ims.database import DatabaseConnection
+from ims.exception import *
+
 logger = create_logger(__name__)
+
 
 # This class is responsible for doing CRUD operations on the Project Table in DB
 # This class was written as per the Repository Model which allows us to change the DB in the future without changing
 # business code
 class ProjectRepository:
     @trace
-    def __init__(self,connection):
+    def __init__(self, connection):
         self.connection = connection
 
     # inserts the arguments into the table
@@ -37,7 +39,7 @@ class ProjectRepository:
     def delete_with_name(self, name):
         try:
             project = self.connection.session.query(Project).filter_by(
-                    name=name).one_or_none()
+                name=name).one_or_none()
             if project is not None:
                 self.connection.session.delete(project)
                 self.connection.session.commit()
@@ -51,9 +53,18 @@ class ProjectRepository:
     def fetch_id_with_name(self, name):
         try:
             project = self.connection.session.query(Project).filter_by(
-                    name=name).one_or_none()
+                name=name).one_or_none()
             if project is not None:
                 return project.id
+        except SQLAlchemyError as e:
+            raise db_exceptions.ORMException(e.message)
+
+    @log
+    def fetch_names(self):
+        try:
+            projects = self.connection.session.query(Project)
+            return [[project.id, project.name, project.provision_network] for
+                    project in projects]
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
 

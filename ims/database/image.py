@@ -1,13 +1,12 @@
 from sqlalchemy import Boolean, ForeignKey
 from sqlalchemy import UniqueConstraint
 
-from ims.common.log import *
 from ims.database.project import *
 from ims.exception import *
 
-
-
 logger = create_logger(__name__)
+
+
 # This class is responsible for doing CRUD operations on the Image Table in DB
 # This class was written as per the Repository Model which allows us to change the DB in the future without changing
 # business code
@@ -104,6 +103,16 @@ class ImageRepository:
                 Image.project.has(name=project_name)).filter_by(
                 is_snapshot=True)
             return [image.name for image in images]
+        except SQLAlchemyError as e:
+            raise db_exceptions.ORMException(e.message)
+
+    @log
+    def fetch_all_images_from_project(self, project_name):
+        try:
+            images = self.connection.session.query(Image)
+            return [[image.id, image.name, image.project.name, image.is_public,
+                     image.is_snapshot, image.is_provision_clone] for image in
+                    images]
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
 
