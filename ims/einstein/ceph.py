@@ -48,6 +48,12 @@ class RBD:
         cluster.connect()
         return cluster
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.tear_down()
+
     # Written to use 'with' for opening and closing images
     # Passing context as it is outside class
     # Need to see if it is ok to put it inside the class
@@ -208,4 +214,13 @@ class RBD:
         try:
             return rbd.Image(self.context, img_id)
         except rbd.ImageNotFound:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
+
+    @log
+    def get_parent_info(self,img_id):
+        try:
+            with self.__open_image(img_id) as img:
+                return img.parent_info()
+        except rbd.ImageNotFound:
+            # Should be changed to special exception
             raise file_system_exceptions.ImageNotFoundException(img_id)

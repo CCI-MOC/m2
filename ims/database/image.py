@@ -49,6 +49,42 @@ class ImageRepository:
             self.connection.session.rollback()
             raise db_exceptions.ORMException(e.message)
 
+    @log
+    def copy_image(self, name, src_project_name, new_name, dest_pid):
+        try:
+            image = self.connection.session.query(Image). \
+                filter(Image.project.has(name=src_project_name)).filter_by(
+                name=name).one_or_none()
+            new_image = Image()
+            if new_name != '':
+                new_image.name = new_name
+            else:
+                new_image.name = name
+            new_image.project_id = dest_pid
+            new_image.is_public = image.is_public
+            new_image.is_provision_clone = image.is_provision_clone
+            new_image.is_snapshot = image.is_snapshot
+            self.connection.session.add(new_image)
+            self.connection.session.commit()
+        except SQLAlchemyError as e:
+            self.connection.session.rollback()
+            raise db_exceptions.ORMException(e.message)
+
+    @log
+    def move_image(self, src_project_name, name, dest_project_id, new_name):
+        try:
+            image = self.connection.session.query(Image). \
+                filter(Image.project.has(name=src_project_name)).filter_by(
+                name=name).one_or_none()
+
+            image.project_id = dest_project_id
+            if new_name != '':
+                image.name = new_name
+            self.connection.session.commit()
+        except SQLAlchemyError as e:
+            self.connection.session.rollback()
+            raise db_exceptions.ORMException(e.message)
+
     # fetch image ids with name in project with name
     # returns a array of image ids of the images which have the given name
     @log
@@ -107,7 +143,17 @@ class ImageRepository:
             raise db_exceptions.ORMException(e.message)
 
     @log
-    def fetch_all_images_from_project(self, project_name):
+    def fetch_clones_from_project(self, project_name):
+        try:
+            images = self.connection.session.query(Image).filter(
+                Image.project.has(name=project_name)).filter_by(
+                is_provision_clone=True)
+            return [image.name for image in images]
+        except SQLAlchemyError as e:
+            raise db_exceptions.ORMException(e.message)
+
+    @log
+    def fetch_all_images_from_project(self):
         try:
             images = self.connection.session.query(Image)
             return [[image.id, image.name, image.project.name, image.is_public,
