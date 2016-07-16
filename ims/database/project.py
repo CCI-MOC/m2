@@ -60,7 +60,7 @@ class ProjectRepository:
             raise db_exceptions.ORMException(e.message)
 
     @log
-    def fetch_names(self):
+    def fetch_projects(self):
         try:
             projects = self.connection.session.query(Project)
             return [[project.id, project.name, project.provision_network] for

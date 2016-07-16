@@ -99,15 +99,14 @@ class ImageRepository:
             raise db_exceptions.ORMException(e.message)
 
     # Fetch the list of images which are public
+    # Was a dictionary changed it for test cases, dont see a reason as to why we need a dict
     # We are returning a dictionary of format {image_name : <img_name> , project_name : <proj_name>}
     @log
     def fetch_names_with_public(self):
         try:
             img_list = self.connection.session.query(Image).filter_by(
                 is_public=True)
-            return [{'image_name': image.name,
-                     'project_name': image.project.name}
-                    for image in img_list]
+            return [image.name for image in img_list]
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
 
@@ -153,7 +152,7 @@ class ImageRepository:
             raise db_exceptions.ORMException(e.message)
 
     @log
-    def fetch_all_images_from_project(self):
+    def fetch_all_images(self):
         try:
             images = self.connection.session.query(Image)
             return [[image.id, image.name, image.project.name, image.is_public,

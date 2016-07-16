@@ -153,7 +153,7 @@ def project_grp():
 def list_projects():
     table = PrettyTable(field_names=["Id", "Name", "Provision Network"])
     with Database() as db:
-        projects = db.project.fetch_names()
+        projects = db.project.fetch_projects()
         for project in projects:
             table.add_row(project)
     click.echo(table.get_string())
@@ -214,7 +214,7 @@ def add_image(project, img, id, snap, clone, public):
 @db.command(name='ls', help='Lists All Images')
 def list_all_images():
     with Database() as db:
-        images = db.image.fetch_all_images_from_project()
+        images = db.image.fetch_all_images()
         table = PrettyTable(
             field_names=["Id", "Name", "Project Name", "Is Public",
                          "Is Snapshot",
