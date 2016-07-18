@@ -16,21 +16,15 @@ class TestInsert(TestCase):
         self.db.image.insert('image 4', 1, is_snapshot=True)
 
         images = self.db.image.fetch_images_from_project('project 1')
-
         yes = 'image 1' in images and 'image 2' in images
-
         self.assertTrue(yes)
 
         images = self.db.image.fetch_clones_from_project('project 1')
-
         yes = 'image 3' in images
-
         self.assertTrue(yes)
 
         images = self.db.image.fetch_snapshots_from_project('project 1')
-
         yes = 'image 4' in images
-
         self.assertTrue(yes)
 
         images = self.db.image.fetch_names_with_public()
@@ -54,11 +48,8 @@ class TestDelete(TestCase):
 
     def test_run(self):
         self.db.image.delete_with_name_from_project('image 1', 'project 1')
-
         images = self.db.image.fetch_images_from_project('project 1')
-
         yes = 'image 1' in images
-
         self.assertFalse(yes)
 
     def tearDown(self):

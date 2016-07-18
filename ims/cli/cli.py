@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import ast
 import json
 
 import click

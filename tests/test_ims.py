@@ -28,6 +28,6 @@ for mod in modules:
     tests.addTest(loader.loadTestsFromModule(mod))
 
 if __name__ == '__main__':
-    # testRunner = unittest.TextTestRunner()
-    # testRunner.run(tests)
-    pass
+    testRunner = unittest.TextTestRunner()
+    testRunner.run(tests)
+    print tests.countTestCases()
