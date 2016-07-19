@@ -14,7 +14,7 @@ CORRECT_HAAS_USERNAME = "haasadmin"
 CORRECT_HAAS_PASSWORD = "admin1234"
 INCORRECT_HAAS_PASSWORD = "admin123##"
 
-NODE_NAME = "cisco-27"
+NODE_NAME = "cisco-24"
 CHANNEL = "vlan/native"
 NIC = "enp130s0f0"
 

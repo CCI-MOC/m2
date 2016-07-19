@@ -98,11 +98,14 @@ def list_images(project):
     data = {constants.PROJECT_PARAMETER: project}
     res = requests.post(_url + "list_images/", data=data,
                         auth=(_username, _password))
-    images = json.loads(res.content)
-    table = PrettyTable(field_names=["Image"])
-    for image in images:
-        table.add_row([image])
-    click.echo(table.get_string())
+    if res.status_code == 200:
+        images = json.loads(res.content)
+        table = PrettyTable(field_names=["Image"])
+        for image in images:
+            table.add_row([image])
+        click.echo(table.get_string())
+    else:
+        click.echo(res.content)
 
 
 @cli.group(help='Snapshot Related Commands')
