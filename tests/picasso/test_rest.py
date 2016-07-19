@@ -11,7 +11,7 @@ from ims.einstein.operations import BMI
 
 _cfg = config.get()
 
-url = "http://192.168.122.125:8000/"
+url = "http://192.168.122.34:7000/"
 
 CORRECT_HAAS_USERNAME = "haasadmin"
 CORRECT_HAAS_PASSWORD = "admin1234"
