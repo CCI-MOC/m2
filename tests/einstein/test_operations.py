@@ -202,13 +202,13 @@ class TestRemoveImage(TestCase):
 def import_test(img):
     with ceph.RBD(_cfg.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
         with Database() as db:
-            pid = db.project.fetch_id_with_name(project)
+            pid = db.project.fetch_id_with_name(PROJECT)
             ceph_img_name = str(img)
 
             fs.snap_image(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
             fs.snap_protect(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
             db.image.insert(ceph_img_name, pid)
-            snap_ceph_name = __get_ceph_image_name(ceph_img_name, project)
+            snap_ceph_name = __get_ceph_image_name(ceph_img_name, PROJECT)
             fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
                      snap_ceph_name)
             fs.flatten(snap_ceph_name)
