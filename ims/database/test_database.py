@@ -52,9 +52,16 @@ class TestDatabase(TestCase):
         # check that the image is not being returned from a different project name
         qimg = imgr.fetch_id_with_name_from_project("image 1", "project 1")
         qimg_list = imgr.fetch_names_with_public()
+        qimg_names = imgr.fetch_names_from_project("project 2")
+        qimg_name = imgr.fetch_name_with_id("1")
         self.assertIsNotNone(qimg_list)
         self.assertEqual(qimg_list[0]['image_name'], "image2")
         self.assertIsNone(qimg)
+        self.assertIsNotNone(qimg_names)
+        self.assertEqual(qimg_names.__len__(), 3)
+        self.assertEqual(qimg_names[0], "image 1")
+        self.assertIsNotNone(qimg_name)
+        self.assertEqual(qimg_name, "image 1")
 
         # delete the inserted image
         imgr = ImageRepository()
