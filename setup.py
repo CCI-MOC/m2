@@ -1,10 +1,11 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='ims',
     version='0.2',
-    install_requires=["sqlalchemy>=1.0.13", 'requests'],
-    packages=['ims', 'ims.database', 'ims.exception'],
+    install_requires=["pyro4==4.41", "requests", "flask", "sqlalchemy>=1.0.13"],
+    packages=find_packages(),
+    scripts=['scripts/einstein_server.py', 'scripts/picasso_server.py'],
     url='',
     license='',
     author='chemistry_sourabh',

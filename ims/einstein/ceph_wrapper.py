@@ -2,10 +2,11 @@
 import os
 from contextlib import contextmanager
 
-import constants
 import rados
 import rbd
-from exception import *
+
+import ims.common.constants as constants
+import ims.exception.file_system_exceptions as file_system_exceptions
 
 
 # Need to think if there is a better way to reduce boilerplate exception

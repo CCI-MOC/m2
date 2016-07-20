@@ -3,8 +3,8 @@ import urlparse
 
 import requests
 
-import constants
-from exception import *
+import ims.common.constants as constants
+import ims.exception.haas_exceptions as haas_exceptions
 
 
 class HaaS:
