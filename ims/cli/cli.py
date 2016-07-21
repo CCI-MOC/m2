@@ -11,8 +11,8 @@ import ims.common.constants as constants
 
 config.load()
 
+from ims.einstein.operations import BMI
 from ims.database import *
-import ims.einstein.ceph as ceph
 
 _cfg = config.get()
 
@@ -66,19 +66,15 @@ def deprovision(project, node, network, nic):
 @cli.command(name='showpro', help='Shows All Provisioned Nodes')
 @click.argument(constants.PROJECT_PARAMETER)
 def list_provisioned_nodes(project):
-    table = PrettyTable(field_names=["Node", "Provisioned Image"])
-    with ceph.RBD(_cfg.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
-        with Database() as db:
-            clones = db.image.fetch_clones_from_project(project)
-            for clone in clones:
-                ceph_name = __get__ceph_image_name(clone, project)
-                parent_info = fs.get_parent_info(ceph_name)
-                start_index = parent_info[1].find("img")
-                start_index += 3
-                img_id = parent_info[1][start_index:]
-                name = db.image.fetch_name_with_id(img_id)
-                table.add_row([clone, name])
-    click.echo(table.get_string())
+    with BMI(_username, _password, project) as bmi:
+        table = PrettyTable(field_names=["Node", "Provisioned Image"])
+        ret = bmi.list_provisioned_nodes()
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            for clone in ret[constants.RETURN_VALUE_KEY]:
+                table.add_row(clone)
+            click.echo(table.get_string())
+        else:
+            click.echo(ret[constants.MESSAGE_KEY])
 
 
 @cli.command(name='rm', help='Remove <IMAGE>')
@@ -132,18 +128,25 @@ def list_snapshots(project):
     data = {constants.PROJECT_PARAMETER: project}
     res = requests.post(_url + "list_snapshots/", data=data,
                         auth=(_username, _password))
-    snapshots = json.loads(res.content)
-    table = PrettyTable(field_names=["Snapshot"])
-    for snapshot in snapshots:
-        table.add_row([snapshot])
-    click.echo(table.get_string())
+    if res.status_code == 200:
+        snapshots = json.loads(res.content)
+        table = PrettyTable(field_names=["Snapshot", "Parent"])
+        for snapshot in snapshots:
+            table.add_row(snapshot)
+        click.echo(table.get_string())
+    else:
+        click.echo(res.content)
 
 
 @snap.command(name='rm', help='Remove the given Snapshot')
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.SNAP_NAME_PARAMETER)
-def remove_snapshot(project, snapshot):
-    remove_image(project, snapshot)
+def remove_snapshot(project, snap_name):
+    data = {constants.PROJECT_PARAMETER: project,
+            constants.IMAGE_NAME_PARAMETER: snap_name}
+    res = requests.delete(_url + "remove_image/", data=data, auth=(
+        _username, _password))
+    click.echo(res.content)
 
 
 @cli.group(name='project', help='Project Related Commands')
@@ -153,33 +156,40 @@ def project_grp():
 
 @project_grp.command(name='ls', help='Lists Projects in DB')
 def list_projects():
-    table = PrettyTable(field_names=["Id", "Name", "Provision Network"])
-    with Database() as db:
-        projects = db.project.fetch_projects()
-        for project in projects:
-            table.add_row(project)
-    click.echo(table.get_string())
+    with BMI(_username, _password, "bmi_admin") as bmi:
+        ret = bmi.list_projects()
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            table = PrettyTable(field_names=["Id", "Name", "Provision Network"])
+            projects = ret[constants.RETURN_VALUE_KEY]
+            for project in projects:
+                table.add_row(project)
+            click.echo(table.get_string())
+        else:
+            click.echo(ret[constants.MESSAGE_KEY])
 
 
 @project_grp.command(name='create', help='Adds Project to DB')
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NETWORK_PARAMETER)
-@click.option('--id', default=-1, help='Specify what id to use for project')
+@click.option('--id', default=None, help='Specify what id to use for project')
 def add_project(project, network, id):
-    with Database() as db:
-        if id == -1:
-            db.project.insert(project, network)
+    with BMI(_username, _password, "bmi_admin") as bmi:
+        ret = bmi.add_project(project, network, id)
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            click.echo("Success")
         else:
-            db.project.insert(project, network, id=id)
-    click.echo("Success")
+            click.echo(ret[constants.MESSAGE_KEY])
 
 
 @project_grp.command(name='rm', help='Deletes Project From DB')
 @click.argument(constants.PROJECT_PARAMETER)
 def delete_project(project):
-    with Database() as db:
-        db.project.delete_with_name(project)
-    click.echo("Success")
+    with BMI(_username, _password, "bmi_admin") as bmi:
+        ret = bmi.delete_project(project)
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            click.echo("Success")
+        else:
+            click.echo(ret[constants.MESSAGE_KEY])
 
 
 @cli.group(help='DB Related Commands')
@@ -191,103 +201,109 @@ def db():
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 def delete_image(project, img):
-    with Database() as db:
-        db.image.delete_with_name_from_project(img, project)
-    click.echo("Success")
+    with BMI(_username, _password, project) as bmi:
+        ret = bmi.delete_image(img)
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            click.echo("Success")
+        else:
+            click.echo(ret[constants.MESSAGE_KEY])
 
 
 @db.command(name='create', help='Adds Image to DB')
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
-@click.option('--id', default=-1, help='Specify what id to use for image')
+@click.option('--id', default=None, help='Specify what id to use for image')
 @click.option('--snap', is_flag=True, help='If image is snapshot')
-@click.option('--clone', is_flag=True, help='If image is provision clone')
+@click.option('--parent', default=None, help='Specify parent name')
 @click.option('--public', is_flag=True, help='If image is public')
-def add_image(project, img, id, snap, clone, public):
-    with Database() as db:
-        pid = db.project.fetch_id_with_name(project)
-        if id == -1:
-            db.image.insert(img, pid, public, snap, clone)
+def add_image(project, img, id, snap, parent, public):
+    with BMI(_username, _password, project) as bmi:
+        ret = bmi.add_image(img, id, snap, parent, public)
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            click.echo("Success")
         else:
-            db.image.insert(img, pid, public, snap, clone, id=id)
-    click.echo("Success")
+            click.echo(ret[constants.MESSAGE_KEY])
 
 
 @db.command(name='ls', help='Lists All Images')
 def list_all_images():
-    with Database() as db:
-        images = db.image.fetch_all_images()
-        table = PrettyTable(
-            field_names=["Id", "Name", "Project Name", "Is Public",
-                         "Is Snapshot",
-                         "Is Provision Clone"])
-        for image in images:
-            table.add_row(image)
-    click.echo(table.get_string())
+    with BMI(_username, _password, "bmi_admin") as bmi:
+        ret = bmi.list_all_images()
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            table = PrettyTable(
+                field_names=["Id", "Name", "Project Name", "Is Public",
+                             "Is Snapshot",
+                             "Parent"])
+            images = ret[constants.RETURN_VALUE_KEY]
+            for image in images:
+                table.add_row(image)
+            click.echo(table.get_string())
+        else:
+            click.echo(ret[constants.MESSAGE_KEY])
 
 
 @cli.command(name='import',
              help='Clones an existing ceph image and makes it compatible with BMI')
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
-@click.option('--snap', default="", help='Specifies what snapshot to import')
-def convert_ceph_image(project, img, snap):
-    if snap == "":
-        with ceph.RBD(_cfg.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
-            with Database() as db:
-                pid = db.project.fetch_id_with_name(project)
-                ceph_img_name = str(img)
+@click.option('--snap', default=None, help='Specifies what snapshot to import')
+def import_ceph_image(project, img, snap):
+    with BMI(_username, _password, project) as bmi:
+        ret = None
+        if snap is None:
+            ret = bmi.import_ceph_image(img)
+        else:
+            ret = bmi.import_ceph_snapshot(img, snap)
 
-                fs.snap_image(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
-                fs.snap_protect(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
-                db.image.insert(ceph_img_name, pid)
-                snap_ceph_name = __get__ceph_image_name(ceph_img_name, project)
-                fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
-                         snap_ceph_name)
-                fs.flatten(snap_ceph_name)
-                fs.snap_image(snap_ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
-                fs.snap_protect(snap_ceph_name,
-                                constants.DEFAULT_SNAPSHOT_NAME)
-                fs.snap_unprotect(ceph_img_name,
-                                  constants.DEFAULT_SNAPSHOT_NAME)
-                fs.remove_snapshot(ceph_img_name,
-                                   constants.DEFAULT_SNAPSHOT_NAME)
-    else:
-        convert_ceph_snapshot(project, img, snap)
-    click.echo("Success")
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            click.echo("Success")
+        else:
+            click.echo(ret[constants.MESSAGE_KEY])
 
 
 @cli.command(name='cp', help="Copy an existing image not clones")
 @click.argument('src_project')
 @click.argument('img1')
 @click.argument('dest_project')
-@click.argument('img2', default='')
+@click.argument('img2', default=None)
 def copy_image(src_project, img1, dest_project, img2):
-    with ceph.RBD(_cfg.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
-        with Database() as db:
-            pid = db.project.fetch_id_with_name(dest_project)
-            db.image.copy_image(img1, src_project, img2, pid)
-            if img2 != '':
-                ceph_name = __get__ceph_image_name(img2, dest_project)
-            else:
-                ceph_name = __get__ceph_image_name(img1, dest_project)
-            fs.clone(__get__ceph_image_name(img1, src_project),
-                     constants.DEFAULT_SNAPSHOT_NAME, ceph_name)
-            fs.snap_image(ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
-            fs.snap_protect(ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
-    click.echo('Success')
+    with BMI(_username, _password, src_project) as bmi:
+        ret = bmi.copy_image(img1, dest_project, img2)
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            click.echo("Success")
+        else:
+            click.echo(ret[constants.MESSAGE_KEY])
 
 
 @cli.command(name='mv', help='Move Image From Project to Another')
 @click.argument('src_project')
 @click.argument('img1')
 @click.argument('dest_project')
-@click.argument('img2', default='')
+@click.argument('img2', default=None)
 def move_image(src_project, img1, dest_project, img2):
-    with Database() as db:
-        pid = db.project.fetch_id_with_name(dest_project)
-        db.image.move_image(src_project, img1, pid, img2)
-    click.echo("Success")
+    with BMI(_username, _password, src_project) as bmi:
+        ret = bmi.move_image(img1, dest_project, img2)
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            click.echo("Success")
+        else:
+            click.echo(ret[constants.MESSAGE_KEY])
+
+
+@cli.group(name='node', help='Node Related Commands')
+def node():
+    pass
+
+
+@node.command('ip', help='Get IP on Provisioning Network')
+@click.argument(constants.PROJECT_PARAMETER)
+@click.argument(constants.NODE_NAME_PARAMETER)
+def get_node_ip(project, node):
+    with BMI(_username, _password, project) as bmi:
+        ret = bmi.get_node_ip(node)
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            click.echo(ret[constants.RETURN_VALUE_KEY])
+        else:
+            click.echo(ret[constants.MESSAGE_KEY])
 
 
 @cli.group(help='ISCSI Related Commands')
@@ -314,31 +330,14 @@ def show_mappings():
     click.echo('Not Yet Implemented')
 
 
-def __get__ceph_image_name(name, project):
-    with Database() as db:
-        img_id = db.image.fetch_id_with_name_from_project(name, project)
-        if img_id is None:
-            logger.info("Raising Image Not Found Exception for %s", name)
-            raise db_exceptions.ImageNotFoundException(name)
-
-        return str(_cfg.uid) + "img" + str(img_id)
+@cli.command(name='upload', help='Upload Image to BMI')
+def upload():
+    click.echo('Not Yet Implemented')
 
 
-def convert_ceph_snapshot(project, img, snap_name):
-    with ceph.RBD(_cfg.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
-        with Database() as db:
-            pid = db.project.fetch_id_with_name(project)
-            ceph_img_name = str(img)
-
-            fs.snap_protect(ceph_img_name, snap_name)
-            db.image.insert(ceph_img_name, pid)
-            snap_ceph_name = __get__ceph_image_name(ceph_img_name, project)
-            fs.clone(ceph_img_name, snap_name,
-                     snap_ceph_name)
-            fs.flatten(snap_ceph_name)
-            fs.snap_image(snap_ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
-            fs.snap_protect(snap_ceph_name,
-                            constants.DEFAULT_SNAPSHOT_NAME)
+@cli.command(name='download', help='Download Image from BMI')
+def download():
+    click.echo('Not Yet Implemented')
 
 
 if __name__ == '__main__':

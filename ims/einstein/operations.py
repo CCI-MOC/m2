@@ -6,6 +6,7 @@ import time
 
 from ims.database import *
 from ims.einstein.ceph import *
+from ims.einstein.dnsmasq import *
 from ims.einstein.haas import *
 from ims.exception import *
 
@@ -21,6 +22,22 @@ class BMI:
         self.haas = HaaS(base_url=self.config.haas_url, usr=self.username,
                          passwd=self.password)
         self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME])
+        self.dhcp = DNSMasq()
+
+    @log
+    def __init__(self, username, password, project):
+        self.config = config.get()
+        self.username = username
+        self.password = password
+        self.project = project
+        self.db = Database()
+        self.pid = self.__does_project_exist()
+        self.is_admin = self.__check_admin()
+        self.haas = HaaS(base_url=self.config.haas_url, usr=self.username,
+                         passwd=self.password)
+        self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME])
+        logger.debug("Username is %s and Password is %s", self.username,
+                     self.password)
 
     def __enter__(self):
         return self
@@ -37,7 +54,10 @@ class BMI:
                         self.project)
             raise db_exceptions.ProjectNotFoundException(self.project)
 
-        self.pid = pid
+        return pid
+
+    def __check_admin(self):
+        return True
 
     @trace
     def __get__ceph_image_name(self, name):
@@ -52,11 +72,12 @@ class BMI:
     @trace
     def __process_credentials(self, credentials):
         base64_str, self.project = credentials
-        self.__does_project_exist()
+        self.pid = self.__does_project_exist()
         self.username, self.password = tuple(
             base64.b64decode(base64_str).split(':'))
         logger.debug("Username is %s and Password is %s", self.username,
                      self.password)
+        self.is_admin = self.__check_admin()
 
     @log
     def __register(self, node_name, img_name, target_name):
@@ -153,7 +174,9 @@ class BMI:
             self.haas.attach_node_to_project_network(node_name, network,
                                                      channel, nic)
 
-            self.db.image.insert(node_name, self.pid, is_provision_clone=True)
+            parent_id = self.db.image.fetch_id_with_name_from_project(img_name,
+                                                                      self.project)
+            self.db.image.insert(node_name, self.pid, parent_id)
             clone_ceph_name = self.__get__ceph_image_name(node_name)
             ceph_img_name = self.__get__ceph_image_name(img_name)
             self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
@@ -259,14 +282,20 @@ class BMI:
                 str(ceph_img_name),
                 constants.ISCSI_CREATE_COMMAND,
                 self.config.iscsi_update_password)
-            self.db.image.insert(node_name, self.pid, is_provision_clone=True,
+            # Have to get parent name
+            parent_id = self.db.image.fetch_id_with_name_from_project(img_name,
+                                                                      self.project)
+            # Id is wrong
+            self.db.image.insert(node_name, self.pid, parent_id,
                                  id=ceph_img_name[3:])
             time.sleep(30)
             self.haas.attach_node_haas_project(self.project, node_name)
             return self.__return_error(e)
         except ISCSIException as e:
             logger.exception('')
-            self.db.image.insert(node_name, self.pid, is_provision_clone=True,
+            parent_id = self.db.image.fetch_id_with_name_from_project(img_name,
+                                                                      self.project)
+            self.db.image.insert(node_name, self.pid, parent_id,
                                  id=ceph_img_name[3:])
             time.sleep(30)
             self.haas.attach_node_haas_project(self.project, node_name)
@@ -291,7 +320,9 @@ class BMI:
 
             self.fs.snap_image(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
             self.fs.snap_protect(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
-            self.db.image.insert(snap_name, self.pid, is_snapshot=True)
+            parent_id = self.db.image.fetch_parent_id(self.project, node_name)
+            self.db.image.insert(snap_name, self.pid, parent_id,
+                                 is_snapshot=True)
             snap_ceph_name = self.__get__ceph_image_name(snap_name)
             self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
                           snap_ceph_name)
@@ -351,5 +382,164 @@ class BMI:
             return self.__return_success(names)
 
         except (HaaSException, DBException) as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+    @log
+    def list_provisioned_nodes(self):
+        try:
+            clones = self.db.image.fetch_clones_from_project(self.project)
+            return self.__return_success(clones)
+        except DBException as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+    @log
+    def list_all_images(self):
+        try:
+            images = self.db.image.fetch_all_images()
+            return self.__return_success(images)
+        except DBException as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+    @log
+    def import_ceph_image(self, img):
+        try:
+            ceph_img_name = str(img)
+
+            self.fs.snap_image(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.snap_protect(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
+            self.db.image.insert(ceph_img_name, self.pid)
+            snap_ceph_name = self.__get__ceph_image_name(ceph_img_name,
+                                                         self.project)
+            self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
+                          snap_ceph_name)
+            self.fs.flatten(snap_ceph_name)
+            self.fs.snap_image(snap_ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.snap_protect(snap_ceph_name,
+                                 constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.snap_unprotect(ceph_img_name,
+                                   constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.remove_snapshot(ceph_img_name,
+                                    constants.DEFAULT_SNAPSHOT_NAME)
+            return self.__return_success(True)
+        except (DBException, FileSystemException) as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+    @log
+    def import_ceph_snapshot(self, img, snap_name):
+        try:
+            ceph_img_name = str(img)
+
+            self.fs.snap_protect(ceph_img_name, snap_name)
+            self.db.image.insert(ceph_img_name, self.pid)
+            snap_ceph_name = self.__get__ceph_image_name(ceph_img_name, project)
+            self.fs.clone(ceph_img_name, snap_name,
+                          snap_ceph_name)
+            self.fs.flatten(snap_ceph_name)
+            self.fs.snap_image(snap_ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.snap_protect(snap_ceph_name,
+                                 constants.DEFAULT_SNAPSHOT_NAME)
+            return self.__return_success(True)
+        except (DBException, FileSystemException) as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+    @log
+    def delete_image(self, img):
+        try:
+            if not self.is_admin:
+                raise exception.AuthorizationFailedException()
+            self.db.image.delete_with_name_from_project(img, self.project)
+            return self.__return_success(True)
+        except (DBException,AuthorizationFailedException) as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+    @log
+    def add_image(self, img, id, snap, parent, public):
+        try:
+            if not self.is_admin:
+                raise exception.AuthorizationFailedException()
+            parent_id = None
+            if parent is not None:
+                parent_id = self.db.image.fetch_id_with_name_from_project(
+                    parent,
+                    self.project)
+            self.db.image.insert(img, self.pid, parent_id, public, snap, id)
+            return self.__return_success(True)
+        except (DBException,AuthorizationFailedException) as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+    @log
+    def get_node_ip(self, node_name):
+        try:
+            mac_addr = self.haas.get_node_mac_addr(node_name)
+            return self.dhcp.get_ip(mac_addr)
+        except (HaaSException, DHCPException) as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+    @log
+    def copy_image(self, img1, dest_project, img2=None):
+        try:
+            dest_pid = self.__does_project_exist(dest_project)
+            self.db.image.copy_image(self.project, img1, dest_pid, img2)
+            if img2 is not None:
+                ceph_name = self.__get__ceph_image_name(img2, dest_project)
+            else:
+                ceph_name = self.__get__ceph_image_name(img1, dest_project)
+            self.fs.clone(self.__get__ceph_image_name(img1, self.project),
+                          constants.DEFAULT_SNAPSHOT_NAME, ceph_name)
+            self.fs.snap_image(ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.snap_protect(ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
+            return self.__return_success(True)
+        except (DBException, FileSystemException) as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+    @log
+    def move_image(self, img1, dest_project, img2):
+        try:
+            dest_pid = self.__does_project_exist(dest_project)
+            self.db.image.move_image(self.project, img1, dest_pid, img2)
+            return self.__return_success(True)
+        except DBException as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+    @log
+    def add_project(self, project, network, id):
+        try:
+            if not self.is_admin:
+                raise exception.AuthorizationFailedException()
+            self.db.project.insert(project, network, id)
+            return self.__return_success(True)
+        except (DBException,AuthorizationFailedException) as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+    @log
+    def delete_project(self, project):
+        try:
+            if not self.is_admin:
+                raise exception.AuthorizationFailedException()
+            self.db.project.delete_with_name(project)
+            return self.__return_success(True)
+        except (DBException,AuthorizationFailedException) as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+    @log
+    def list_projects(self):
+        try:
+            if not self.is_admin:
+                raise exception.AuthorizationFailedException()
+            projects = self.db.project.fetch_projects()
+            return self.__return_success(projects)
+        except (DBException,AuthorizationFailedException) as e:
             logger.exception('')
             return self.__return_error(e)
