@@ -3,8 +3,8 @@ import urlparse
 
 import requests
 
-import constants
-from exception import *
+import ims.common.constants as constants
+import ims.exception.haas_exceptions as haas_exceptions
 
 
 class HaaS:
@@ -102,6 +102,14 @@ class HaaS:
         api = '/node/' + node + '/nic/' + nic + '/detach_network'
         body = {"network": network}
         return self.__call_rest_api_with_body(api=api, body=body)
+
+    def get_node_mac_addr(self, node):
+        '''
+        Checks the current information for the node and returns a tuple consisting of (<project_name>,List of <{"network": network-name}>, NIC name)
+        '''
+        api = "node/" + node
+        node_info = self.__call_rest_api(api)
+        return node_info[constants.RETURN_VALUE_KEY]['nics'][0]['macaddr']
 
     def validate_project(self, project):
         api = '/project/' + project + '/nodes'

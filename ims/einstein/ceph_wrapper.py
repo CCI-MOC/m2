@@ -2,10 +2,10 @@
 import os
 from contextlib import contextmanager
 
-import constants
+import ims.common.constants as constants
+import ims.exception.file_system_exceptions as file_system_exceptions
 import rados
 import rbd
-from exception import *
 
 
 # Need to think if there is a better way to reduce boilerplate exception
@@ -142,6 +142,41 @@ class RBD:
         # Was having issue with ceph implemented work around (stack dump issue)
         except rbd.ImageExists:
             raise file_system_exceptions.ImageExistsException(img_id)
+        except rbd.ImageNotFound:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
+
+    def snap_protect(self, img_id, snap_name):
+        try:
+
+            snaps = self.list_snapshots(img_id)
+            if snap_name not in snaps:
+                raise file_system_exceptions.ImageNotFoundException(snap_name)
+
+            with self.__open_image(img_id) as img:
+                img.protect_snap(snap_name)
+                return True
+        except rbd.ImageNotFound:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
+
+    def snap_unprotect(self, img_id, snap_name):
+        try:
+
+            snaps = self.list_snapshots(img_id)
+            if snap_name not in snaps:
+                raise file_system_exceptions.ImageNotFoundException(snap_name)
+
+            with self.__open_image(img_id) as img:
+                img.unprotect_snap(snap_name)
+                return True
+        except rbd.ImageNotFound:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
+
+    def flatten(self,img_id):
+        try:
+
+            with self.__open_image(img_id) as img:
+                img.flatten()
+                return True
         except rbd.ImageNotFound:
             raise file_system_exceptions.ImageNotFoundException(img_id)
 

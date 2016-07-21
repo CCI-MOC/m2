@@ -1,0 +1,5 @@
+#!ipxe
+      set keep-san 1
+      ifconf --configurator=dhcp net2
+      sanboot --keep iscsi:192.168.29.20::::iqn.2015.${target_name}
+      boot
