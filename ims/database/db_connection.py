@@ -7,6 +7,7 @@ import ims.common.config as config
 
 _cfg = config.get()
 
+
 # The class which represents the BMI database
 # It is responsible for creating and closing sessions
 class DatabaseConnection:
@@ -18,7 +19,7 @@ class DatabaseConnection:
     # sample_bmi.db should be changed to something more realistic
     # NullPool pool class is equivalent to no connection pool
     # Should be adapted to postgres SQL
-    engine = create_engine('sqlite:///'+_cfg.db_url, poolclass=NullPool)
+    engine = create_engine('sqlite:///' + _cfg.db_url, poolclass=NullPool)
 
     # creates a session maker for creating sessions
     session_maker = sessionmaker(bind=engine)

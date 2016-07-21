@@ -1,16 +1,15 @@
 #! /bin/python
-import os
 from contextlib import contextmanager
 
 import rados
 import rbd
 
-from ims.common.log import *
 import ims.common.constants as constants
 import ims.exception.file_system_exceptions as file_system_exceptions
-
+from ims.common.log import *
 
 logger = create_logger(__name__)
+
 
 # Need to think if there is a better way to reduce boilerplate exception
 # handling code in methods
@@ -217,7 +216,7 @@ class RBD:
             raise file_system_exceptions.ImageNotFoundException(img_id)
 
     @log
-    def get_parent_info(self,img_id):
+    def get_parent_info(self, img_id):
         try:
             with self.__open_image(img_id) as img:
                 return img.parent_info()

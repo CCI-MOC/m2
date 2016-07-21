@@ -6,9 +6,7 @@ from flask import request
 from ims.rpc.client.rpc_client import *
 
 app = Flask(__name__)
-
 rpc_client = None
-
 logger = create_logger(__name__)
 
 

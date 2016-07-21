@@ -23,11 +23,11 @@ HTTP_CONFIG_SECTION_NAME = 'http'
 LOGS_CONFIG_SECTION_NAME = 'logs'
 TFTP_CONFIG_SECTION_NAME = 'tftp'
 
-
 # Non FS Keys in Config File
 HAAS_URL_KEY = 'url'
 ISCSI_URL_KEY = 'update_shell_url'
 ISCSI_PASSWORD_KEY = 'password'
+ISCSI_IP_KEY = 'ip'
 
 # DB
 DB_URL_KEY = 'url'
@@ -61,11 +61,11 @@ LOGS_URL_KEY = 'url'
 LOGS_DEBUG_KEY = 'debug'
 LOGS_VERBOSE_KEY = 'verbose'
 
-#TFTP
+# TFTP
 PXELINUX_URL_KEY = 'pxelinux_url'
 IPXE_URL_KEY = 'ipxe_url'
 
-#Identity
+# Identity
 UID_KEY = 'uid'
 
 # Response Related Keys
@@ -92,6 +92,7 @@ CHANNEL_PARAMETER = "channel"
 
 # Template Parameters
 IPXE_TARGET_NAME = "${target_name}"
+IPXE_ISCSI_IP = "${iscsi_ip}"
 MAC_IMG_NAME = "${img_name}"
 MAC_IPXE_NAME = "${ipxe.file}"
 

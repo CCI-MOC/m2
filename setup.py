@@ -13,10 +13,4 @@ setup(
         'console_scripts': [
             'bmi = ims.cli.cli:cli'
         ]
-    },
-    url='',
-    license='',
-    author='chemistry_sourabh',
-    author_email='',
-    description=''
-)
+    })

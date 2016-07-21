@@ -97,6 +97,8 @@ class BMI:
         with io.open(path, 'w') as ipxe:
             for line in io.open(template_loc + "/ipxe.temp", 'r'):
                 line = line.replace(constants.IPXE_TARGET_NAME, target_name)
+                line = line.replace(constants.IPXE_ISCSI_IP,
+                                    self.config.iscsi_ip)
                 ipxe.write(line)
         logger.info("Generated ipxe file")
         os.chmod(path, 0755)
@@ -454,7 +456,7 @@ class BMI:
                 raise exception.AuthorizationFailedException()
             self.db.image.delete_with_name_from_project(img, self.project)
             return self.__return_success(True)
-        except (DBException,AuthorizationFailedException) as e:
+        except (DBException, AuthorizationFailedException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -470,7 +472,7 @@ class BMI:
                     self.project)
             self.db.image.insert(img, self.pid, parent_id, public, snap, id)
             return self.__return_success(True)
-        except (DBException,AuthorizationFailedException) as e:
+        except (DBException, AuthorizationFailedException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -518,7 +520,7 @@ class BMI:
                 raise exception.AuthorizationFailedException()
             self.db.project.insert(project, network, id)
             return self.__return_success(True)
-        except (DBException,AuthorizationFailedException) as e:
+        except (DBException, AuthorizationFailedException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -529,7 +531,7 @@ class BMI:
                 raise exception.AuthorizationFailedException()
             self.db.project.delete_with_name(project)
             return self.__return_success(True)
-        except (DBException,AuthorizationFailedException) as e:
+        except (DBException, AuthorizationFailedException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -540,6 +542,6 @@ class BMI:
                 raise exception.AuthorizationFailedException()
             projects = self.db.project.fetch_projects()
             return self.__return_success(projects)
-        except (DBException,AuthorizationFailedException) as e:
+        except (DBException, AuthorizationFailedException) as e:
             logger.exception('')
             return self.__return_error(e)

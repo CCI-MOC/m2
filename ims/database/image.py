@@ -1,6 +1,5 @@
 from sqlalchemy import Boolean, ForeignKey
 from sqlalchemy import UniqueConstraint
-from sqlalchemy import and_
 
 from ims.database.project import *
 from ims.exception import *
@@ -77,7 +76,8 @@ class ImageRepository:
             raise db_exceptions.ORMException(e.message)
 
     @log
-    def move_image(self, src_project_name, name, dest_project_id, new_name=None):
+    def move_image(self, src_project_name, name, dest_project_id,
+                   new_name=None):
         try:
             image = self.connection.session.query(Image). \
                 filter(Image.project.has(name=src_project_name)).filter_by(
