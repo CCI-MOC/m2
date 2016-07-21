@@ -1,217 +1,170 @@
 #! /bin/python
+import os
+from contextlib import contextmanager
+
+import constants
 import rados
 import rbd
-import os
-
-#Need to define abstract class for Filesystem in a seperate file. 
+from exception import *
 
 
-class CephException(Exception):
-    def __init__(self, message = None, errors = None):
-        super(CephException, self).__init__(message)
-        self.errors = errors   
- 
-class CephBase(object):
-    def __init__(self, rid, r_conf, pool, debug=None):
-        if not rid or not r_conf or not pool:
-            raise CephException("one or more arguments for ceph is incorrect")
-        if not os.path.isfile(r_conf):
-            raise CephException("invalid configuration file")
-        self.rid = rid
-        self.r_conf = r_conf
-        self.pool = pool
+# Need to think if there is a better way to reduce boilerplate exception
+# handling code in methods
+
+class RBD:
+    def __init__(self, config):
+        self.__validate(config)
         self.cluster = self.__init_cluster()
-        self.ctx = self.__init_context()
-        self.rbd = self.__init_rbd()
-        self.is_debug = False
-        self.c_img_list = list()
-        self.img_dict = dict()
-        if debug:   
-            self.is_debug = debug
-        
+        self.context = self.__init_context()
+        self.rbd = rbd.RBD()
+
+    def __enter__(self):
+        self.rbd = rbd.RBD()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.tear_down()
+
     def __repr__(self):
-        return str([self.rid, self.r_conf, self.pool, self.is_debug])
-#
-# log in case of debug
-#
+        return str([self.rid, self.r_conf, self.pool])
+
     def __str__(self):
-        return 'rid = {0}, conf_file = {1}, pool = {2},'\
-                'is_debug? = {3}, current images {4}'\
-                .format(self.rid,self.r_conf,\
-                        self.pool, self.is_debug,\
-                        str(self.img_dict.keys()))
+        return 'rid = {0}, conf_file = {1}, pool = {2},' \
+               'current images {3}' \
+            .format(self.rid, self.r_conf,
+                    self.pool)
+
+    # Validates the config arguments passed
+    # If all are present then the values are copied to variables
+    def __validate(self, config):
+        try:
+            self.rid = config[constants.CEPH_ID_KEY]
+            self.r_conf = config[constants.CEPH_CONFIG_FILE_KEY]
+            self.pool = config[constants.CEPH_POOL_KEY]
+        except KeyError as e:
+            raise file_system_exceptions.MissingConfigArgumentException(
+                e.args[0])
+
+        if not os.path.isfile(self.r_conf):
+            raise file_system_exceptions.InvalidConfigArgumentException(
+                constants.CEPH_CONFIG_FILE_KEY)
 
     def __init_context(self):
-        try:
-            return  self.cluster.open_ioctx(self.\
-                pool.encode('utf-8'))
-        except Exception as e:
-            raise e
+        return self.cluster.open_ioctx(self.pool.encode('utf-8'))
 
     def __init_cluster(self):
+        cluster = rados.Rados(rados_id=self.rid, conffile=self.r_conf)
+        cluster.connect()
+        return cluster
+
+    # Written to use 'with' for opening and closing images
+    # Passing context as it is outside class
+    # Need to see if it is ok to put it inside the class
+    @contextmanager
+    def __open_image(self, img_name):
+        img = None
         try:
-            cluster = rados.Rados(rados_id = self.rid,\
-                    conffile = self.r_conf)
-            cluster.connect()
-            return cluster      
-        except Exception as e:
-            raise e
-
-    def __init_rbd(self):
-        try:
-            return rbd.RBD() 
-        except Exception as e:
-            raise e
-
-    def init_image(self, name, ctx = None, \
-            snapshot = None, read_only = False):
-        try:
-            if not ctx:
-                ctx = self.ctx
-            image_instance = rbd.Image(ctx, name, snapshot, read_only)
-            self.img_dict[name] = image_instance 
-            ##return True We return True because we can already reference the image
-            ##using the name as the key to the dict. The worklflos is something like
-            return True
-        except Exception as e:
-            raise e
-# define this function in the derivative class
-# to be specific for the call.
-
-    def run(self):
-        pass
-
-# this is the teardown section, we undo things here
-    def __td_context(self):
-        self.ctx.close()    
-
-    def __td_cluster(self):
-        self.cluster.shutdown()
-    
-    def __td_images(self):
-        if self.img_dict is None:
-            return
-        for key in self.img_dict.keys():
-            self.img_dict[key].close()
-            del(self.img_dict[key])
+            img = rbd.Image(self.context, img_name)
+            yield (img)
+        finally:
+            if img is not None:
+                img.close()
 
     def tear_down(self):
-        try:
-            self.__td_images()
-            self.__td_context()
-            self.__td_cluster()
-        except Exception as e:
-            raise e
+        self.context.close()
+        self.cluster.shutdown()
 
+    # RBD Operations Section
+    def list_images(self):
+        return self.rbd.list(self.context)
 
+    def create_image(self, img_id, img_size):
+        try:
+            self.rbd.create(self.context, img_id, img_size)
+            return True
+        except rbd.ImageExists:
+            raise file_system_exceptions.ImageExistsException(img_id)
+        except rbd.FunctionNotSupported:
+            raise file_system_exceptions.FunctionNotSupportedException()
 
-class RBD(CephBase):
-    def list_n(self):
+    def clone(self, parent_img_name, parent_snap_name, clone_img_name):
         try:
-            return self.rbd.list(self.ctx)
-        except Exception as e:
-            raise e
-          
-    def clone(self, p_name, p_snap, c_nm,\
-            p_ctx = None, c_ctx = None):
-        try:
-            if not p_ctx:
-                p_ctx = self.ctx
-            if not c_ctx:
-                c_ctx = self.ctx
-            self.rbd.clone(p_ctx, p_name, p_snap, c_ctx,\
-                    c_nm, features = 1 )
-            if c_nm in self.list_n():
-                self.c_img_list.append(c_nm)
-                return True
+            parent_context = child_context = self.context
+            self.rbd.clone(parent_context, parent_img_name, parent_snap_name,
+                           child_context, clone_img_name, features=1)
+            return True
+        except rbd.ImageNotFound:
+            # Can be raised if the img or snap is not found
+            if parent_img_name not in self.list_images():
+                img_name = parent_img_name
             else:
-                raise CephException("post image creation check failed")
-        except Exception as e:
-            raise e
-    
-    def remove(self, iname, ctx = None):
-        if not ctx:
-            ctx = self.ctx
-        if iname in self.c_img_list:
-            self._remove(iname, ctx) 
-        else:
-            raise CephException("image not found in list,'\
-                    ' use the unsafe remove if you are sure")
-        if iname not in self.list_n():
-            self.c_img_list.remove(iname)
+                img_name = parent_snap_name
+            raise file_system_exceptions.ImageNotFoundException(img_name)
+        except rbd.ImageExists:
+            raise file_system_exceptions.ImageExistsException(clone_img_name)
+        # No Clue when will this be raised so not testing
+        except rbd.FunctionNotSupported:
+            raise file_system_exceptions.FunctionNotSupportedException()
+        # No Clue when will this be raised so not testing
+        except rbd.ArgumentOutOfRange:
+            raise file_system_exceptions.ArgumentsOutOfRangeException()
+
+    def remove(self, img_id):
+        try:
+            self.rbd.remove(self.context, img_id)
             return True
-        else:
-            raise CephException("post image removal\
-                    ' check failed")
+        except rbd.ImageNotFound:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
+        # Don't know how to raise this
+        except rbd.ImageBusy:
+            raise file_system_exceptions.ImageBusyException(img_id)
+        # Forgot to test this
+        except rbd.ImageHasSnapshots:
+            raise file_system_exceptions.ImageHasSnapshotException(img_id)
 
-    def _remove(self, iname, ctx = None):
-            try:
-                if not ctx:
-                    ctx = self.ctx
-                self.rbd.remove(ctx, iname)
-            except CephException as e:
-                raise e
-
-    def write(img_name, data, offset):
+    def write(self, img_id, data, offset):
         try:
-            if not img_name in self.img_dict:
-                raise CephException('Image not instantiated:'\
-                        ' Open the image first')
-            self.img_dict[img_name].write(data, offset)
-        except Exception as e:
-            raise e
+            with self.__open_image(img_id) as img:
+                img.write(data, offset)
+        except rbd.ImageNotFound:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
 
-    def close_image(self, name):
-        if name in self.img_dict:
-            self.img_dict[name].close()
-            del(self.img_dict[name])
-        else:
-            raise CephException("{0} not found!".format(name))
-
-    def snap_image(self, img_name, name):
+    def snap_image(self, img_id, name):
         try:
-            if img_name not in self.img_dict:
-                raise CephException("Invalid image name"\
-                        " or image not instantiated")
-            self.img_dict[img_name].create_snap(name)
-            return True
-        except Exception as e:
-            raise e
-    
-    def list_snapshots(self, img_name):
+            # Work around for Ceph problem
+            snaps = self.list_snapshots(img_id)
+            if name in snaps:
+                raise file_system_exceptions.ImageExistsException(name)
+
+            with self.__open_image(img_id) as img:
+                img.create_snap(name)
+                return True
+        # Was having issue with ceph implemented work around (stack dump issue)
+        except rbd.ImageExists:
+            raise file_system_exceptions.ImageExistsException(img_id)
+        except rbd.ImageNotFound:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
+
+    def list_snapshots(self, img_id):
         try:
-            if img_name not in self.img_dict:
-                raise CephException("Invalid image name"\
-                        " or image not instantiated")
-            snap_list_iter = self.img_dict[img_name].list_snaps()
-            snap_list = [snap['name'] for snap in snap_list_iter]
-            return snap_list
-        except Exception as e:
-            raise e
-    
-    def remove_snapshots(self, img_name, name, debug = False):
+            with self.__open_image(img_id) as img:
+                return [snap['name'] for snap in img.list_snaps()]
+        except rbd.ImageNotFound:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
+
+    def remove_snapshots(self, img_id, name):
         try:
-            if img_name not in self.img_dict:
-                raise CephException("Invalid image name"\
-                        " or image not instantiated")
-            self.img_dict[img_name].remove_snap(name)
-            if debug:
-                print {"image name" : self.img_dict[img_name]}
-            return True
+            with self.__open_image(img_id) as img:
+                img.remove_snap(name)
+                return True
+        except rbd.ImageNotFound:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
+        # Don't know how to raise this
+        except rbd.ImageBusy:
+            raise file_system_exceptions.ImageBusyException(img_id)
 
-        except Exception as e:
-            raise e
-
-
-    def create_image(self, img_name, img_file,\
-                 img_size, ctx = None):
-        ctx = self.ctx    
-        self.rbd.create(ctx, img_name, img_size)
-        return True
-    
-    def get_image(self, img_name):
-         '''
-            Gets image object for manipulation
-         '''
-         return self.img_dict[img_name]
-
+    def get_image(self, img_id):
+        try:
+            return rbd.Image(self.context, img_id)
+        except rbd.ImageNotFound:
+            raise file_system_exceptions.ImageNotFoundException(img_id)

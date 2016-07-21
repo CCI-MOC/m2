@@ -1,209 +1,180 @@
 #!/usr/bin/python
-import sys
-from ceph_wrapper import *
-import ConfigParser, os
 import subprocess
-import os.path
 
-#As of now a shell script that can accomodate rbd map and update.
-#Since there are no python rbd map and updates wrappers around ceph.
-class ShellScriptException(Exception): 
-    def __init__(self, message = None, errors = None):
-        super(ShellScriptException, self).__init__(message)
-        self.errors = errors   
- 
-class GlobalConfig(object):
-    # once we have a config file going, this object will parse the config file.
-    # for the time being we are going to hard code the inits.
-        
-    def __init__(self):
-        try:
-            self.configfile = 'bmiconfig.cfg'
-        except Exception, e:
-            print e
-    #add parser code here once we have a configfile/ if we decide on a Db
-    # we put the db code here.
-    def __str__(self):
-        return {'file system :' : self.fstype, \
-            'rid' : self.rid, 'pool' : self.pool,\
-                'configfile' : self.r_conf} 
+from ceph_wrapper import *
+from config import BMIConfig
+from database import *
+from haas_wrapper import *
 
-    def parse_config(self):
-        config = ConfigParser.SafeConfigParser()
-        try:
-            config.read(self.configfile)
-            for k, v in config.items('filesystem'):
-                if v == 'True':
-                    self.fstype = k
-            if self.fstype == 'ceph':
-                self.rid = config.get(self.fstype, 'id')
-                self.pool = config.get(self.fstype, 'pool')
-                self.r_conf = config.get(self.fstype, 'conf_file')
-                self.keyring = config.get(self.fstype, 'keyring')
-        except ConfigParser.NoOptionError, err: #which is same as 'exp as e'
-            print str(err)
 
-#Calling shell script which executes a iscsi update as we don't have 
-#rbd map in documentation.
-def call_shellscript(path, m_args):
-        arglist = []
-        arglist.append(path)
-        for arg in m_args:
-                arglist.append(arg)
-        proc = subprocess.Popen(arglist, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+# logging will be submitted later
+
+class BMI:
+    def __init__(self, usr, passwd):
+        self.config = BMIConfig.create_config()
+        self.haas = HaaS(base_url=self.config.haas_url, usr=usr, passwd=passwd)
+
+    def __does_project_exist(self, name):
+        pr = ProjectRepository()
+        pid = pr.fetch_id_with_name(name)
+        # None as a query result implies that the project does not exist.
+        if pid is None:
+            raise db_exceptions.ProjectNotFoundException(name)
+
+    def __get_image_id(self, project, name):
+        imgr = ImageRepository()
+        img_id = imgr.fetch_id_with_name_from_project(name, project)
+        if img_id is None:
+            raise db_exceptions.ImageNotFoundException(name)
+        return str(img_id)
+
+    # Calling shell script which executes a iscsi update as we don't have
+    # rbd map in documentation.
+    @staticmethod
+    def __call_shellscript(*args):
+        arglist = list(args)
+        proc = subprocess.Popen(arglist, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
         return proc.communicate()
 
-#Custom Exception Class that we are going to use which is a wrapper around
-#Ceph exception classes.
-class ResponseException(object):
-    def __init__(self, e, debug = False):
-        self.exception_dict = dict()
-        self.exception = e
-        if debug:
-            print self.exception
-# Extend this dict as needed for future expceptions. this
-# ensures readeability and uniformity of errors.
-        self.exception_dict = {
-           type(rbd.ImageExists())  : 401,
-           type(CephException()) : 403,
-           type(rbd.ImageBusy()) : 409,
-           type(rbd.ImageHasSnapshots()) : 405,
-           type(rbd.ImageNotFound()) : 404,
-           type(rbd.FunctionNotSupported()) : 410,
-           type(rbd.ArgumentOutOfRange()) : 411,
-           type(ShellScriptException()) : 440,
-                                }
-        #This is to handle key error exception, this also gives us the default error
-        self.current_err = self.exception_dict.get(type(e), 500)
+    # A custom function which is wrapper around only success code that
+    # we are creating.
+    @staticmethod
+    def __return_success(obj):
+        return {constants.STATUS_CODE_KEY: 200, constants.RETURN_VALUE_KEY: obj}
 
-    def parse_curr_err(self, debug = False):
-        if self.current_err != 500:  #check for existing error code in the exception, 
-            emsg = self.exception.message
-        elif self.current_err == 500:
-            #This is for debugging original exceptions, if we don't have this, 
-            #we will always get internal error, so that end-user can't 
-            #see original exceptions
-            emsg = "Internal server error"
-        return {'status_code' : self.current_err, 'msg' : emsg}
+    # Parses the Exception and returns the dict that should be returned to user
+    @staticmethod
+    def __return_error(ex):
 
+        # Replaces the image name with id in error string
+        def swap_id_with_name(err_str):
+            parts = err_str.split(" ")
+            imgr = ImageRepository()
+            name = imgr.fetch_name_with_id(parts[0].strip())
+            if name is not None:
+                parts[0] = name
+            return " ".join(parts)
 
-#Provisioning the nodes for a given project using the image and snapshot name
-#given. The nodes are typically implemented using ceph.
-def provision(node_name, img_name = "hadoopMaster.img",\
-        snap_name = "HadoopMasterGoldenImage",\
-        debug = False):
-    try:
-        fsconfig = create_fsconfigobj()
-        fs_obj = init_fs(fsconfig)
-        if fs_obj.clone(img_name.encode('utf-8'),\
-                snap_name.encode('utf-8'),\
-                node_name.encode("utf-8")):
-            iscsi_output = call_shellscript('./iscsi_update.sh', \
-                                        [fsconfig.keyring, \
-                                fsconfig.rid, fsconfig.pool, node_name, 'create'])
-            if 'successfully' in iscsi_output[0]:
-                return ret_200(True)    
-            elif 'already' in iscsi_output[0]:
-                raise ShellScriptException("Node is already in use")
-    except Exception as e:
-        return ResponseException(e).parse_curr_err()            
-    finally:
-        fs_obj.tear_down()
+        if FileSystemException in ex.__class__.__bases__:
+            return {constants.STATUS_CODE_KEY: ex.status_code,
+                    constants.MESSAGE_KEY: swap_id_with_name(str(ex))}
+        return {constants.STATUS_CODE_KEY: ex.status_code,
+                constants.MESSAGE_KEY: str(ex)}
 
-#This is for detach a node and removing it from iscsi
-#and destroying its image
-def detach_node(node_name):
-    try:
-        fsconfig = create_fsconfigobj()
-        fs_obj = init_fs(fsconfig)
-        iscsi_output = call_shellscript('./iscsi_update.sh', \
-                                        [fsconfig.keyring, \
-                                fsconfig.rid, fsconfig.pool, node_name,\
-                                'delete'])
-        if 'successfully' in iscsi_output[0]:
-            fs_obj._remove(node_name.encode("utf-8"))
-            return ret_200(True)
-        elif 'already' in iscsi_output[0]:
-            raise ShellScriptException("Node already part unmapped and no image exists")
-    except Exception as e:
-        return ResponseException(e).parse_curr_err() 
-    finally:
-        fs_obj.tear_down()    
+    # Provisions from HaaS and Boots the given node with given image
+    def provision(self, node_name, img_name, snap_name, network, channel, nic):
+        try:
+            self.haas.attach_node_to_project_network(node_name, network,
+                                                     channel, nic)
 
+            with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
+                fs.clone(img_name.encode('utf-8'), snap_name.encode('utf-8'),
+                         node_name.encode("utf-8"))
 
-#Creates snapshot for the given image with snap_name as given name
-def create_snapshot(img_name, snap_name):
-    try:
-        fsconfig = create_fsconfigobj() 
-        fs_obj = init_fs(fsconfig)
-        #return (img_name, snap_name)
-        if fs_obj.init_image(img_name.encode("utf-8")):
-            a = ret_200(fs_obj.snap_image(img_name.encode("utf-8"), snap_name.encode("utf-8")))
-            fs_obj.tear_down()
-            return a
-    except Exception as e:
-        fs_obj.tear_down()
-        return ResponseException(e).parse_curr_err()
+                ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
+                # Should be changed to python script
+                iscsi_output = BMI.__call_shellscript(self.config.iscsi_update,
+                                                      ceph_config[
+                                                          constants.CEPH_KEY_RING_KEY],
+                                                      ceph_config[
+                                                          constants.CEPH_ID_KEY],
+                                                      ceph_config[
+                                                          constants.CEPH_POOL_KEY],
+                                                      node_name,
+                                                      constants.ISCSI_CREATE_COMMAND,
+                                                      self.config.iscsi_update_password)
+                if constants.ISCSI_UPDATE_SUCCESS in iscsi_output[0]:
+                    return BMI.__return_success(True)
+                elif constants.ISCSI_UPDATE_FAILURE in iscsi_output[0]:
+                    # Was not able to test this exception in test cases as the haas
+                    # call was blocking this exception
+                    # But it was raised during preparation of tests
+                    # Rare exception
+                    raise iscsi_exceptions.NodeAlreadyInUseException()
 
-#Lists snapshot for the given image img_name 
-def list_snaps(img_name):
-    try:
-        fsconfig = create_fsconfigobj() 
-        fs_obj = init_fs(fsconfig)
-        if fs_obj.init_image(img_name.encode("utf-8")):
-            a = ret_200(fs_obj.list_snapshots(img_name.encode("utf-8")))
-            fs_obj.tear_down()
-            return a
-    except Exception as e:
-        fs_obj.tear_down()
-        return ResponseException(e).parse_curr_err()
+        except (HaaSException, ISCSIException, FileSystemException) as e:
+            return BMI.__return_error(e)
 
-#Removes snapshot sna_name for the given image img_name
-def remove_snaps(img_name, snap_name):
-    try:
-        fsconfig = create_fsconfigobj() 
-        fs_obj = init_fs(fsconfig)
-        if fs_obj.init_image(img_name.encode("utf-8")):
-            a = ret_200(fs_obj.remove_snapshots(img_name.encode("utf-8"), snap_name.encode("utf-8")))
-            fs_obj.tear_down()
-            return a
-    except Exception as e:
-        fs_obj.tear_down()
-        return ResponseException(e).parse_curr_err()
+    # This is for detach a node and removing it from iscsi
+    # and destroying its image
+    def detach_node(self, node_name, network, nic):
+        try:
 
+            self.haas.detach_node_from_project_network(node_name,
+                                                       network, nic)
 
+            with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
+                ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
 
-#Lists the images for the project which includes the snapshot
-def list_all_images(debug = True):
-    try:
-        fsconfig = create_fsconfigobj()
-        fs_obj = init_fs(fsconfig)
-        a = ret_200(fs_obj.list_n())
-        fs_obj.tear_down()
-        return a
-    except Exception as e:
-        return ResponseException(e).parse_curr_err()
+                iscsi_output = BMI.__call_shellscript(self.config.iscsi_update,
+                                                      ceph_config[
+                                                          constants.CEPH_KEY_RING_KEY],
+                                                      ceph_config[
+                                                          constants.CEPH_ID_KEY],
+                                                      ceph_config[
+                                                          constants.CEPH_POOL_KEY],
+                                                      node_name,
+                                                      constants.ISCSI_DELETE_COMMAND,
+                                                      self.config.iscsi_update_password)
+                if constants.ISCSI_UPDATE_SUCCESS in iscsi_output[0]:
+                    return BMI.__return_success(
+                        fs.remove(node_name.encode("utf-8")))
+                elif constants.ISCSI_UPDATE_FAILURE in iscsi_output[0]:
+                    raise iscsi_exceptions.NodeAlreadyUnmappedException()
+        except (HaaSException, ISCSIException, FileSystemException) as e:
+            return BMI.__return_error(e)
 
-#Creates a filesystem configuration object
-def create_fsconfigobj():
-    fsconfig = GlobalConfig()
-    fsconfig.parse_config()    
-    return fsconfig
+    # Creates snapshot for the given image with snap_name as given name
+    # fs_obj will be populated by decorator
+    def create_snapshot(self, project, img_name, snap_name):
+        try:
+            self.haas.validate_project(project)
+            self.__does_project_exist(project)
+            img_id = self.__get_image_id(project, img_name)
 
+            with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
+                return BMI.__return_success(fs.snap_image(img_id, snap_name))
 
-#This function initializes files system object and 
-# returns an object for it.
-def init_fs(fsconfig, debug = False):
-    try:
-        if fsconfig.fstype == "ceph":
-             return RBD(fsconfig.rid,\
-                    fsconfig.r_conf,\
-                    fsconfig.pool, debug)
-    except Exception as e:
-        return ResponseException(e).parse_curr_err()
+        except (HaaSException, DBException, FileSystemException) as e:
+            return BMI.__return_error(e)
 
+    # Lists snapshot for the given image img_name
+    # URL's have to be read from BMI config file
+    # fs_obj will be populated by decorator
+    def list_snaps(self, project, img_name):
+        try:
+            self.haas.validate_project(project)
+            self.__does_project_exist(project)
+            img_id = self.__get_image_id(project, img_name)
 
-#A custom function which is wrapper around only success code that
-#we are creating.
-def ret_200(obj):
-    return {"status_code" : 200, "retval" : obj}
+            with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
+                return BMI.__return_success(fs.list_snapshots(img_id))
+
+        except (HaaSException, DBException, FileSystemException) as e:
+            return BMI.__return_error(e)
+
+    # Removes snapshot snap_name for the given image img_name
+    # fs_obj will be populated by decorator
+    def remove_snaps(self, project, img_name, snap_name):
+        try:
+            self.haas.validate_project(project)
+            self.__does_project_exist(project)
+            img_id = self.__get_image_id(project, img_name)
+
+            with RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
+                return BMI.__return_success(
+                    fs.remove_snapshots(img_id, snap_name))
+
+        except (HaaSException, DBException, FileSystemException) as e:
+            return BMI.__return_error(e)
+
+    # Lists the images for the project which includes the snapshot
+    def list_all_images(self, project):
+        try:
+            self.haas.validate_project(project)
+            self.__does_project_exist(project)
+            imgr = ImageRepository()
+            return BMI.__return_success(imgr.fetch_names_from_project(project))
+        except (HaaSException, DBException) as e:
+            return BMI.__return_error(e)
