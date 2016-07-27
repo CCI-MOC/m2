@@ -1,13 +1,13 @@
 #!/usr/bin/python
 import base64
 import io
-import subprocess
 import time
 
 from ims.database import *
 from ims.einstein.ceph import *
 from ims.einstein.dnsmasq import *
 from ims.einstein.haas import *
+from ims.einstein.iscsi import *
 from ims.exception import *
 
 logger = create_logger(__name__)
@@ -15,29 +15,40 @@ logger = create_logger(__name__)
 
 class BMI:
     @log
-    def __init__(self, credentials):
-        self.config = config.get()
-        self.db = Database()
-        self.__process_credentials(credentials)
-        self.haas = HaaS(base_url=self.config.haas_url, usr=self.username,
-                         passwd=self.password)
-        self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME])
-        self.dhcp = DNSMasq()
-
-    @log
-    def __init__(self, username, password, project):
-        self.config = config.get()
-        self.username = username
-        self.password = password
-        self.project = project
-        self.db = Database()
-        self.pid = self.__does_project_exist()
-        self.is_admin = self.__check_admin()
-        self.haas = HaaS(base_url=self.config.haas_url, usr=self.username,
-                         passwd=self.password)
-        self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME])
-        logger.debug("Username is %s and Password is %s", self.username,
-                     self.password)
+    def __init__(self, *args):
+        if args.__len__() == 1:
+            credentials = args[0]
+            self.config = config.get()
+            self.db = Database()
+            self.__process_credentials(credentials)
+            self.haas = HaaS(base_url=self.config.haas_url, usr=self.username,
+                             passwd=self.password)
+            self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME])
+            self.dhcp = DNSMasq()
+            ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
+            self.iscsi = IET(ceph_config[constants.CEPH_KEY_RING_KEY],
+                             ceph_config[constants.CEPH_ID_KEY],
+                             ceph_config[constants.CEPH_POOL_KEY],
+                             self.config.iscsi_update_password)
+        elif args.__len__() == 3:
+            username, password, project = args
+            self.config = config.get()
+            self.username = username
+            self.password = password
+            self.project = project
+            self.db = Database()
+            self.pid = self.__does_project_exist()
+            self.is_admin = self.__check_admin()
+            self.haas = HaaS(base_url=self.config.haas_url, usr=self.username,
+                             passwd=self.password)
+            self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME])
+            logger.debug("Username is %s and Password is %s", self.username,
+                         self.password)
+            ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
+            self.iscsi = IET(ceph_config[constants.CEPH_KEY_RING_KEY],
+                             ceph_config[constants.CEPH_ID_KEY],
+                             ceph_config[constants.CEPH_POOL_KEY],
+                             self.config.iscsi_update_password)
 
     def __enter__(self):
         return self
@@ -60,7 +71,7 @@ class BMI:
         return True
 
     @trace
-    def __get__ceph_image_name(self, name):
+    def __get_ceph_image_name(self, name):
         img_id = self.db.image.fetch_id_with_name_from_project(name,
                                                                self.project)
         if img_id is None:
@@ -68,6 +79,22 @@ class BMI:
             raise db_exceptions.ImageNotFoundException(name)
 
         return str(self.config.uid) + "img" + str(img_id)
+
+    def get_ceph_image_name_from_project(self, name, project_name):
+        img_id = self.db.image.fetch_id_with_name_from_project(name,
+                                                               project_name)
+        if img_id is None:
+            logger.info("Raising Image Not Found Exception for %s", name)
+            raise db_exceptions.ImageNotFoundException(name)
+
+        return str(self.config.uid) + "img" + str(img_id)
+
+    @trace
+    def __extract_id(self, ceph_img_name):
+        start_index = ceph_img_name.find("img")
+        start_index += 3
+        img_id = ceph_img_name[start_index:]
+        return img_id
 
     @trace
     def __process_credentials(self, credentials):
@@ -121,16 +148,6 @@ class BMI:
         os.chmod(path, 0644)
         logger.debug("Changed permissions to 644")
 
-    # Calling shell script which executes a iscsi update as we don't have
-    # rbd map in documentation.
-    @log
-    def __call_shellscript(self, *args):
-        arglist = list(args)
-        proc = subprocess.Popen(arglist, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        logger.debug("Created Process with pid = %s", proc.pid)
-        return proc.communicate()
-
     # Parses the Exception and returns the dict that should be returned to user
     @log
     def __return_error(self, ex):
@@ -179,44 +196,24 @@ class BMI:
             parent_id = self.db.image.fetch_id_with_name_from_project(img_name,
                                                                       self.project)
             self.db.image.insert(node_name, self.pid, parent_id)
-            clone_ceph_name = self.__get__ceph_image_name(node_name)
-            ceph_img_name = self.__get__ceph_image_name(img_name)
+            clone_ceph_name = self.__get_ceph_image_name(node_name)
+            ceph_img_name = self.__get_ceph_image_name(img_name)
             self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
                           clone_ceph_name)
             ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
             logger.debug("Contents of ceph_config = %s", str(ceph_config))
-            # Should be changed to python script
-            iscsi_output = self.__call_shellscript(
-                self.config.iscsi_update,
-                ceph_config[
-                    constants.CEPH_KEY_RING_KEY],
-                ceph_config[
-                    constants.CEPH_ID_KEY],
-                ceph_config[
-                    constants.CEPH_POOL_KEY],
-                str(clone_ceph_name),
-                constants.ISCSI_CREATE_COMMAND,
-                self.config.iscsi_update_password)
-            if constants.ISCSI_UPDATE_SUCCESS in iscsi_output[0]:
-                logger.info("The create command was executed successfully")
-                self.__register(node_name, img_name, clone_ceph_name)
-                return self.__return_success(True)
-
-            elif constants.ISCSI_UPDATE_FAILURE in iscsi_output[0]:
-                # Was not able to test this exception in test cases as the haas
-                # call was blocking this exception
-                # But it was raised during preparation of tests
-                # Rare exception
-                logger.info("Raising Node Already In Use Exception")
-                raise iscsi_exceptions.NodeAlreadyInUseException()
+            self.iscsi.create_mapping(clone_ceph_name)
+            logger.info("The create command was executed successfully")
+            self.__register(node_name, img_name, clone_ceph_name)
+            return self.__return_success(True)
 
         except ISCSIException as e:
             # Message is being handled by custom formatter
             logger.exception('')
-            clone_ceph_name = self.__get__ceph_image_name(node_name)
+            clone_ceph_name = self.__get_ceph_image_name(node_name)
             self.fs.remove(clone_ceph_name)
             self.db.image.delete_with_name_from_project(node_name, self.project)
-            time.sleep(30)
+            time.sleep(constants.HAAS_CALL_TIMEOUT)
             self.haas.detach_node_from_project_network(node_name, network,
                                                        nic)
             return self.__return_error(e)
@@ -225,14 +222,14 @@ class BMI:
             # Message is being handled by custom formatter
             logger.exception('')
             self.db.image.delete_with_name_from_project(node_name, self.project)
-            time.sleep(30)
+            time.sleep(constants.HAAS_CALL_TIMEOUT)
             self.haas.detach_node_from_project_network(node_name, network,
                                                        nic)
             return self.__return_error(e)
         except DBException as e:
             # Message is being handled by custom formatter
             logger.exception('')
-            time.sleep(30)
+            time.sleep(constants.HAAS_CALL_TIMEOUT)
             self.haas.detach_node_from_project_network(node_name, network,
                                                        nic)
             return self.__return_error(e)
@@ -245,66 +242,48 @@ class BMI:
     # and destroying its image
     @log
     def deprovision(self, node_name, network, nic):
+        ceph_img_name = None
         try:
             self.haas.detach_node_from_project_network(node_name,
                                                        network, nic)
-            ceph_img_name = self.__get__ceph_image_name(node_name)
+            ceph_img_name = self.__get_ceph_image_name(node_name)
             self.db.image.delete_with_name_from_project(node_name, self.project)
             ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
             logger.debug("Contents of ceph+config = %s", str(ceph_config))
-            iscsi_output = self.__call_shellscript(
-                self.config.iscsi_update,
-                ceph_config[
-                    constants.CEPH_KEY_RING_KEY],
-                ceph_config[
-                    constants.CEPH_ID_KEY],
-                ceph_config[
-                    constants.CEPH_POOL_KEY],
-                str(ceph_img_name),
-                constants.ISCSI_DELETE_COMMAND,
-                self.config.iscsi_update_password)
-            if constants.ISCSI_UPDATE_SUCCESS in iscsi_output[0]:
-                logger.info("The delete command was executed successfully")
-                ret = self.fs.remove(str(ceph_img_name).encode("utf-8"))
-                return self.__return_success(ret)
+            self.iscsi.delete_mapping(ceph_img_name)
+            logger.info("The delete command was executed successfully")
+            ret = self.fs.remove(str(ceph_img_name).encode("utf-8"))
+            return self.__return_success(ret)
 
-            elif constants.ISCSI_UPDATE_FAILURE in iscsi_output[0]:
-                logger.info("Raising Node Already Unmapped Exception")
-                raise iscsi_exceptions.NodeAlreadyUnmappedException()
         except FileSystemException as e:
             logger.exception('')
-            iscsi_output = BMI.__call_shellscript(
-                self.config.iscsi_update,
-                ceph_config[
-                    constants.CEPH_KEY_RING_KEY],
-                ceph_config[
-                    constants.CEPH_ID_KEY],
-                ceph_config[
-                    constants.CEPH_POOL_KEY],
-                str(ceph_img_name),
-                constants.ISCSI_CREATE_COMMAND,
-                self.config.iscsi_update_password)
+            self.iscsi.create_mapping(ceph_img_name)
             # Have to get parent name
-            parent_id = self.db.image.fetch_id_with_name_from_project(img_name,
-                                                                      self.project)
+            parent_name = self.fs.get_parent_info(ceph_img_name)[1]
+
+            parent_id = self.db.image.fetch_id_with_name_from_project(
+                parent_name,
+                self.project)
             # Id is wrong
             self.db.image.insert(node_name, self.pid, parent_id,
-                                 id=ceph_img_name[3:])
-            time.sleep(30)
+                                 id=self.__extract_id(ceph_img_name))
+            time.sleep(constants.HAAS_CALL_TIMEOUT)
             self.haas.attach_node_haas_project(self.project, node_name)
             return self.__return_error(e)
         except ISCSIException as e:
             logger.exception('')
-            parent_id = self.db.image.fetch_id_with_name_from_project(img_name,
-                                                                      self.project)
+            parent_name = self.fs.get_parent_info(ceph_img_name)[1]
+            parent_id = self.db.image.fetch_id_with_name_from_project(
+                parent_name,
+                self.project)
             self.db.image.insert(node_name, self.pid, parent_id,
-                                 id=ceph_img_name[3:])
-            time.sleep(30)
+                                 id=self.__extract_id(ceph_img_name))
+            time.sleep(constants.HAAS_CALL_TIMEOUT)
             self.haas.attach_node_haas_project(self.project, node_name)
             return self.__return_error(e)
         except DBException as e:
             logger.exception('')
-            time.sleep(30)
+            time.sleep(constants.HAAS_CALL_TIMEOUT)
             self.haas.attach_node_haas_project(self.project, node_name)
             return self.__return_error(e)
         except HaaSException as e:
@@ -318,14 +297,14 @@ class BMI:
         try:
             self.haas.validate_project(self.project)
 
-            ceph_img_name = self.__get__ceph_image_name(node_name)
+            ceph_img_name = self.__get_ceph_image_name(node_name)
 
             self.fs.snap_image(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
             self.fs.snap_protect(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
             parent_id = self.db.image.fetch_parent_id(self.project, node_name)
             self.db.image.insert(snap_name, self.pid, parent_id,
                                  is_snapshot=True)
-            snap_ceph_name = self.__get__ceph_image_name(snap_name)
+            snap_ceph_name = self.__get_ceph_image_name(snap_name)
             self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
                           snap_ceph_name)
             self.fs.flatten(snap_ceph_name)
@@ -362,7 +341,7 @@ class BMI:
     def remove_image(self, img_name):
         try:
             self.haas.validate_project(self.project)
-            ceph_img_name = self.__get__ceph_image_name(img_name)
+            ceph_img_name = self.__get_ceph_image_name(img_name)
 
             self.fs.snap_unprotect(ceph_img_name,
                                    constants.DEFAULT_SNAPSHOT_NAME)
@@ -400,7 +379,11 @@ class BMI:
     def list_all_images(self):
         try:
             images = self.db.image.fetch_all_images()
-            return self.__return_success(images)
+            new_images = []
+            for image in images:
+                image.insert(3, self.get_ceph_image_name_from_project(image[1], image[2]))
+                new_images.append(image)
+            return self.__return_success(new_images)
         except DBException as e:
             logger.exception('')
             return self.__return_error(e)
@@ -413,8 +396,7 @@ class BMI:
             self.fs.snap_image(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
             self.fs.snap_protect(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
             self.db.image.insert(ceph_img_name, self.pid)
-            snap_ceph_name = self.__get__ceph_image_name(ceph_img_name,
-                                                         self.project)
+            snap_ceph_name = self.__get_ceph_image_name(ceph_img_name)
             self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
                           snap_ceph_name)
             self.fs.flatten(snap_ceph_name)
@@ -437,7 +419,7 @@ class BMI:
 
             self.fs.snap_protect(ceph_img_name, snap_name)
             self.db.image.insert(ceph_img_name, self.pid)
-            snap_ceph_name = self.__get__ceph_image_name(ceph_img_name, project)
+            snap_ceph_name = self.__get_ceph_image_name(ceph_img_name, project)
             self.fs.clone(ceph_img_name, snap_name,
                           snap_ceph_name)
             self.fs.flatten(snap_ceph_name)
@@ -450,18 +432,18 @@ class BMI:
             return self.__return_error(e)
 
     @log
-    def delete_image(self, img):
+    def delete_image(self, project, img):
         try:
             if not self.is_admin:
                 raise exception.AuthorizationFailedException()
-            self.db.image.delete_with_name_from_project(img, self.project)
+            self.db.image.delete_with_name_from_project(img, project)
             return self.__return_success(True)
         except (DBException, AuthorizationFailedException) as e:
             logger.exception('')
             return self.__return_error(e)
 
     @log
-    def add_image(self, img, id, snap, parent, public):
+    def add_image(self,project, img, id, snap, parent, public):
         try:
             if not self.is_admin:
                 raise exception.AuthorizationFailedException()
@@ -491,10 +473,10 @@ class BMI:
             dest_pid = self.__does_project_exist(dest_project)
             self.db.image.copy_image(self.project, img1, dest_pid, img2)
             if img2 is not None:
-                ceph_name = self.__get__ceph_image_name(img2, dest_project)
+                ceph_name = self.__get_ceph_image_name(img2, dest_project)
             else:
-                ceph_name = self.__get__ceph_image_name(img1, dest_project)
-            self.fs.clone(self.__get__ceph_image_name(img1, self.project),
+                ceph_name = self.__get_ceph_image_name(img1, dest_project)
+            self.fs.clone(self.__get_ceph_image_name(img1, self.project),
                           constants.DEFAULT_SNAPSHOT_NAME, ceph_name)
             self.fs.snap_image(ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
             self.fs.snap_protect(ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
@@ -543,5 +525,46 @@ class BMI:
             projects = self.db.project.fetch_projects()
             return self.__return_success(projects)
         except (DBException, AuthorizationFailedException) as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+    @log
+    def mount_image(self, img):
+        try:
+            if not self.is_admin:
+                raise exception.AuthorizationFailedException()
+            ceph_img_name = self.__get_ceph_image_name(img)
+            self.iscsi.create_mapping(ceph_img_name)
+            return self.__return_success(True)
+        except (ISCSIException, DBException) as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+    @log
+    def umount_image(self, img):
+        try:
+            if not self.is_admin:
+                raise exception.AuthorizationFailedException()
+            ceph_img_name = self.__get_ceph_image_name(img)
+            self.iscsi.delete_mapping(ceph_img_name)
+            return self.__return_success(True)
+        except (ISCSIException, DBException) as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+    @log
+    def show_mounted(self):
+        try:
+            if not self.is_admin:
+                raise exception.AuthorizationFailedException()
+            mappings = self.iscsi.show_mappings()
+            swapped_mappings = {}
+            for k, v in mappings.iteritems():
+                img_id = self.__extract_id(k)
+                if self.project == self.db.image.fetch_project_with_id(img_id):
+                    swapped_mappings[
+                        self.db.image.fetch_name_with_id(img_id)] = v
+            return self.__return_success(swapped_mappings)
+        except (ISCSIException, DBException) as e:
             logger.exception('')
             return self.__return_error(e)

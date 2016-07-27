@@ -24,11 +24,22 @@ _password = os.environ[constants.HAAS_PASSWORD_VARIABLE]
 
 @click.group()
 def cli():
+    """
+    The Bare Metal Imaging (BMI) is a core component of the Massachusetts Open
+    Cloud and a image management system(ims) that
+
+    \b
+    (1) Provisions numerous nodes as quickly as possible while preserving support
+    for multitenancy using Hardware Isolation Layer (HIL) and
+
+    \b
+    (2) Introduces the image management techniques that are supported by
+    virtual machines, with little to no impact on application performance.
+    """
     pass
 
 
-@cli.command(name='pro',
-             help="Provisions a <NODE> with an <IMAGE> connected on <NIC> to <NETWORK> through <CHANNEL>")
+@cli.command(name='pro', short_help="Provision a Node")
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NODE_NAME_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
@@ -36,6 +47,18 @@ def cli():
 @click.argument(constants.CHANNEL_PARAMETER)
 @click.argument(constants.NIC_PARAMETER)
 def provision(project, node, img, network, channel, nic):
+    """
+    Provision a Node
+
+    \b
+    Arguments:
+    PROJECT = The HIL Project attached to your credentials
+    NODE    = The Node to Provision
+    IMG     = The Name of the Image to Provision
+    NETWORK = The Name of the Provisioning Network
+    CHANNEL = The Channel to Provision On (For HIL It is 'vlan/native')
+    NIC     = The NIC to use for Network Boot (For HIL IT is 'enp130s0f0')
+    """
     data = {constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
             constants.IMAGE_NAME_PARAMETER: img,
@@ -47,13 +70,22 @@ def provision(project, node, img, network, channel, nic):
     click.echo(res.content)
 
 
-@cli.command(name='dpro',
-             help='Deprovision <NODE> from <NETWORK> connected on <NIC>')
+@cli.command(name='dpro', short_help='Deprovision a node')
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NODE_NAME_PARAMETER)
 @click.argument(constants.NETWORK_PARAMETER)
 @click.argument(constants.NIC_PARAMETER)
 def deprovision(project, node, network, nic):
+    """
+    Deprovision a Node
+
+    \b
+    Arguments:
+    PROJECT = The HIL Project attached to your credentials
+    NODE    = The Node to Provision
+    NETWORK = The Name of the Provisioning Network
+    NIC     = The NIC that was used for Network Boot (For HIL IT is 'enp130s0f0')
+    """
     data = {constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
             constants.NETWORK_PARAMETER: network,
@@ -63,9 +95,17 @@ def deprovision(project, node, network, nic):
     click.echo(res.content)
 
 
-@cli.command(name='showpro', help='Shows All Provisioned Nodes')
+@cli.command(name='showpro',
+             short_help='Lists Provisioned Nodes')
 @click.argument(constants.PROJECT_PARAMETER)
 def list_provisioned_nodes(project):
+    """
+    Lists Provisioned Nodes under a Project.
+
+    \b
+    Arguments:
+    PROJECT = The HIL Project attached to your credentials
+    """
     with BMI(_username, _password, project) as bmi:
         table = PrettyTable(field_names=["Node", "Provisioned Image"])
         ret = bmi.list_provisioned_nodes()
@@ -77,10 +117,18 @@ def list_provisioned_nodes(project):
             click.echo(ret[constants.MESSAGE_KEY])
 
 
-@cli.command(name='rm', help='Remove <IMAGE>')
+@cli.command(name='rm', short_help='Remove an Image')
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 def remove_image(project, img):
+    """
+    Remove an Image From BMI
+
+    \b
+    Arguments:
+    PROJECT = The HIL Project attached to your credentials
+    IMG = The Image Name to Remove
+    """
     data = {constants.PROJECT_PARAMETER: project,
             constants.IMAGE_NAME_PARAMETER: img}
     res = requests.delete(_url + "remove_image/", data=data, auth=(
@@ -88,9 +136,16 @@ def remove_image(project, img):
     click.echo(res.content)
 
 
-@cli.command(name='ls', help='List Images Stored')
+@cli.command(name='ls', short_help='List Images Stored')
 @click.argument(constants.PROJECT_PARAMETER)
 def list_images(project):
+    """
+    Lists Images Under A Project
+
+    \b
+    Arguments:
+    PROJECT = The HIL Project attached to your credentials
+    """
     data = {constants.PROJECT_PARAMETER: project}
     res = requests.post(_url + "list_images/", data=data,
                         auth=(_username, _password))
@@ -104,16 +159,31 @@ def list_images(project):
         click.echo(res.content)
 
 
-@cli.group(help='Snapshot Related Commands')
+@cli.group(short_help='Snapshot Related Commands')
 def snap():
+    """
+    Use The Subcommands under this command to manipulate Snapshots
+    """
     pass
 
 
-@snap.command(name='create', help='Create Snapshot of <NODE> as <SNAP_NAME>')
+@snap.command(name='create', short_help='Create Snapshot')
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NODE_NAME_PARAMETER)
 @click.argument(constants.SNAP_NAME_PARAMETER)
 def create_snapshot(project, node, snap_name):
+    """
+    Create a Snapshot of a Node's state to preserve it
+
+    \b
+    WARNING : The Node must be in a powered down state
+
+    \b
+    Arguments:
+    PROJECT = The HIL Project attached to your credentials
+    NODE = The Name of Node to Snapshot
+    SNAP_NAME = The Name which needs to be used for saving snapshot
+    """
     data = {constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
             constants.SNAP_NAME_PARAMETER: snap_name}
@@ -122,9 +192,16 @@ def create_snapshot(project, node, snap_name):
     click.echo(res.content)
 
 
-@snap.command(name='ls', help='List All Snapshots Stored')
+@snap.command(name='ls', short_help='List All Snapshots Stored')
 @click.argument(constants.PROJECT_PARAMETER)
 def list_snapshots(project):
+    """
+    Lists All The Snapshots Under a Project
+
+    \b
+    Arguments:
+    PROJECT = The HIL Project attached to your credentials
+    """
     data = {constants.PROJECT_PARAMETER: project}
     res = requests.post(_url + "list_snapshots/", data=data,
                         auth=(_username, _password))
@@ -138,10 +215,18 @@ def list_snapshots(project):
         click.echo(res.content)
 
 
-@snap.command(name='rm', help='Remove the given Snapshot')
+@snap.command(name='rm', short_help='Remove a Snapshot')
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.SNAP_NAME_PARAMETER)
 def remove_snapshot(project, snap_name):
+    """
+    Remove a Snapshot under a Project
+
+    \b
+    Arguments:
+    PROJECT = The HIL Project attached to your credentials
+    SNAP_NAME = The Name of Snapshot that should be Removed.
+    """
     data = {constants.PROJECT_PARAMETER: project,
             constants.IMAGE_NAME_PARAMETER: snap_name}
     res = requests.delete(_url + "remove_image/", data=data, auth=(
@@ -151,11 +236,20 @@ def remove_snapshot(project, snap_name):
 
 @cli.group(name='project', help='Project Related Commands')
 def project_grp():
+    """
+    Use The Subcommands under this command to manipulate Projects
+    """
     pass
 
 
-@project_grp.command(name='ls', help='Lists Projects in DB')
+@project_grp.command(name='ls', short_help='Lists Projects')
 def list_projects():
+    """
+    Lists Projects From DB
+
+    \b
+    WARNING = User Must be An Admin
+    """
     with BMI(_username, _password, "bmi_admin") as bmi:
         ret = bmi.list_projects()
         if ret[constants.STATUS_CODE_KEY] == 200:
@@ -168,11 +262,22 @@ def list_projects():
             click.echo(ret[constants.MESSAGE_KEY])
 
 
-@project_grp.command(name='create', help='Adds Project to DB')
+@project_grp.command(name='create', help='Create Project')
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NETWORK_PARAMETER)
 @click.option('--id', default=None, help='Specify what id to use for project')
 def add_project(project, network, id):
+    """
+    Create Project in DB
+
+    \b
+    WARNING = User Must be An Admin
+
+    \b
+    Arguments:
+    PROJECT = The Name of Project (A HIL Project must exist)
+    NETWORK = The Name of the Provisioning Network
+    """
     with BMI(_username, _password, "bmi_admin") as bmi:
         ret = bmi.add_project(project, network, id)
         if ret[constants.STATUS_CODE_KEY] == 200:
@@ -184,6 +289,16 @@ def add_project(project, network, id):
 @project_grp.command(name='rm', help='Deletes Project From DB')
 @click.argument(constants.PROJECT_PARAMETER)
 def delete_project(project):
+    """
+    Remove Project From DB
+
+    \b
+    WARNING = User Must be An Admin
+
+    \b
+    Arguments:
+    PROJECT = The Name of Project (A HIL Project must exist)
+    """
     with BMI(_username, _password, "bmi_admin") as bmi:
         ret = bmi.delete_project(project)
         if ret[constants.STATUS_CODE_KEY] == 200:
@@ -194,6 +309,9 @@ def delete_project(project):
 
 @cli.group(help='DB Related Commands')
 def db():
+    """
+    Use The Subcommands under this command to manipulate DB
+    """
     pass
 
 
@@ -201,8 +319,19 @@ def db():
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 def delete_image(project, img):
-    with BMI(_username, _password, project) as bmi:
-        ret = bmi.delete_image(img)
+    """
+    Delete Image in DB
+
+    \b
+    WARNING = User Must be An Admin
+
+    \b
+    Arguments:
+    PROJECT = The Name of Project
+    IMG = The Name of the Image to insert
+    """
+    with BMI(_username, _password, "bmi_admin") as bmi:
+        ret = bmi.delete_image(project,img)
         if ret[constants.STATUS_CODE_KEY] == 200:
             click.echo("Success")
         else:
@@ -217,33 +346,81 @@ def delete_image(project, img):
 @click.option('--parent', default=None, help='Specify parent name')
 @click.option('--public', is_flag=True, help='If image is public')
 def add_image(project, img, id, snap, parent, public):
-    with BMI(_username, _password, project) as bmi:
-        ret = bmi.add_image(img, id, snap, parent, public)
+    """
+    Create Image in DB
+
+    \b
+    Arguments:
+    PROJECT = The Name of Project (A HIL Project must exist)
+    IMG = The Name of the Image to insert
+    """
+    with BMI(_username, _password, "bmi_admin") as bmi:
+        ret = bmi.add_image(project,img, id, snap, parent, public)
         if ret[constants.STATUS_CODE_KEY] == 200:
             click.echo("Success")
         else:
             click.echo(ret[constants.MESSAGE_KEY])
 
 
-@db.command(name='ls', help='Lists All Images')
-def list_all_images():
+@db.command(name='ls', short_help='Lists All Images')
+@click.option('-s', is_flag=True, help='Filter for Snapshots')
+@click.option('-c', is_flag=True, help='Filter for Clones')
+@click.option('-p', is_flag=True, help='Filter For Public Images')
+@click.option('--project', default=None, help='Filter By Project')
+@click.option('--name', default=None, help='Filter By Name')
+@click.option('--ceph', default=None, help="Filter By Ceph Name")
+def list_all_images(s, c, p, project, name, ceph):
+    """
+    List All Image Present in DB
+    """
+
+    def second_filter():
+        if project is None:
+            f1 = True
+        else:
+            f1 = image[2] == project
+
+        if ceph is None:
+            f2 = True
+        else:
+            f2 = image[3] == ceph
+
+        if name is None:
+            f3 = True
+        else:
+            f3 = image[1] == name
+
+        f4 = project is None and ceph is None and name is None
+
+        return (f1 and f2 and f3) or f4
+
     with BMI(_username, _password, "bmi_admin") as bmi:
         ret = bmi.list_all_images()
         if ret[constants.STATUS_CODE_KEY] == 200:
             table = PrettyTable(
-                field_names=["Id", "Name", "Project Name", "Is Public",
-                             "Is Snapshot",
+                field_names=["Id", "Name", "Project", "Ceph", "Public",
+                             "Snapshot",
                              "Parent"])
             images = ret[constants.RETURN_VALUE_KEY]
             for image in images:
-                table.add_row(image)
+                flag = False
+                if s and image[5]:
+                    flag = second_filter()
+                elif c and image[6] != '' and not image[5]:
+                    flag = second_filter()
+                elif p and image[4]:
+                    flag = second_filter()
+                elif not s and not c and not p:
+                    flag = second_filter()
+
+                if flag:
+                    table.add_row(image)
             click.echo(table.get_string())
         else:
             click.echo(ret[constants.MESSAGE_KEY])
 
 
-@cli.command(name='import',
-             help='Clones an existing ceph image and makes it compatible with BMI')
+@cli.command(name='import', short_help='Import an Image or Snapshot into BMI')
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 @click.option('--snap', default=None, help='Specifies what snapshot to import')
@@ -315,19 +492,39 @@ def iscsi():
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 def create_mapping(project, img):
-    click.echo('Not Yet Implemented')
+    with BMI(_username, _password, project) as bmi:
+        ret = bmi.mount_image(img)
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            click.echo('Success')
+        else:
+            click.echo(ret[constants.MESSAGE_KEY])
 
 
 @iscsi.command(name='rm', help='Remove ISCSI Mapping')
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 def delete_mapping(project, img):
-    click.echo('Not Yet Implemented')
+    with BMI(_username, _password, project) as bmi:
+        ret = bmi.umount_image(img)
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            click.echo('Success')
+        else:
+            click.echo(ret[constants.MESSAGE_KEY])
 
 
 @iscsi.command(name='ls', help='Show ISCSI Mappings')
-def show_mappings():
-    click.echo('Not Yet Implemented')
+@click.argument(constants.PROJECT_PARAMETER)
+def show_mappings(project):
+    with BMI(_username, _password, project) as bmi:
+        ret = bmi.show_mounted()
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            table = PrettyTable(field_names=['Target', 'Block Device'])
+            mappings = ret[constants.RETURN_VALUE_KEY]
+            for k, v in mappings.iteritems():
+                table.add_row([k, v])
+            click.echo(table.get_string())
+        else:
+            click.echo(ret[constants.MESSAGE_KEY])
 
 
 @cli.command(name='upload', help='Upload Image to BMI')

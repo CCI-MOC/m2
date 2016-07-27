@@ -37,7 +37,9 @@ class ImageRepository:
 
     # deletes images with name under the given project name
     # commits if deletion was successful otherwise rollback occurs and exception is bubbled up
-    # THINK ABOUT DELETING CLONE ENTRIES
+    # THINK ABOUT DELETING CLONE ENTRIES (Should not delete if entry has clone child,
+    # ceph may throw error and may result in return of row, need to test)
+    # Need to throw errors
     @log
     def delete_with_name_from_project(self, name, project_name):
         try:
@@ -54,37 +56,55 @@ class ImageRepository:
             self.connection.session.rollback()
             raise db_exceptions.ORMException(e.message)
 
+    # Need to throw errors
     @log
     def copy_image(self, src_project_name, name, dest_pid, new_name=None):
         try:
+
+            project = self.connection.session.query(Project).filter_by(
+                name=src_project_name).one_or_none()
+
             image = self.connection.session.query(Image). \
                 filter(Image.project.has(name=src_project_name)).filter_by(
                 name=name).one_or_none()
+
             new_image = Image()
             if new_name is not None:
                 new_image.name = new_name
             else:
                 new_image.name = name
+
             new_image.project_id = dest_pid
             new_image.is_public = image.is_public
-            new_image.is_snapshot = image.is_snapshot
-            new_image.parent_id = None
+            if project.id == dest_pid:
+                new_image.is_snapshot = image.is_snapshot
+                new_image.parent_id = image.parent_id
+            else:
+                new_image.is_snapshot = False
+                new_image.parent_id = None
             self.connection.session.add(new_image)
             self.connection.session.commit()
         except SQLAlchemyError as e:
             self.connection.session.rollback()
             raise db_exceptions.ORMException(e.message)
 
+    # Need to throw errors
     @log
     def move_image(self, src_project_name, name, dest_project_id,
                    new_name=None):
         try:
+
+            project = self.connection.session.query(Project).filter_by(
+                name=src_project_name).one_or_none()
+
             image = self.connection.session.query(Image). \
                 filter(Image.project.has(name=src_project_name)).filter_by(
                 name=name).one_or_none()
 
             image.project_id = dest_project_id
-            image.parent_id = None
+            if project.id != dest_project_id:
+                image.parent_id = None
+                image.is_snapshot = False
             if new_name is not None:
                 image.name = new_name
             self.connection.session.commit()
@@ -211,6 +231,15 @@ class ImageRepository:
                 id=id).one_or_none()
             if image is not None:
                 return image.name
+        except SQLAlchemyError as e:
+            raise db_exceptions.ORMException(e.message)
+
+    def fetch_project_with_id(self, id):
+        try:
+            image = self.connection.session.query(Image).filter_by(
+                id=id).one_or_none()
+            if image is not None:
+                return image.project.name
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
 

@@ -1,10 +1,11 @@
 import Pyro4
 
-from ims.common.log import *
 import ims.common.config as config
 import ims.common.constants as constants
+from ims.common.log import *
 
 logger = create_logger(__name__)
+
 
 class RPCClient:
     @log

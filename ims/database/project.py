@@ -3,7 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import relationship
 
 from ims.common.log import *
-from ims.database import DatabaseConnection
+from ims.database.db_connection import DatabaseConnection
 from ims.exception import *
 
 logger = create_logger(__name__)

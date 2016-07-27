@@ -1,11 +1,13 @@
 import Pyro4
-from ims.common.log import *
+
 import ims.common.config as config
 import ims.common.constants as constants
+from ims.common.log import *
 from ims.einstein.operations import BMI
 from ims.exception import *
 
 logger = create_logger(__name__)
+
 
 class MainServer:
     # This method takes in the commandline arguments from the client program.
@@ -24,6 +26,7 @@ class MainServer:
             logger.exception('')
             return {constants.STATUS_CODE_KEY: ex.status_code,
                     constants.MESSAGE_KEY: str(ex)}
+
 
 @log
 def start_rpc_server():

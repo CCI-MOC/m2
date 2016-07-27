@@ -33,7 +33,8 @@ class Snapshot():
     def delete_with_name(self, name):
         try:
             self.database.create_session()
-            for image in self.database.session.query(Snapshot).filter_by(name=name):
+            for image in self.database.session.query(Snapshot).filter_by(
+                    name=name):
                 self.database.delete(image)
 
             self.database.session.commit()
@@ -47,7 +48,8 @@ class Snapshot():
         try:
             self.database.create_session()
             images = []
-            for image in self.database.session.query(Image).filter_by(name=name):
+            for image in self.database.session.query(Image).filter_by(
+                    name=name):
                 if image.project.name == project_name:
                     images.append(image)
 

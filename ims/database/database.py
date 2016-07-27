@@ -1,4 +1,4 @@
-from image import *
+from ims.database.image import *
 
 
 class Database:
