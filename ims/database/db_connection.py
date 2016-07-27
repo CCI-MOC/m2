@@ -3,6 +3,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
+import ims.common.config as config
+
+_cfg = config.get()
+
 
 # The class which represents the BMI database
 # It is responsible for creating and closing sessions
@@ -15,7 +19,7 @@ class DatabaseConnection:
     # sample_bmi.db should be changed to something more realistic
     # NullPool pool class is equivalent to no connection pool
     # Should be adapted to postgres SQL
-    engine = create_engine('sqlite:///sample_bmi.db', poolclass=NullPool)
+    engine = create_engine('sqlite:///' + _cfg.db_url, poolclass=NullPool)
 
     # creates a session maker for creating sessions
     session_maker = sessionmaker(bind=engine)
@@ -23,10 +27,7 @@ class DatabaseConnection:
     # creates all tables if not present
     def __init__(self):
         DatabaseConnection.Base.metadata.create_all(DatabaseConnection.engine)
-
-    def __enter__(self):
         self.session = DatabaseConnection.session_maker()
-        return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def close(self):
         self.session.close()
