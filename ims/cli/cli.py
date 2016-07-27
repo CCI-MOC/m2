@@ -22,6 +22,15 @@ _username = os.environ[constants.HAAS_USERNAME_VARIABLE]
 _password = os.environ[constants.HAAS_PASSWORD_VARIABLE]
 
 
+def bmi_exception_wrapper(func):
+    def function_wrapper(*args,**kwargs):
+        try:
+            return func(*args,**kwargs)
+        except BMIException as e:
+            click.echo(str(e))
+
+    return function_wrapper
+
 @click.group()
 def cli():
     """
@@ -98,6 +107,7 @@ def deprovision(project, node, network, nic):
 @cli.command(name='showpro',
              short_help='Lists Provisioned Nodes')
 @click.argument(constants.PROJECT_PARAMETER)
+@bmi_exception_wrapper
 def list_provisioned_nodes(project):
     """
     Lists Provisioned Nodes under a Project.
@@ -243,6 +253,7 @@ def project_grp():
 
 
 @project_grp.command(name='ls', short_help='Lists Projects')
+@bmi_exception_wrapper
 def list_projects():
     """
     Lists Projects From DB
@@ -250,7 +261,7 @@ def list_projects():
     \b
     WARNING = User Must be An Admin
     """
-    with BMI(_username, _password, "bmi_admin") as bmi:
+    with BMI(_username, _password, constants.BMI_ADMIN_PROJECT) as bmi:
         ret = bmi.list_projects()
         if ret[constants.STATUS_CODE_KEY] == 200:
             table = PrettyTable(field_names=["Id", "Name", "Provision Network"])
@@ -266,6 +277,7 @@ def list_projects():
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NETWORK_PARAMETER)
 @click.option('--id', default=None, help='Specify what id to use for project')
+@bmi_exception_wrapper
 def add_project(project, network, id):
     """
     Create Project in DB
@@ -278,7 +290,7 @@ def add_project(project, network, id):
     PROJECT = The Name of Project (A HIL Project must exist)
     NETWORK = The Name of the Provisioning Network
     """
-    with BMI(_username, _password, "bmi_admin") as bmi:
+    with BMI(_username, _password, constants.BMI_ADMIN_PROJECT) as bmi:
         ret = bmi.add_project(project, network, id)
         if ret[constants.STATUS_CODE_KEY] == 200:
             click.echo("Success")
@@ -288,6 +300,7 @@ def add_project(project, network, id):
 
 @project_grp.command(name='rm', help='Deletes Project From DB')
 @click.argument(constants.PROJECT_PARAMETER)
+@bmi_exception_wrapper
 def delete_project(project):
     """
     Remove Project From DB
@@ -299,7 +312,7 @@ def delete_project(project):
     Arguments:
     PROJECT = The Name of Project (A HIL Project must exist)
     """
-    with BMI(_username, _password, "bmi_admin") as bmi:
+    with BMI(_username, _password, constants.BMI_ADMIN_PROJECT) as bmi:
         ret = bmi.delete_project(project)
         if ret[constants.STATUS_CODE_KEY] == 200:
             click.echo("Success")
@@ -318,6 +331,7 @@ def db():
 @db.command(name='rm', help='Deletes Image From DB')
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
+@bmi_exception_wrapper
 def delete_image(project, img):
     """
     Delete Image in DB
@@ -330,7 +344,7 @@ def delete_image(project, img):
     PROJECT = The Name of Project
     IMG     = The Name of the Image to insert
     """
-    with BMI(_username, _password, "bmi_admin") as bmi:
+    with BMI(_username, _password, constants.BMI_ADMIN_PROJECT) as bmi:
         ret = bmi.delete_image(project, img)
         if ret[constants.STATUS_CODE_KEY] == 200:
             click.echo("Success")
@@ -345,6 +359,7 @@ def delete_image(project, img):
 @click.option('--snap', is_flag=True, help='If image is snapshot')
 @click.option('--parent', default=None, help='Specify parent name')
 @click.option('--public', is_flag=True, help='If image is public')
+@bmi_exception_wrapper
 def add_image(project, img, id, snap, parent, public):
     """
     Create Image in DB
@@ -357,7 +372,7 @@ def add_image(project, img, id, snap, parent, public):
     PROJECT = The Name of Project (A HIL Project must exist)
     IMG = The Name of the Image to insert
     """
-    with BMI(_username, _password, "bmi_admin") as bmi:
+    with BMI(_username, _password, constants.BMI_ADMIN_PROJECT) as bmi:
         ret = bmi.add_image(project, img, id, snap, parent, public)
         if ret[constants.STATUS_CODE_KEY] == 200:
             click.echo("Success")
@@ -372,6 +387,7 @@ def add_image(project, img, id, snap, parent, public):
 @click.option('--project', default=None, help='Filter By Project')
 @click.option('--name', default=None, help='Filter By Name')
 @click.option('--ceph', default=None, help="Filter By Ceph Name")
+@bmi_exception_wrapper
 def list_all_images(s, c, p, project, name, ceph):
     """
     List All Image Present in DB
@@ -400,7 +416,7 @@ def list_all_images(s, c, p, project, name, ceph):
 
         return (f1 and f2 and f3) or f4
 
-    with BMI(_username, _password, "bmi_admin") as bmi:
+    with BMI(_username, _password, constants.BMI_ADMIN_PROJECT) as bmi:
         ret = bmi.list_all_images()
         if ret[constants.STATUS_CODE_KEY] == 200:
             table = PrettyTable(
@@ -430,6 +446,7 @@ def list_all_images(s, c, p, project, name, ceph):
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 @click.option('--snap', default=None, help='Specifies what snapshot to import')
+@bmi_exception_wrapper
 def import_ceph_image(project, img, snap):
     """
     Import an existing CEPH image into BMI
@@ -453,10 +470,11 @@ def import_ceph_image(project, img, snap):
 
 
 @cli.command(name='cp', help="Copy an existing image not clones")
-@click.argument('src_project')
-@click.argument('img1')
-@click.argument('dest_project')
-@click.argument('img2', default=None)
+@click.argument(constants.SRC_PROJECT_PARAMETER)
+@click.argument(constants.IMAGE1_NAME_PARAMETER)
+@click.argument(constants.DEST_PROJECT_PARAMETER)
+@click.argument(constants.IMAGE2_NAME_PARAMETER, default=None)
+@bmi_exception_wrapper
 def copy_image(src_project, img1, dest_project, img2):
     """
     Copy an image from one project to another
@@ -477,10 +495,11 @@ def copy_image(src_project, img1, dest_project, img2):
 
 
 @cli.command(name='mv', help='Move Image From Project to Another')
-@click.argument('src_project')
-@click.argument('img1')
-@click.argument('dest_project')
-@click.argument('img2', default=None)
+@click.argument(constants.SRC_PROJECT_PARAMETER)
+@click.argument(constants.IMAGE1_NAME_PARAMETER)
+@click.argument(constants.DEST_PROJECT_PARAMETER)
+@click.argument(constants.IMAGE2_NAME_PARAMETER, default=None)
+@bmi_exception_wrapper
 def move_image(src_project, img1, dest_project, img2):
     """
     Move an image from one project to another
@@ -508,6 +527,7 @@ def node():
 @node.command('ip', help='Get IP on Provisioning Network')
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NODE_NAME_PARAMETER)
+@bmi_exception_wrapper
 def get_node_ip(project, node):
     """
     Get the IP of Provisioned Node on Provisioning Network
@@ -533,6 +553,7 @@ def iscsi():
 @iscsi.command(name='create', help='Create ISCSI Mapping')
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
+@bmi_exception_wrapper
 def create_mapping(project, img):
     """
     Mount image on iscsi server
@@ -556,6 +577,7 @@ def create_mapping(project, img):
 @iscsi.command(name='rm', help='Remove ISCSI Mapping')
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
+@bmi_exception_wrapper
 def delete_mapping(project, img):
     """
     Unmount image from iscsi server
@@ -578,6 +600,7 @@ def delete_mapping(project, img):
 
 @iscsi.command(name='ls', help='Show ISCSI Mappings')
 @click.argument(constants.PROJECT_PARAMETER)
+@bmi_exception_wrapper
 def show_mappings(project):
     """
     Show mounted images on iscsi

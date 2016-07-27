@@ -3,11 +3,10 @@ import base64
 import io
 import time
 
-from ims.einstein.haas import *
-
 from ims.database import *
 from ims.einstein.ceph import *
 from ims.einstein.dnsmasq import *
+from ims.einstein.hil import *
 from ims.einstein.iscsi import *
 from ims.exception import *
 
@@ -22,8 +21,8 @@ class BMI:
             self.config = config.get()
             self.db = Database()
             self.__process_credentials(credentials)
-            self.haas = HaaS(base_url=self.config.haas_url, usr=self.username,
-                             passwd=self.password)
+            self.hil = HIL(base_url=self.config.haas_url, usr=self.username,
+                           passwd=self.password)
             self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME])
             self.dhcp = DNSMasq()
             ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
@@ -40,8 +39,8 @@ class BMI:
             self.db = Database()
             self.pid = self.__does_project_exist()
             self.is_admin = self.__check_admin()
-            self.haas = HaaS(base_url=self.config.haas_url, usr=self.username,
-                             passwd=self.password)
+            self.hil = HIL(base_url=self.config.haas_url, usr=self.username,
+                            passwd=self.password)
             self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME])
             logger.debug("Username is %s and Password is %s", self.username,
                          self.password)
@@ -68,6 +67,8 @@ class BMI:
 
         return pid
 
+    # this method will determine whether user is admin (still unclear on doing
+    # it properly)
     def __check_admin(self):
         return True
 
@@ -109,8 +110,8 @@ class BMI:
 
     @log
     def __register(self, node_name, img_name, target_name):
-        mac_addr = "01-" + self.haas.get_node_mac_addr(node_name).replace(":",
-                                                                          "-")
+        mac_addr = "01-" + self.hil.get_node_mac_addr(node_name).replace(":",
+                                                                         "-")
         logger.debug("The Mac Addr File name is %s", mac_addr)
         self.__generate_ipxe_file(node_name, target_name)
         self.__generate_mac_addr_file(img_name, node_name, mac_addr)
@@ -191,8 +192,8 @@ class BMI:
     @log
     def provision(self, node_name, img_name, network, channel, nic):
         try:
-            self.haas.attach_node_to_project_network(node_name, network,
-                                                     channel, nic)
+            self.hil.attach_node_to_project_network(node_name, network,
+                                                    channel, nic)
 
             parent_id = self.db.image.fetch_id_with_name_from_project(img_name,
                                                                       self.project)
@@ -215,8 +216,8 @@ class BMI:
             self.fs.remove(clone_ceph_name)
             self.db.image.delete_with_name_from_project(node_name, self.project)
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.haas.detach_node_from_project_network(node_name, network,
-                                                       nic)
+            self.hil.detach_node_from_project_network(node_name, network,
+                                                      nic)
             return self.__return_error(e)
 
         except FileSystemException as e:
@@ -224,15 +225,15 @@ class BMI:
             logger.exception('')
             self.db.image.delete_with_name_from_project(node_name, self.project)
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.haas.detach_node_from_project_network(node_name, network,
-                                                       nic)
+            self.hil.detach_node_from_project_network(node_name, network,
+                                                      nic)
             return self.__return_error(e)
         except DBException as e:
             # Message is being handled by custom formatter
             logger.exception('')
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.haas.detach_node_from_project_network(node_name, network,
-                                                       nic)
+            self.hil.detach_node_from_project_network(node_name, network,
+                                                      nic)
             return self.__return_error(e)
         except HaaSException as e:
             # Message is being handled by custom formatter
@@ -245,8 +246,8 @@ class BMI:
     def deprovision(self, node_name, network, nic):
         ceph_img_name = None
         try:
-            self.haas.detach_node_from_project_network(node_name,
-                                                       network, nic)
+            self.hil.detach_node_from_project_network(node_name,
+                                                      network, nic)
             ceph_img_name = self.__get_ceph_image_name(node_name)
             self.db.image.delete_with_name_from_project(node_name, self.project)
             ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
@@ -259,17 +260,15 @@ class BMI:
         except FileSystemException as e:
             logger.exception('')
             self.iscsi.create_mapping(ceph_img_name)
-            # Have to get parent name
             parent_name = self.fs.get_parent_info(ceph_img_name)[1]
 
             parent_id = self.db.image.fetch_id_with_name_from_project(
                 parent_name,
                 self.project)
-            # Id is wrong
             self.db.image.insert(node_name, self.pid, parent_id,
                                  id=self.__extract_id(ceph_img_name))
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.haas.attach_node_haas_project(self.project, node_name)
+            self.hil.attach_node_haas_project(self.project, node_name)
             return self.__return_error(e)
         except ISCSIException as e:
             logger.exception('')
@@ -280,12 +279,12 @@ class BMI:
             self.db.image.insert(node_name, self.pid, parent_id,
                                  id=self.__extract_id(ceph_img_name))
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.haas.attach_node_haas_project(self.project, node_name)
+            self.hil.attach_node_haas_project(self.project, node_name)
             return self.__return_error(e)
         except DBException as e:
             logger.exception('')
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.haas.attach_node_haas_project(self.project, node_name)
+            self.hil.attach_node_haas_project(self.project, node_name)
             return self.__return_error(e)
         except HaaSException as e:
             logger.exception('')
@@ -296,7 +295,7 @@ class BMI:
     @log
     def create_snapshot(self, node_name, snap_name):
         try:
-            self.haas.validate_project(self.project)
+            self.hil.validate_project(self.project)
 
             ceph_img_name = self.__get_ceph_image_name(node_name)
 
@@ -328,7 +327,7 @@ class BMI:
     @log
     def list_snapshots(self):
         try:
-            self.haas.validate_project(self.project)
+            self.hil.validate_project(self.project)
             snapshots = self.db.image.fetch_snapshots_from_project(self.project)
             return self.__return_success(snapshots)
 
@@ -341,7 +340,7 @@ class BMI:
     @log
     def remove_image(self, img_name):
         try:
-            self.haas.validate_project(self.project)
+            self.hil.validate_project(self.project)
             ceph_img_name = self.__get_ceph_image_name(img_name)
 
             self.fs.snap_unprotect(ceph_img_name,
@@ -359,7 +358,7 @@ class BMI:
     @log
     def list_images(self):
         try:
-            self.haas.validate_project(self.project)
+            self.hil.validate_project(self.project)
             names = self.db.image.fetch_images_from_project(self.project)
             return self.__return_success(names)
 
@@ -463,7 +462,7 @@ class BMI:
     @log
     def get_node_ip(self, node_name):
         try:
-            mac_addr = self.haas.get_node_mac_addr(node_name)
+            mac_addr = self.hil.get_node_mac_addr(node_name)
             return self.dhcp.get_ip(mac_addr)
         except (HaaSException, DHCPException) as e:
             logger.exception('')

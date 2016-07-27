@@ -10,7 +10,7 @@ from ims.common.log import *
 logger = create_logger(__name__)
 
 
-class HaaS:
+class HIL:
     class Request:
         def __init__(self, method, data, auth=None):
             self.method = method
@@ -71,14 +71,14 @@ class HaaS:
     @trace
     def __call_rest_api(self, api):
         link = urlparse.urljoin(self.base_url, api)
-        request = HaaS.Request('get', None, auth=(self.usr, self.passwd))
-        return HaaS.Communicator(link, request).send_request()
+        request = HIL.Request('get', None, auth=(self.usr, self.passwd))
+        return HIL.Communicator(link, request).send_request()
 
     @trace
     def __call_rest_api_with_body(self, api, body):
         link = urlparse.urljoin(self.base_url, api)
-        request = HaaS.Request('post', body, auth=(self.usr, self.passwd))
-        return HaaS.Communicator(link, request).send_request()
+        request = HIL.Request('post', body, auth=(self.usr, self.passwd))
+        return HIL.Communicator(link, request).send_request()
 
     @log
     def list_free_nodes(self):

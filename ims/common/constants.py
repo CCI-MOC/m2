@@ -25,7 +25,6 @@ TFTP_CONFIG_SECTION_NAME = 'tftp'
 
 # Non FS Keys in Config File
 HAAS_URL_KEY = 'url'
-ISCSI_URL_KEY = 'update_shell_url'
 ISCSI_PASSWORD_KEY = 'password'
 ISCSI_IP_KEY = 'ip'
 
@@ -86,6 +85,10 @@ NODE_NAME_PARAMETER = 'node'
 IMAGE_NAME_PARAMETER = "img"
 SNAP_NAME_PARAMETER = "snap_name"
 PROJECT_PARAMETER = "project"
+SRC_PROJECT_PARAMETER = 'src_project'
+DEST_PROJECT_PARAMETER = "dest_project"
+IMAGE1_NAME_PARAMETER = "img1"
+IMAGE2_NAME_PARAMETER = "img2"
 NETWORK_PARAMETER = "network"
 NIC_PARAMETER = "nic"
 CHANNEL_PARAMETER = "channel"
@@ -105,5 +108,9 @@ IET_ISCSI_CONFIG_TEMP_LOC = '/etc/iet/ietd.temp'
 IET_TARGET_STARTING = 'Target'
 IET_LUN_STARTING = "Lun"
 
+DNSMASQ_LEASES_LOC = '/var/lib/misc/dnsmasq.leases'
+
 HAAS_CALL_TIMEOUT = 5
 DEFAULT_SNAPSHOT_NAME = "snapshot"
+
+BMI_ADMIN_PROJECT = "bmi_infra"

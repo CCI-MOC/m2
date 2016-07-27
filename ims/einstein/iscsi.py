@@ -1,6 +1,7 @@
 import subprocess
 
 import os
+import sh
 
 import ims.common.constants as constants
 from ims.exception import *
@@ -82,9 +83,7 @@ class IET:
         output, err = p.communicate()
 
     def __execute_showmapped(self):
-        p = subprocess.Popen('rbd showmapped', shell=True,
-                             stdout=subprocess.PIPE)
-        output, err = p.communicate()
+        output = sh.rbd("showmapped")
         lines = output.split('\n')[1:-1]
         maps = {}
         for line in lines:

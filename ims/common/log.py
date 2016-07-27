@@ -31,7 +31,7 @@ def log(func):
         ret = func(*args, **kwargs)
         if func.__name__ == "__init__":
             logger.info(base_msg + "Successfully Initialised %s instance",
-                        type(list(args)[0]).__name__, extra={'special': True})
+                        list(args)[0].__class__.__name__, extra={'special': True})
         else:
             logger.info(base_msg + "Successfully Executed %s",
                         func.__name__, extra={'special': True})

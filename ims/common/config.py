@@ -36,7 +36,6 @@ class __BMIConfig:
         self.fs = {}
         self.uid = None
         self.db_url = None
-        self.iscsi_update = None
         self.iscsi_update_password = None
         self.iscsi_ip = None
         self.haas_url = None
@@ -63,9 +62,6 @@ class __BMIConfig:
 
             self.db_url = config.get(constants.DB_CONFIG_SECTION_NAME,
                                      constants.DB_URL_KEY)
-
-            self.iscsi_update = config.get(constants.ISCSI_CONFIG_SECTION_NAME,
-                                           constants.ISCSI_URL_KEY)
 
             self.iscsi_update_password = config.get(
                 constants.ISCSI_CONFIG_SECTION_NAME,
