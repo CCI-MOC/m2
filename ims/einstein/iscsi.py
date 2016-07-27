@@ -83,7 +83,7 @@ class IET:
         output, err = p.communicate()
 
     def __execute_showmapped(self):
-        output = sh.rbd("showmapped")
+        output = sh.rbd.showmapped()
         lines = output.split('\n')[1:-1]
         maps = {}
         for line in lines:

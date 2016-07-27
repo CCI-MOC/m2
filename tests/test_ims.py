@@ -32,6 +32,7 @@ tests = unittest.TestSuite()
 for mod in modules:
     tests.addTest(loader.loadTestsFromModule(mod))
 
-testRunner = unittest.TextTestRunner()
-testRunner.run(tests)
-print tests.countTestCases()
+if __name__ == "__main__":
+    testRunner = unittest.TextTestRunner()
+    testRunner.run(tests)
+    print tests.countTestCases()
