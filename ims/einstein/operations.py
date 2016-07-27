@@ -3,10 +3,11 @@ import base64
 import io
 import time
 
+from ims.einstein.haas import *
+
 from ims.database import *
 from ims.einstein.ceph import *
 from ims.einstein.dnsmasq import *
-from ims.einstein.haas import *
 from ims.einstein.iscsi import *
 from ims.exception import *
 
@@ -381,7 +382,8 @@ class BMI:
             images = self.db.image.fetch_all_images()
             new_images = []
             for image in images:
-                image.insert(3, self.get_ceph_image_name_from_project(image[1], image[2]))
+                image.insert(3, self.get_ceph_image_name_from_project(image[1],
+                                                                      image[2]))
                 new_images.append(image)
             return self.__return_success(new_images)
         except DBException as e:
@@ -443,7 +445,7 @@ class BMI:
             return self.__return_error(e)
 
     @log
-    def add_image(self,project, img, id, snap, parent, public):
+    def add_image(self, project, img, id, snap, parent, public):
         try:
             if not self.is_admin:
                 raise exception.AuthorizationFailedException()
@@ -470,6 +472,8 @@ class BMI:
     @log
     def copy_image(self, img1, dest_project, img2=None):
         try:
+            if not self.is_admin and (self.project != dest_project):
+                raise exception.AuthorizationFailedException()
             dest_pid = self.__does_project_exist(dest_project)
             self.db.image.copy_image(self.project, img1, dest_pid, img2)
             if img2 is not None:
@@ -488,6 +492,8 @@ class BMI:
     @log
     def move_image(self, img1, dest_project, img2):
         try:
+            if not self.is_admin and (self.project != dest_project):
+                raise exception.AuthorizationFailedException()
             dest_pid = self.__does_project_exist(dest_project)
             self.db.image.move_image(self.project, img1, dest_pid, img2)
             return self.__return_success(True)

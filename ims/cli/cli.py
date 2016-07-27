@@ -127,7 +127,7 @@ def remove_image(project, img):
     \b
     Arguments:
     PROJECT = The HIL Project attached to your credentials
-    IMG = The Image Name to Remove
+    IMG     = The Image Name to Remove
     """
     data = {constants.PROJECT_PARAMETER: project,
             constants.IMAGE_NAME_PARAMETER: img}
@@ -180,8 +180,8 @@ def create_snapshot(project, node, snap_name):
 
     \b
     Arguments:
-    PROJECT = The HIL Project attached to your credentials
-    NODE = The Name of Node to Snapshot
+    PROJECT   = The HIL Project attached to your credentials
+    NODE      = The Name of Node to Snapshot
     SNAP_NAME = The Name which needs to be used for saving snapshot
     """
     data = {constants.PROJECT_PARAMETER: project,
@@ -224,7 +224,7 @@ def remove_snapshot(project, snap_name):
 
     \b
     Arguments:
-    PROJECT = The HIL Project attached to your credentials
+    PROJECT   = The HIL Project attached to your credentials
     SNAP_NAME = The Name of Snapshot that should be Removed.
     """
     data = {constants.PROJECT_PARAMETER: project,
@@ -328,10 +328,10 @@ def delete_image(project, img):
     \b
     Arguments:
     PROJECT = The Name of Project
-    IMG = The Name of the Image to insert
+    IMG     = The Name of the Image to insert
     """
     with BMI(_username, _password, "bmi_admin") as bmi:
-        ret = bmi.delete_image(project,img)
+        ret = bmi.delete_image(project, img)
         if ret[constants.STATUS_CODE_KEY] == 200:
             click.echo("Success")
         else:
@@ -350,12 +350,15 @@ def add_image(project, img, id, snap, parent, public):
     Create Image in DB
 
     \b
+    WARNING = User Must be An Admin
+
+    \b
     Arguments:
     PROJECT = The Name of Project (A HIL Project must exist)
     IMG = The Name of the Image to insert
     """
     with BMI(_username, _password, "bmi_admin") as bmi:
-        ret = bmi.add_image(project,img, id, snap, parent, public)
+        ret = bmi.add_image(project, img, id, snap, parent, public)
         if ret[constants.STATUS_CODE_KEY] == 200:
             click.echo("Success")
         else:
@@ -372,6 +375,9 @@ def add_image(project, img, id, snap, parent, public):
 def list_all_images(s, c, p, project, name, ceph):
     """
     List All Image Present in DB
+
+    \b
+    WARNING = User Must be An Admin
     """
 
     def second_filter():
@@ -425,6 +431,14 @@ def list_all_images(s, c, p, project, name, ceph):
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 @click.option('--snap', default=None, help='Specifies what snapshot to import')
 def import_ceph_image(project, img, snap):
+    """
+    Import an existing CEPH image into BMI
+
+    \b
+    Arguments:
+    PROJECT = The HIL Project attached to your credentials
+    IMG = The Name of the CEPH Image to import
+    """
     with BMI(_username, _password, project) as bmi:
         ret = None
         if snap is None:
@@ -444,6 +458,16 @@ def import_ceph_image(project, img, snap):
 @click.argument('dest_project')
 @click.argument('img2', default=None)
 def copy_image(src_project, img1, dest_project, img2):
+    """
+    Copy an image from one project to another
+
+    \b
+    Arguments:
+    SRC_PROJECT  = The HIL Project attached to your credentials
+    IMG1         = The Name of the source image
+    DEST_PROJECT = The Destination HIL Project (Can be same as source)
+    IMG2         = The Name of the destination image (optional)
+    """
     with BMI(_username, _password, src_project) as bmi:
         ret = bmi.copy_image(img1, dest_project, img2)
         if ret[constants.STATUS_CODE_KEY] == 200:
@@ -458,6 +482,16 @@ def copy_image(src_project, img1, dest_project, img2):
 @click.argument('dest_project')
 @click.argument('img2', default=None)
 def move_image(src_project, img1, dest_project, img2):
+    """
+    Move an image from one project to another
+
+    \b
+    Arguments:
+    SRC_PROJECT  = The HIL Project attached to your credentials
+    IMG1         = The Name of the source image
+    DEST_PROJECT = The Destination HIL Project (Can be same as source)
+    IMG2         = The Name of the destination image (optional)
+    """
     with BMI(_username, _password, src_project) as bmi:
         ret = bmi.move_image(img1, dest_project, img2)
         if ret[constants.STATUS_CODE_KEY] == 200:
@@ -475,6 +509,14 @@ def node():
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NODE_NAME_PARAMETER)
 def get_node_ip(project, node):
+    """
+    Get the IP of Provisioned Node on Provisioning Network
+
+    \b
+    Arguments:
+    PROJECT  = The HIL Project attached to your credentials
+    NODE     = The node whose IP is required
+    """
     with BMI(_username, _password, project) as bmi:
         ret = bmi.get_node_ip(node)
         if ret[constants.STATUS_CODE_KEY] == 200:
@@ -492,6 +534,17 @@ def iscsi():
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 def create_mapping(project, img):
+    """
+    Mount image on iscsi server
+
+    \b
+    WARNING = User Must be An Admin
+
+    \b
+    Arguments:
+    PROJECT  = The HIL Project attached to your credentials
+    IMG      = The image that must be mounted
+    """
     with BMI(_username, _password, project) as bmi:
         ret = bmi.mount_image(img)
         if ret[constants.STATUS_CODE_KEY] == 200:
@@ -504,6 +557,17 @@ def create_mapping(project, img):
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 def delete_mapping(project, img):
+    """
+    Unmount image from iscsi server
+
+    \b
+    WARNING = User Must be An Admin
+
+    \b
+    Arguments:
+    PROJECT  = The HIL Project attached to your credentials
+    IMG      = The image that must be unmounted
+    """
     with BMI(_username, _password, project) as bmi:
         ret = bmi.umount_image(img)
         if ret[constants.STATUS_CODE_KEY] == 200:
@@ -515,6 +579,16 @@ def delete_mapping(project, img):
 @iscsi.command(name='ls', help='Show ISCSI Mappings')
 @click.argument(constants.PROJECT_PARAMETER)
 def show_mappings(project):
+    """
+    Show mounted images on iscsi
+
+    \b
+    WARNING = User Must be An Admin
+
+    \b
+    Arguments:
+    PROJECT  = The HIL Project attached to your credentials
+    """
     with BMI(_username, _password, project) as bmi:
         ret = bmi.show_mounted()
         if ret[constants.STATUS_CODE_KEY] == 200:
@@ -529,11 +603,17 @@ def show_mappings(project):
 
 @cli.command(name='upload', help='Upload Image to BMI')
 def upload():
+    """
+    Coming Soon
+    """
     click.echo('Not Yet Implemented')
 
 
 @cli.command(name='download', help='Download Image from BMI')
 def download():
+    """
+    Coming Soon
+    """
     click.echo('Not Yet Implemented')
 
 
