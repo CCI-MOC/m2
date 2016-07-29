@@ -40,7 +40,7 @@ class BMI:
             self.pid = self.__does_project_exist()
             self.is_admin = self.__check_admin()
             self.hil = HIL(base_url=self.config.haas_url, usr=self.username,
-                            passwd=self.password)
+                           passwd=self.password)
             self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME])
             logger.debug("Username is %s and Password is %s", self.username,
                          self.password)
@@ -268,7 +268,8 @@ class BMI:
             self.db.image.insert(node_name, self.pid, parent_id,
                                  id=self.__extract_id(ceph_img_name))
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.hil.attach_node_haas_project(self.project, node_name)
+            self.hil.attach_node_to_project_network(node_name, network,
+                                                    "vlan/native", nic)
             return self.__return_error(e)
         except ISCSIException as e:
             logger.exception('')
@@ -279,12 +280,14 @@ class BMI:
             self.db.image.insert(node_name, self.pid, parent_id,
                                  id=self.__extract_id(ceph_img_name))
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.hil.attach_node_haas_project(self.project, node_name)
+            self.hil.attach_node_to_project_network(node_name, network,
+                                                    "vlan/native", nic)
             return self.__return_error(e)
         except DBException as e:
             logger.exception('')
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.hil.attach_node_haas_project(self.project, node_name)
+            self.hil.attach_node_to_project_network(node_name, network,
+                                                    "vlan/native", nic)
             return self.__return_error(e)
         except HaaSException as e:
             logger.exception('')
