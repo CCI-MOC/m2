@@ -36,7 +36,7 @@ class ImageBusyException(FileSystemException):
         self.name = name
 
     def __str__(self):
-        return self.name + " is Busy"
+        return self.name + " is Busy (Could have Clones)"
 
 
 # this exception should be raised when some operation is called on an image that has snapshots
