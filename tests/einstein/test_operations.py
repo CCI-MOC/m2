@@ -14,7 +14,6 @@ CORRECT_HAAS_PASSWORD = "admin1234"
 INCORRECT_HAAS_PASSWORD = "admin123##"
 
 NODE_NAME = "cisco-24"
-CHANNEL = "vlan/native"
 NIC = "enp130s0f0"
 
 PROJECT = "bmi_infra"
@@ -27,6 +26,7 @@ NOT_EXIST_SNAP_NAME = "hello"
 
 
 class TestProvision(TestCase):
+    @trace
     def setUp(self):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)
@@ -37,7 +37,7 @@ class TestProvision(TestCase):
 
     def test_run(self):
         response = self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK,
-                                           CHANNEL, NIC)
+                                           NIC)
         self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
         time.sleep(constants.HAAS_CALL_TIMEOUT)
 
@@ -51,6 +51,7 @@ class TestProvision(TestCase):
 
 
 class TestDeprovision(TestCase):
+    @trace
     def setUp(self):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)
@@ -58,8 +59,7 @@ class TestDeprovision(TestCase):
         self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK,
-                                CHANNEL, NIC)
+        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
         time.sleep(constants.HAAS_CALL_TIMEOUT)
 
     def test_run(self):
@@ -75,6 +75,7 @@ class TestDeprovision(TestCase):
 
 
 class TestCreateSnapshot(TestCase):
+    @trace
     def setUp(self):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)
@@ -82,8 +83,7 @@ class TestCreateSnapshot(TestCase):
         self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK,
-                                CHANNEL, NIC)
+        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
         time.sleep(constants.HAAS_CALL_TIMEOUT)
 
     def test_run(self):
@@ -97,7 +97,8 @@ class TestCreateSnapshot(TestCase):
                 has_image = True
         self.assertTrue(has_image)
 
-        with ceph.RBD(_cfg.fs[constants.CEPH_CONFIG_SECTION_NAME]) as fs:
+        with ceph.RBD(_cfg.fs[constants.CEPH_CONFIG_SECTION_NAME],
+                      _cfg.iscsi_update_password) as fs:
             img_id = self.good_bmi.get_ceph_image_name_from_project(
                 NEW_SNAP_NAME, PROJECT)
             fs.get_image(img_id)
@@ -113,6 +114,7 @@ class TestCreateSnapshot(TestCase):
 
 
 class TestListSnapshots(TestCase):
+    @trace
     def setUp(self):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)
@@ -120,8 +122,7 @@ class TestListSnapshots(TestCase):
         self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK,
-                                CHANNEL, NIC)
+        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
         time.sleep(constants.HAAS_CALL_TIMEOUT)
 
         self.good_bmi.create_snapshot(NODE_NAME, NEW_SNAP_NAME)
@@ -142,7 +143,7 @@ class TestListSnapshots(TestCase):
         time.sleep(constants.HAAS_CALL_TIMEOUT)
 
 
-@unittest.skip('Same as Remove Image')
+@unittest.skip("Same as Remove Image")
 class TestRemoveSnapshot(TestCase):
     def setUp(self):
         pass
@@ -155,6 +156,7 @@ class TestRemoveSnapshot(TestCase):
 
 
 class TestListImages(TestCase):
+    @trace
     def setUp(self):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)
@@ -176,6 +178,7 @@ class TestListImages(TestCase):
 
 
 class TestRemoveImage(TestCase):
+    @trace
     def setUp(self):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)

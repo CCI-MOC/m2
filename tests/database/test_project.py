@@ -5,6 +5,7 @@ from ims.database.database import *
 
 
 class TestInsert(TestCase):
+    @trace
     def setUp(self):
         self.db = Database()
 
@@ -21,6 +22,7 @@ class TestInsert(TestCase):
 
 
 class TestDelete(TestCase):
+    @trace
     def setUp(self):
         self.db = Database()
         self.db.project.insert('project 1', 'network 1')
@@ -36,6 +38,7 @@ class TestDelete(TestCase):
 
 
 class TestFetch(TestCase):
+    @trace
     def setUp(self):
         self.db = Database()
         self.db.project.insert('project 1', 'network 1')

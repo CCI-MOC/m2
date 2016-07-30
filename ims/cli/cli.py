@@ -64,9 +64,8 @@ def cli():
 @click.argument(constants.NODE_NAME_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 @click.argument(constants.NETWORK_PARAMETER)
-@click.argument(constants.CHANNEL_PARAMETER)
 @click.argument(constants.NIC_PARAMETER)
-def provision(project, node, img, network, channel, nic):
+def provision(project, node, img, network,nic):
     """
     Provision a Node
 
@@ -83,7 +82,6 @@ def provision(project, node, img, network, channel, nic):
             constants.NODE_NAME_PARAMETER: node,
             constants.IMAGE_NAME_PARAMETER: img,
             constants.NETWORK_PARAMETER: network,
-            constants.CHANNEL_PARAMETER: channel,
             constants.NIC_PARAMETER: nic}
     res = requests.put(_url + "provision/", data=data,
                        auth=(_username, _password))

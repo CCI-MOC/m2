@@ -1,104 +1,192 @@
 import subprocess
 
-import os
+import re
 import sh
 
 import ims.common.constants as constants
+from ims.common.log import *
 from ims.exception import *
+
+logger = create_logger(__name__)
 
 
 class IET:
-    def __init__(self, keyring, id, pool, password):
-        self.keyring = keyring
-        self.id = id
-        self.pool = pool
+    @log
+    def __init__(self, fs, password):
+        self.fs = fs
         self.password = password
 
+    @log
     def create_mapping(self, ceph_img_name):
-        mappings = self.show_mappings()
-        if ceph_img_name in mappings:
-            raise iscsi_exceptions.NodeAlreadyInUseException()
-        rbd_name = self.__execute_map(ceph_img_name)
-        self.__add_mapping(ceph_img_name, rbd_name)
-        self.__restart()
+        rbd_name = None
+        try:
+            mappings = self.show_mappings()
+            if ceph_img_name in mappings:
+                raise iscsi_exceptions.NodeAlreadyInUseException()
+            rbd_name = self.fs.map(ceph_img_name)
+            self.__add_mapping(ceph_img_name, rbd_name)
+            self.__restart()
+            self.__check_status(True)
+        except iscsi_exceptions.UpdateConfigFailedException as e:
+            maps = self.fs.showmapped()
+            self.fs.unmap(maps[ceph_img_name])
+            raise e
+        except (iscsi_exceptions.MountException,
+                iscsi_exceptions.DuplicatesException,
+                iscsi_exceptions.RestartFailedException) as e:
+            self.__remove_mapping(ceph_img_name, rbd_name)
+            maps = self.fs.showmapped()
+            self.fs.unmap(maps[ceph_img_name])
+            raise e
 
+    @log
     def delete_mapping(self, ceph_img_name):
-        iscsi_mappings = self.show_mappings()
-        if ceph_img_name not in iscsi_mappings:
-            raise iscsi_exceptions.NodeAlreadyUnmappedException()
-        self.__stop()
-        mappings = self.__execute_showmapped()
-        self.__remove_mapping(ceph_img_name, mappings[ceph_img_name])
-        self.__execute_unmap(mappings[ceph_img_name])
-        self.__restart()
+        mappings = None
+        try:
+            iscsi_mappings = self.show_mappings()
+            if ceph_img_name not in iscsi_mappings:
+                raise iscsi_exceptions.NodeAlreadyUnmappedException()
+            self.__stop()
+            self.__check_status(False)
+            mappings = self.fs.showmapped()
+            self.__remove_mapping(ceph_img_name, mappings[ceph_img_name])
+            self.fs.unmap(mappings[ceph_img_name])
+            self.__restart()
+            self.__check_status(True)
+        except iscsi_exceptions.UpdateConfigFailedException as e:
+            self.__restart()
+            raise e
+        except file_system_exceptions.UnmapFailedException as e:
+            self.__add_mapping(ceph_img_name, mappings(ceph_img_name))
+            self.__restart()
+            raise e
+        except (iscsi_exceptions.MountException,
+                iscsi_exceptions.DuplicatesException,
+                iscsi_exceptions.RestartFailedException) as e:
+            self.fs.map(ceph_img_name)
+            self.__add_mapping(ceph_img_name, mappings(ceph_img_name))
+            self.__restart()
+            raise e
 
+    @log
     def show_mappings(self):
-        target_lines = []
-        lun_lines = []
-        with open(constants.IET_ISCSI_CONFIG_LOC, 'r') as fi:
-            for line in fi:
-                line = line.strip()
-                if line.startswith(constants.IET_TARGET_STARTING):
-                    target_lines.append(line)
-                elif line.startswith(constants.IET_LUN_STARTING):
-                    lun_lines.append(line)
         mappings = {}
-        for i in xrange(target_lines.__len__()):
-            target_line = target_lines[i]
-            lun_line = lun_lines[i]
-            mappings[target_line.split('.')[2]] = \
-                lun_line.split(',')[0].split('=')[1]
-
-        return mappings
-
-    def __add_mapping(self, ceph_img_name, rbd_name):
-        with open(constants.IET_ISCSI_CONFIG_LOC, 'a') as fi:
-            fi.write(constants.IET_MAPPING_TEMP.replace(constants.CEPH_IMG_NAME,
-                                                        ceph_img_name).replace(
-                constants.RBD_NAME, rbd_name))
-
-    def __remove_mapping(self, ceph_img_name, rbd_name):
-        with open(constants.IET_ISCSI_CONFIG_LOC, 'r') as fi:
-            with open(constants.IET_ISCSI_CONFIG_TEMP_LOC, 'w') as temp:
+        try:
+            with open(constants.IET_ISCSI_CONFIG_LOC, 'r') as fi:
+                target = None
                 for line in fi:
-                    if line.find(ceph_img_name) == -1 and line.find(
-                            rbd_name) == -1:
-                        temp.write(line)
-        os.rename(constants.IET_ISCSI_CONFIG_TEMP_LOC,
-                  constants.IET_ISCSI_CONFIG_LOC)
+                    line = line.strip()
+                    if line.startswith(constants.IET_TARGET_STARTING):
+                        if target is None:
+                            target = line.split('.')[2]
+                        else:
+                            raise iscsi_exceptions.InvalidConfigException()
+                    elif line.startswith(constants.IET_LUN_STARTING):
+                        if target is not None:
+                            mappings[target] = line.split(',')[0].split('=')[1]
+                            target = None
+                        else:
+                            raise iscsi_exceptions.InvalidConfigException()
 
-    def __execute_map(self, ceph_img_name):
-        command = "echo {0} | sudo -S rbd --keyring {1} --id {2} map {3}/{4}".format(
-            self.password, self.keyring, self.id, self.pool, ceph_img_name)
-        p = subprocess.Popen(command, shell=True,
-                             stdout=subprocess.PIPE)
-        output, err = p.communicate()
-        return output.strip()
+            return mappings
+        except IOError as e:
+            logger.info("Raising Read Config Failed Exception")
+            raise iscsi_exceptions.ReadConfigFailedException(e.message)
 
-    def __execute_unmap(self, rbd_name):
-        command = "echo {0} | sudo -S rbd --keyring {1} --id {2} unmap {3}".format(
-            self.password, self.keyring, self.id, rbd_name)
-        p = subprocess.Popen(command, shell=True,
-                             stdout=subprocess.PIPE)
-        output, err = p.communicate()
+    @log
+    def __add_mapping(self, ceph_img_name, rbd_name):
+        try:
+            with open(constants.IET_ISCSI_CONFIG_LOC, 'a') as fi:
+                fi.write(
+                    constants.IET_MAPPING_TEMP.replace(constants.CEPH_IMG_NAME,
+                                                       ceph_img_name).replace(
+                        constants.RBD_NAME, rbd_name))
+        except IOError as e:
+            logger.info("Raising Update Config Failed Exception")
+            raise iscsi_exceptions.UpdateConfigFailedException(e.message)
 
-    def __execute_showmapped(self):
-        output = sh.rbd.showmapped()
-        lines = output.split('\n')[1:-1]
-        maps = {}
-        for line in lines:
-            parts = line.split()
-            maps[parts[2]] = parts[4]
-        return maps
+    @log
+    def __remove_mapping(self, ceph_img_name, rbd_name):
+        try:
+            with open(constants.IET_ISCSI_CONFIG_LOC, 'r') as fi:
+                with open(constants.IET_ISCSI_CONFIG_TEMP_LOC, 'w') as temp:
+                    for line in fi:
+                        if line.find(ceph_img_name) == -1 and line.find(
+                                rbd_name) == -1:
+                            temp.write(line)
+            os.rename(constants.IET_ISCSI_CONFIG_TEMP_LOC,
+                      constants.IET_ISCSI_CONFIG_LOC)
+        except IOError as e:
+            logger.info("Raising Update Config Failed Exception")
+            raise iscsi_exceptions.UpdateConfigFailedException(e.message)
 
+    @log
     def __restart(self):
         command = "echo {0} | sudo -S service iscsitarget restart".format(
             self.password)
-        p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+        p = subprocess.Popen(command, shell=True, stderr=subprocess.STDOUT,
+                             stdout=subprocess.PIPE)
         output, err = p.communicate()
+        # output = sh.service.iscsitarget.restart()
+        if p.returncode == 0:
+            return output.strip()
+        else:
+            logger.info("Raising Restart Failed Exception")
+            raise iscsi_exceptions.RestartFailedException()
 
+    @log
     def __stop(self):
         command = "echo {0} | sudo -S service iscsitarget stop".format(
             self.password)
-        p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+        p = subprocess.Popen(command, shell=True, stderr=subprocess.STDOUT,
+                             stdout=subprocess.PIPE)
         output, err = p.communicate()
+        # output = sh.service.iscsitarget.stop()
+        if p.returncode == 0:
+            return output.strip()
+        else:
+            logger.info("Raising Stop Failed Exception")
+            raise iscsi_exceptions.StopFailedException()
+
+    def __check_status(self, on):
+        output = sh.service.iscsitarget.status(_ok_code=[0, 3])
+        ansi_escape = re.compile(r'\x1b[^m]*m')
+        output = ansi_escape.sub('', output.strip())
+        parts = output.split("\n")
+        active = not on
+        targets = []
+        failed_mount = []
+        duplicates = []
+        for part in parts:
+            if part.strip().startswith("Active"):
+                line_parts = part.strip().split()
+                if line_parts[1] + line_parts[2] == "active(running)":
+                    active = True
+                if line_parts[1] + line_parts[2] == "inactive(dead)":
+                    active = False
+            elif part.strip().find("created target") != -1:
+                line = part.strip()[
+                       part.strip().find("created target"):].split()
+                targets.append(line[2].split(".")[2])
+            elif part.strip().find("unable to create logical unit") != -1:
+                target = targets.pop()
+                failed_mount.append(target)
+            elif part.strip().find("duplicated target") != -1:
+                line = part.strip()[
+                       part.strip().find("duplicated target"):].split()
+                duplicates.append(line[2].split(".")[2])
+
+        if failed_mount:
+            logger.info("Raising Mount Exception for %s",failed_mount)
+            raise iscsi_exceptions.MountException(failed_mount)
+
+        if duplicates:
+            logger.info("Raising Mount Exception for %s",duplicates)
+            raise iscsi_exceptions.DuplicatesException(duplicates)
+
+        if not active and on:
+            logger.info("Raising Restart Failed Exception")
+            raise iscsi_exceptions.RestartFailedException()
+        elif not on and active:
+            logger.info("Raising Stop Failed Exception")
+            raise iscsi_exceptions.StopFailedException()

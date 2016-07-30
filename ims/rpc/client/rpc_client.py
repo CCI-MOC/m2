@@ -12,7 +12,7 @@ class RPCClient:
         # Loads the variable dict with the contents of config.json.
         self.dict = {
             "function-list": {
-                "provision": "5",
+                "provision": "4",
                 "deprovision": "3",
                 "create_snapshot": "2",
                 "list_images": "0",

@@ -74,8 +74,7 @@ def list_images():
 
 @rest_call("/provision/", 'PUT', constants.PROVISION_COMMAND,
            [constants.NODE_NAME_PARAMETER, constants.IMAGE_NAME_PARAMETER,
-            constants.NETWORK_PARAMETER, constants.CHANNEL_PARAMETER,
-            constants.NIC_PARAMETER])
+            constants.NETWORK_PARAMETER, constants.NIC_PARAMETER])
 def provision():
     pass
 

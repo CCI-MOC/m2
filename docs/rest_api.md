@@ -45,7 +45,6 @@ PUT
  "node" : "<node_name>" , 
  "img" : "<image_name>" ,
  "network" : "<network_name>" ,
- "channel" : "<channel in haas>" ,
  "nic" : "<nic to connect on>"
 }
 ```
@@ -67,7 +66,6 @@ Send a PUT Request with following body to http://<BMI_SERVER>:<PORT>/provision/
  "node" : "cisco-2016" , 
  "img" : "hadoopMaster.img" ,  
  "network" : "provision-net" ,
- "channel" : "vlan/native",
  "nic" : "nic01"
 }
 ```

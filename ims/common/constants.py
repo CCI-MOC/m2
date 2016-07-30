@@ -110,7 +110,9 @@ IET_LUN_STARTING = "Lun"
 
 DNSMASQ_LEASES_LOC = '/var/lib/misc/dnsmasq.leases'
 
-HAAS_CALL_TIMEOUT = 5
+HAAS_CALL_TIMEOUT = 10
 DEFAULT_SNAPSHOT_NAME = "snapshot"
 
 BMI_ADMIN_PROJECT = "bmi_infra"
+
+HAAS_BMI_CHANNEL = "vlan/native"

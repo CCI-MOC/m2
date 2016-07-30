@@ -23,13 +23,10 @@ class BMI:
             self.__process_credentials(credentials)
             self.hil = HIL(base_url=self.config.haas_url, usr=self.username,
                            passwd=self.password)
-            self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME])
+            self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME],
+                          self.config.iscsi_update_password)
             self.dhcp = DNSMasq()
-            ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
-            self.iscsi = IET(ceph_config[constants.CEPH_KEY_RING_KEY],
-                             ceph_config[constants.CEPH_ID_KEY],
-                             ceph_config[constants.CEPH_POOL_KEY],
-                             self.config.iscsi_update_password)
+            self.iscsi = IET(self.fs, self.config.iscsi_update_password)
         elif args.__len__() == 3:
             username, password, project = args
             self.config = config.get()
@@ -37,18 +34,15 @@ class BMI:
             self.password = password
             self.project = project
             self.db = Database()
-            self.pid = self.__does_project_exist()
+            self.pid = self.__does_project_exist(self.project)
             self.is_admin = self.__check_admin()
             self.hil = HIL(base_url=self.config.haas_url, usr=self.username,
                            passwd=self.password)
-            self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME])
+            self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME],
+                          self.config.iscsi_update_password)
             logger.debug("Username is %s and Password is %s", self.username,
                          self.password)
-            ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
-            self.iscsi = IET(ceph_config[constants.CEPH_KEY_RING_KEY],
-                             ceph_config[constants.CEPH_ID_KEY],
-                             ceph_config[constants.CEPH_POOL_KEY],
-                             self.config.iscsi_update_password)
+            self.iscsi = IET(self.fs, self.config.iscsi_update_password)
 
     def __enter__(self):
         return self
@@ -57,13 +51,13 @@ class BMI:
         self.shutdown()
 
     @trace
-    def __does_project_exist(self):
-        pid = self.db.project.fetch_id_with_name(self.project)
+    def __does_project_exist(self, project):
+        pid = self.db.project.fetch_id_with_name(project)
         # None as a query result implies that the project does not exist.
         if pid is None:
             logger.info("Raising Project Not Found Exception for %s",
-                        self.project)
-            raise db_exceptions.ProjectNotFoundException(self.project)
+                        project)
+            raise db_exceptions.ProjectNotFoundException(project)
 
         return pid
 
@@ -101,7 +95,7 @@ class BMI:
     @trace
     def __process_credentials(self, credentials):
         base64_str, self.project = credentials
-        self.pid = self.__does_project_exist()
+        self.pid = self.__does_project_exist(self.project)
         self.username, self.password = tuple(
             base64.b64decode(base64_str).split(':'))
         logger.debug("Username is %s and Password is %s", self.username,
@@ -123,15 +117,19 @@ class BMI:
         logger.debug("Template LOC = %s", template_loc)
         path = self.config.ipxe_loc + node_name + ".ipxe"
         logger.debug("The Path for ipxe file is %s", path)
-        with io.open(path, 'w') as ipxe:
-            for line in io.open(template_loc + "/ipxe.temp", 'r'):
-                line = line.replace(constants.IPXE_TARGET_NAME, target_name)
-                line = line.replace(constants.IPXE_ISCSI_IP,
-                                    self.config.iscsi_ip)
-                ipxe.write(line)
-        logger.info("Generated ipxe file")
-        os.chmod(path, 0755)
-        logger.info("Changed permissions to 755")
+        try:
+            with io.open(path, 'w') as ipxe:
+                for line in io.open(template_loc + "/ipxe.temp", 'r'):
+                    line = line.replace(constants.IPXE_TARGET_NAME, target_name)
+                    line = line.replace(constants.IPXE_ISCSI_IP,
+                                        self.config.iscsi_ip)
+                    ipxe.write(line)
+            logger.info("Generated ipxe file")
+            os.chmod(path, 0755)
+            logger.info("Changed permissions to 755")
+        except (OSError, IOError) as e:
+            logger.info("Raising Registration Failed Exception for %s",node_name)
+            raise RegistrationFailedException(node_name, e.message)
 
     @log
     def __generate_mac_addr_file(self, img_name, node_name, mac_addr):
@@ -140,15 +138,19 @@ class BMI:
         logger.debug("Template LOC = %s", template_loc)
         path = self.config.pxelinux_loc + mac_addr
         logger.debug("The Path for mac addr file is %s", path)
-        with io.open(path, 'w') as mac:
-            for line in io.open(template_loc + "/mac.temp", 'r'):
-                line = line.replace(constants.MAC_IMG_NAME, img_name)
-                line = line.replace(constants.MAC_IPXE_NAME,
-                                    node_name + ".ipxe")
-                mac.write(line)
-        logger.info("Generated mac addr file")
-        os.chmod(path, 0644)
-        logger.debug("Changed permissions to 644")
+        try:
+            with io.open(path, 'w') as mac:
+                for line in io.open(template_loc + "/mac.temp", 'r'):
+                    line = line.replace(constants.MAC_IMG_NAME, img_name)
+                    line = line.replace(constants.MAC_IPXE_NAME,
+                                        node_name + ".ipxe")
+                    mac.write(line)
+            logger.info("Generated mac addr file")
+            os.chmod(path, 0644)
+            logger.debug("Changed permissions to 644")
+        except (OSError, IOError) as e:
+            logger.info("Raising Registration Failed Exception for %s",node_name)
+            raise RegistrationFailedException(node_name, e.message)
 
     # Parses the Exception and returns the dict that should be returned to user
     @log
@@ -190,10 +192,9 @@ class BMI:
 
     # Provisions from HaaS and Boots the given node with given image
     @log
-    def provision(self, node_name, img_name, network, channel, nic):
+    def provision(self, node_name, img_name, network, nic):
         try:
-            self.hil.attach_node_to_project_network(node_name, network,
-                                                    channel, nic)
+            self.hil.attach_node_to_project_network(node_name, network, nic)
 
             parent_id = self.db.image.fetch_id_with_name_from_project(img_name,
                                                                       self.project)
@@ -268,8 +269,7 @@ class BMI:
             self.db.image.insert(node_name, self.pid, parent_id,
                                  id=self.__extract_id(ceph_img_name))
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.hil.attach_node_to_project_network(node_name, network,
-                                                    "vlan/native", nic)
+            self.hil.attach_node_to_project_network(node_name, network, nic)
             return self.__return_error(e)
         except ISCSIException as e:
             logger.exception('')
@@ -280,14 +280,12 @@ class BMI:
             self.db.image.insert(node_name, self.pid, parent_id,
                                  id=self.__extract_id(ceph_img_name))
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.hil.attach_node_to_project_network(node_name, network,
-                                                    "vlan/native", nic)
+            self.hil.attach_node_to_project_network(node_name, network, nic)
             return self.__return_error(e)
         except DBException as e:
             logger.exception('')
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.hil.attach_node_to_project_network(node_name, network,
-                                                    "vlan/native", nic)
+            self.hil.attach_node_to_project_network(node_name, network, nic)
             return self.__return_error(e)
         except HaaSException as e:
             logger.exception('')
@@ -456,7 +454,8 @@ class BMI:
                 parent_id = self.db.image.fetch_id_with_name_from_project(
                     parent,
                     self.project)
-            self.db.image.insert(img, self.pid, parent_id, public, snap, id)
+            pid = self.__does_project_exist(project)
+            self.db.image.insert(img, pid, parent_id, public, snap, id)
             return self.__return_success(True)
         except (DBException, AuthorizationFailedException) as e:
             logger.exception('')
