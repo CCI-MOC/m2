@@ -489,7 +489,7 @@ def export_ceph_image(project, img, name):
     """
     """
     with BMI(_username, _password, project) as bmi:
-        ret = bmi.export_ceph_image(img, name)
+        ret = bmi.export_ceph_image(img, str(name))
         if ret[constants.STATUS_CODE_KEY] == 200:
             click.echo("Success")
         else:
