@@ -5,7 +5,7 @@ We have a basic set of API as of now. All of the services as of now are taking t
 BMI API assumes that you know the image which you are interested in. BMI has an driver which can communicate with Ceph(the file storage system that we are using for storing our images). Please make sure that you understand Ceph concepts before you play with the API. 
 
 To have a clear understanding of the API, we wish to provide the following terminology:
-* project - A project is the HaaS project that has been allocated to tenant.
+* project - A project is the HIL project that has been allocated to tenant.
 * node - A node that is allocated to project by HaaS. This node should be present in HaaS.
 * img - The name of image which will be used for provisioning.
 * snap_name - The snapshot of the image from which you want to provision a node.
@@ -28,7 +28,7 @@ Each possible API call has:
 
 ---
 ###Provision:
-Provision API is needed for provisioning a node from MOC cluster as of now. Provision operation internally calls a ceph clone operation. Ceph clone operation usually takes a snap_
+Provision API is needed for provisioning a node from MOC cluster as of now. Provision operation internally calls a ceph clone operation which makes a copy of the given image and uses it to provision the node.
 
 Following is the call for API:
 
@@ -45,7 +45,6 @@ PUT
  "node" : "<node_name>" , 
  "img" : "<image_name>" ,
  "network" : "<network_name>" ,
- "channel" : "<channel in haas>" ,
  "nic" : "<nic to connect on>"
 }
 ```
@@ -67,7 +66,6 @@ Send a PUT Request with following body to http://<BMI_SERVER>:<PORT>/provision/
  "node" : "cisco-2016" , 
  "img" : "hadoopMaster.img" ,  
  "network" : "provision-net" ,
- "channel" : "vlan/native",
  "nic" : "nic01"
 }
 ```
