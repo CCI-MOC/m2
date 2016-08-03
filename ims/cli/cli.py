@@ -479,6 +479,20 @@ def import_ceph_image(project, img, snap, protect):
         else:
             click.echo(ret[constants.MESSAGE_KEY])
 
+@cli.command(name='export', short_help='Export a BMI image to ceph')
+@click.argument(constants.PROJECT_PARAMETER)
+@click.argument(constants.IMAGE_NAME_PARAMETER)
+@click.argument('name')
+@bmi_exception_wrapper
+def export_ceph_image(project,img,name):
+    """
+    """
+    with BMI(_username,_password,project) as bmi:
+        ret = bmi.export_ceph_image(img,name)
+        if ret[constants.STATUS_CODE_KEY] == 200:
+            click.echo("Success")
+        else:
+            click.echo(ret[constants.MESSAGE_KEY])
 
 @cli.command(name='cp', help="Copy an existing image not clones")
 @click.argument(constants.SRC_PROJECT_PARAMETER)

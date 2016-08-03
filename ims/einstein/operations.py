@@ -438,6 +438,17 @@ class BMI:
             return self.__return_error(e)
 
     @log
+    def export_ceph_image(self, img, name):
+        try:
+            ceph_img_name = self.__get_ceph_image_name(img)
+            self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME, name)
+            self.fs.flatten(name)
+            return self.__return_success(True)
+        except FileSystemException as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+    @log
     def delete_image(self, project, img):
         try:
             if not self.is_admin:
