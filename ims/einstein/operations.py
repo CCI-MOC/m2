@@ -424,7 +424,7 @@ class BMI:
             if protect:
                 self.fs.snap_protect(ceph_img_name, snap_name)
             self.db.image.insert(ceph_img_name, self.pid)
-            snap_ceph_name = self.__get_ceph_image_name(ceph_img_name, project)
+            snap_ceph_name = self.__get_ceph_image_name(ceph_img_name)
             self.fs.clone(ceph_img_name, snap_name,
                           snap_ceph_name)
             self.fs.flatten(snap_ceph_name)
