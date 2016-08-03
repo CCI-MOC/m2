@@ -42,6 +42,7 @@ class BMI:
                           self.config.iscsi_update_password)
             logger.debug("Username is %s and Password is %s", self.username,
                          self.password)
+            self.dhcp = DNSMasq()
             self.iscsi = IET(self.fs, self.config.iscsi_update_password)
 
     def __enter__(self):
