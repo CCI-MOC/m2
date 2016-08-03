@@ -128,7 +128,8 @@ class BMI:
             os.chmod(path, 0755)
             logger.info("Changed permissions to 755")
         except (OSError, IOError) as e:
-            logger.info("Raising Registration Failed Exception for %s",node_name)
+            logger.info("Raising Registration Failed Exception for %s",
+                        node_name)
             raise RegistrationFailedException(node_name, e.message)
 
     @log
@@ -149,7 +150,8 @@ class BMI:
             os.chmod(path, 0644)
             logger.debug("Changed permissions to 644")
         except (OSError, IOError) as e:
-            logger.info("Raising Registration Failed Exception for %s",node_name)
+            logger.info("Raising Registration Failed Exception for %s",
+                        node_name)
             raise RegistrationFailedException(node_name, e.message)
 
     # Parses the Exception and returns the dict that should be returned to user
@@ -415,11 +417,12 @@ class BMI:
             return self.__return_error(e)
 
     @log
-    def import_ceph_snapshot(self, img, snap_name):
+    def import_ceph_snapshot(self, img, snap_name, protect):
         try:
             ceph_img_name = str(img)
 
-            self.fs.snap_protect(ceph_img_name, snap_name)
+            if protect:
+                self.fs.snap_protect(ceph_img_name, snap_name)
             self.db.image.insert(ceph_img_name, self.pid)
             snap_ceph_name = self.__get_ceph_image_name(ceph_img_name, project)
             self.fs.clone(ceph_img_name, snap_name,

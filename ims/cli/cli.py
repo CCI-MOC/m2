@@ -2,6 +2,7 @@
 
 import json
 import sys
+
 import click
 import requests
 from prettytable import PrettyTable
@@ -23,7 +24,6 @@ if constants.HAAS_USERNAME_VARIABLE in os.environ:
 else:
     click.echo(constants.HAAS_USERNAME_VARIABLE + " Variable Not Set")
     sys.exit(1)
-
 
 if constants.HAAS_PASSWORD_VARIABLE in os.environ:
     _password = os.environ[constants.HAAS_PASSWORD_VARIABLE]
@@ -65,7 +65,7 @@ def cli():
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 @click.argument(constants.NETWORK_PARAMETER)
 @click.argument(constants.NIC_PARAMETER)
-def provision(project, node, img, network,nic):
+def provision(project, node, img, network, nic):
     """
     Provision a Node
 
@@ -455,8 +455,10 @@ def list_all_images(s, c, p, project, name, ceph):
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 @click.option('--snap', default=None, help='Specifies what snapshot to import')
+@click.option('--protect', is_flag=True,
+              help="Set if snapshot should be protected before cloning")
 @bmi_exception_wrapper
-def import_ceph_image(project, img, snap):
+def import_ceph_image(project, img, snap, protect):
     """
     Import an existing CEPH image into BMI
 
@@ -470,7 +472,7 @@ def import_ceph_image(project, img, snap):
         if snap is None:
             ret = bmi.import_ceph_image(img)
         else:
-            ret = bmi.import_ceph_snapshot(img, snap)
+            ret = bmi.import_ceph_snapshot(img, snap, protect)
 
         if ret[constants.STATUS_CODE_KEY] == 200:
             click.echo("Success")
