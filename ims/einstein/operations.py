@@ -453,7 +453,7 @@ class BMI:
             if parent is not None:
                 parent_id = self.db.image.fetch_id_with_name_from_project(
                     parent,
-                    self.project)
+                    project)
             pid = self.__does_project_exist(project)
             self.db.image.insert(img, pid, parent_id, public, snap, id)
             return self.__return_success(True)
