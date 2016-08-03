@@ -29,7 +29,6 @@ def get():
 
 
 class __BMIConfig:
-    # the config file is hardcoded for now
     # other instance variables are initialized as to not get AttributeErrors
     def __init__(self, filename):
         self.configfile = filename
