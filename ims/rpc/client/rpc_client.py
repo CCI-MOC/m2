@@ -24,7 +24,8 @@ class RPCClient:
         # The script name and no. of arguments.
         self.func_list = self.dict['function-list']
         self.cfg = config.get()
-
+        self.name_server = None
+        self.main_obj = None
         self.__get_main_obj()
 
     def __get_main_obj(self):
