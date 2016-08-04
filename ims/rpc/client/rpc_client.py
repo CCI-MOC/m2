@@ -74,5 +74,6 @@ class RPCClient:
                                                                         args)
                     return execute_command
                 except Pyro4.errors.CommunicationError as e:
+                    self.main_obj = None
                     return {constants.STATUS_CODE_KEY: 500,
                             constants.MESSAGE_KEY: str(e)}
