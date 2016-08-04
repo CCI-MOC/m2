@@ -441,7 +441,7 @@ class BMI:
     def export_ceph_image(self, img, name):
         try:
             ceph_img_name = self.__get_ceph_image_name(img)
-            self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,name)
+            self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME, name)
             self.fs.flatten(name)
             return self.__return_success(True)
         except FileSystemException as e:
@@ -590,3 +590,10 @@ class BMI:
         except (ISCSIException, DBException) as e:
             logger.exception('')
             return self.__return_error(e)
+
+    @log
+    def remake_mappings(self):
+        try:
+            self.iscsi.remake_mappings()
+        except (FileSystemException, ISCSIException) as e:
+            logger.exception('')

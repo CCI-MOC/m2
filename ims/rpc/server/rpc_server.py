@@ -26,10 +26,21 @@ class MainServer:
             return {constants.STATUS_CODE_KEY: ex.status_code,
                     constants.MESSAGE_KEY: str(ex)}
 
+    @log
+    def remake_mappings(self):
+        try:
+            with BMI("", "", constants.BMI_ADMIN_PROJECT) as bmi:
+                bmi.remake_mappings()
+        except:
+            logger.exception('')
+
 
 @log
 def start_rpc_server():
     cfg = config.get()
+    if cfg.is_service:
+        server = MainServer()
+        server.remake_mappings()
     Pyro4.config.HOST = cfg.rpcserver_ip
     # Starting the Pyro daemon, locating and registering object with name server.
     daemon = Pyro4.Daemon(port=cfg.rpcserver_port)

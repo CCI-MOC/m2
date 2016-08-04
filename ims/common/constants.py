@@ -12,7 +12,7 @@ HAAS_USERNAME_VARIABLE = 'HAAS_USERNAME'
 HAAS_PASSWORD_VARIABLE = 'HAAS_PASSWORD'
 
 # Config section names
-IDENTITY_CONFIG_SECTION_NAME = 'identity'
+BMI_CONFIG_SECTION_NAME = 'bmi'
 DB_CONFIG_SECTION_NAME = 'db'
 FILESYSTEM_CONFIG_SECTION_NAME = 'filesystem'
 HAAS_CONFIG_SECTION_NAME = 'haas'
@@ -64,8 +64,9 @@ LOGS_VERBOSE_KEY = 'verbose'
 PXELINUX_URL_KEY = 'pxelinux_url'
 IPXE_URL_KEY = 'ipxe_url'
 
-# Identity
+# BMI
 UID_KEY = 'uid'
+SERVICE_KEY = 'service'
 
 # Response Related Keys
 STATUS_CODE_KEY = 'status_code'

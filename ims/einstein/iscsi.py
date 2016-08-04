@@ -177,11 +177,11 @@ class IET:
                 duplicates.append(line[2].split(".")[2])
 
         if failed_mount:
-            logger.info("Raising Mount Exception for %s",failed_mount)
+            logger.info("Raising Mount Exception for %s", failed_mount)
             raise iscsi_exceptions.MountException(failed_mount)
 
         if duplicates:
-            logger.info("Raising Mount Exception for %s",duplicates)
+            logger.info("Raising Mount Exception for %s", duplicates)
             raise iscsi_exceptions.DuplicatesException(duplicates)
 
         if not active and on:
@@ -190,3 +190,19 @@ class IET:
         elif not on and active:
             logger.info("Raising Stop Failed Exception")
             raise iscsi_exceptions.StopFailedException()
+
+    def remake_mappings(self):
+
+        if not self.fs.showmapped():
+            return
+
+        mappings = self.show_mappings()
+
+        for k, v in mappings.items():
+            self.__remove_mapping(k, v)
+
+        for k, v in mappings.items():
+            rbd_name = self.fs.map(k)
+            self.__add_mapping(k, rbd_name)
+
+        self.__restart()
