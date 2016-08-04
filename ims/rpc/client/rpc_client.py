@@ -1,4 +1,5 @@
 import Pyro4
+import Pyro4.errors
 
 import ims.common.constants as constants
 from ims.common.log import *
@@ -22,13 +23,21 @@ class RPCClient:
         }
         # The script name and no. of arguments.
         self.func_list = self.dict['function-list']
-        cfg = config.get()
-        # Locates the name server
-        name_server = Pyro4.locateNS(host=cfg.nameserver_ip,
-                                     port=cfg.nameserver_port)
-        # Looks up for the registered service in the name server
-        uri = name_server.lookup(constants.RPC_SERVER_NAME)
-        self.main_obj = Pyro4.Proxy(uri)
+        self.cfg = config.get()
+
+        self.__get_main_obj()
+
+    def __get_main_obj(self):
+        try:
+            # Locates the name server
+            self.name_server = Pyro4.locateNS(host=self.cfg.nameserver_ip,
+                                              port=self.cfg.nameserver_port)
+            # Looks up for the registered service in the name server
+            uri = self.name_server.lookup(constants.RPC_SERVER_NAME)
+            self.main_obj = Pyro4.Proxy(uri)
+        except Pyro4.errors.NamingError as e:
+            return {constants.STATUS_CODE_KEY: 500,
+                    constants.MESSAGE_KEY: str(e)}
 
     @trace
     def __correct_argument_list_length(self, command, args):
@@ -53,6 +62,16 @@ class RPCClient:
             if ((not self.__escape_characters_present(
                     concatenated_command)) and self.__correct_argument_list_length(
                 command, args)):
-                execute_command = self.main_obj.execute_command(credentials,
-                                                                command, args)
-                return execute_command
+                if self.main_obj is None:
+                    output = self.__get_main_obj()
+                    if output is not None:
+                        return output
+
+                try:
+                    execute_command = self.main_obj.execute_command(credentials,
+                                                                        command,
+                                                                        args)
+                    return execute_command
+                except Pyro4.errors.CommunicationError as e:
+                    return {constants.STATUS_CODE_KEY: 500,
+                            constants.MESSAGE_KEY: str(e)}
