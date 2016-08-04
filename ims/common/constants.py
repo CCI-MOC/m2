@@ -3,7 +3,7 @@ PICASSO_CONFIG_FLAG = 'picasso'
 EINSTEIN_CONFIG_FLAG = 'einstein'
 
 # Config Default Locations
-CONFIG_DEFAULT_LOCATION = 'bmiconfig.cfg'
+CONFIG_DEFAULT_LOCATION = '/etc/bmi/bmiconfig.cfg'
 
 # Environment Variable Names
 CONFIG_LOCATION_ENV_VARIABLE = 'BMI_CONFIG'
