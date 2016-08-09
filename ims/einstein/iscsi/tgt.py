@@ -126,7 +126,8 @@ class TGT(ISCSI):
                 os.remove(self.TGT_ISCSI_CONFIG+target_name+".conf")
                 tgtarglist = ["sudo", "-S","tgt-admin", "--execute"]
                 proc=subprocess.Popen(tgtarglist, stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE).communicate()
+                             stderr=subprocess.PIPE)
+                proc.communicate(self.root_password + "\n")
                 if proc.returncode != 0:
                     raise iscsi_exceptions.UpdateConfigFailedException(
                         "Deleting target failed at deleting target file stage")
