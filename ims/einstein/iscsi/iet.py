@@ -1,31 +1,32 @@
+import re
 import subprocess
 
-import re
 import sh
 
 import ims.common.constants as constants
 from ims.common.log import *
 from ims.exception import *
+from ims.interfaces.iscsi import *
 
 logger = create_logger(__name__)
 
 
-class IET:
+class IET(ISCSI):
     @log
     def __init__(self, fs, password):
         self.fs = fs
         self.password = password
 
     @log
-    def create_mapping(self, ceph_img_name):
+    def add_target(self, ceph_img_name):
         rbd_name = None
         try:
-            mappings = self.show_mappings()
+            mappings = self.list_targets()
             if ceph_img_name in mappings:
                 raise iscsi_exceptions.NodeAlreadyInUseException()
             rbd_name = self.fs.map(ceph_img_name)
             self.__add_mapping(ceph_img_name, rbd_name)
-            self.__restart()
+            self.restart_server()
             self.__check_status(True)
         except iscsi_exceptions.UpdateConfigFailedException as e:
             maps = self.fs.showmapped()
@@ -40,36 +41,36 @@ class IET:
             raise e
 
     @log
-    def delete_mapping(self, ceph_img_name):
+    def remove_target(self, ceph_img_name):
         mappings = None
         try:
-            iscsi_mappings = self.show_mappings()
+            iscsi_mappings = self.list_targets()
             if ceph_img_name not in iscsi_mappings:
                 raise iscsi_exceptions.NodeAlreadyUnmappedException()
-            self.__stop()
+            self.stop_server()
             self.__check_status(False)
             mappings = self.fs.showmapped()
             self.__remove_mapping(ceph_img_name, mappings[ceph_img_name])
             self.fs.unmap(mappings[ceph_img_name])
-            self.__restart()
+            self.restart_server()
             self.__check_status(True)
         except iscsi_exceptions.UpdateConfigFailedException as e:
-            self.__restart()
+            self.restart_server()
             raise e
         except file_system_exceptions.UnmapFailedException as e:
             self.__add_mapping(ceph_img_name, mappings(ceph_img_name))
-            self.__restart()
+            self.restart_server()
             raise e
         except (iscsi_exceptions.MountException,
                 iscsi_exceptions.DuplicatesException,
                 iscsi_exceptions.RestartFailedException) as e:
             self.fs.map(ceph_img_name)
             self.__add_mapping(ceph_img_name, mappings(ceph_img_name))
-            self.__restart()
+            self.restart_server()
             raise e
 
     @log
-    def show_mappings(self):
+    def list_targets(self):
         mappings = {}
         try:
             with open(constants.IET_ISCSI_CONFIG_LOC, 'r') as fi:
@@ -121,7 +122,7 @@ class IET:
             raise iscsi_exceptions.UpdateConfigFailedException(e.message)
 
     @log
-    def __restart(self):
+    def restart_server(self):
         command = "echo {0} | sudo -S service iscsitarget restart".format(
             self.password)
         p = subprocess.Popen(command, shell=True, stderr=subprocess.STDOUT,
@@ -135,7 +136,7 @@ class IET:
             raise iscsi_exceptions.RestartFailedException()
 
     @log
-    def __stop(self):
+    def stop_server(self):
         command = "echo {0} | sudo -S service iscsitarget stop".format(
             self.password)
         p = subprocess.Popen(command, shell=True, stderr=subprocess.STDOUT,
@@ -191,12 +192,12 @@ class IET:
             logger.info("Raising Stop Failed Exception")
             raise iscsi_exceptions.StopFailedException()
 
-    def remake_mappings(self):
+    def persist_targets(self):
 
         if not self.fs.showmapped():
             return
 
-        mappings = self.show_mappings()
+        mappings = self.list_targets()
 
         for k, v in mappings.items():
             self.__remove_mapping(k, v)
@@ -205,4 +206,4 @@ class IET:
             rbd_name = self.fs.map(k)
             self.__add_mapping(k, rbd_name)
 
-        self.__restart()
+        self.restart_server()

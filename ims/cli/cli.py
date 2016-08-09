@@ -639,17 +639,17 @@ def show_mappings(project):
     Arguments:
     PROJECT  = The HIL Project attached to your credentials
     """
-    with BMI(_username, _password, project) as bmi:
-        ret = bmi.show_mounted()
-        if ret[constants.STATUS_CODE_KEY] == 200:
-            table = PrettyTable(field_names=['Target', 'Block Device'])
-            mappings = ret[constants.RETURN_VALUE_KEY]
-            for k, v in mappings.iteritems():
-                table.add_row([k, v])
-            click.echo(table.get_string())
-        else:
-            click.echo(ret[constants.MESSAGE_KEY])
-
+    # with BMI(_username, _password, project) as bmi:
+    #     ret = bmi.show_mounted()
+    #     if ret[constants.STATUS_CODE_KEY] == 200:
+    #         table = PrettyTable(field_names=['Target', 'Block Device'])
+    #         mappings = ret[constants.RETURN_VALUE_KEY]
+    #         for k, v in mappings.iteritems():
+    #             table.add_row([k, v])
+    #         click.echo(table.get_string())
+    #     else:
+    #         click.echo(ret[constants.MESSAGE_KEY])
+    click.echo("Need to Re-Implement")
 
 @cli.command(name='upload', help='Upload Image to BMI')
 def upload():

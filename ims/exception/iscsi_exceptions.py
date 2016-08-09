@@ -94,3 +94,12 @@ class RestartFailedException(ISCSIException):
 
     def __str__(self):
         return "ISCSI Failed to Restart"
+
+
+class StartFailedException(ISCSIException):
+    @property
+    def status_code(self):
+        return 500
+
+    def __str__(self):
+        return "ISCSI Failed to Start"

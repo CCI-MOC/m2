@@ -1,6 +1,5 @@
 #!/usr/bin/python
 import base64
-import io
 import time
 
 from ims.database import *
@@ -26,7 +25,13 @@ class BMI:
             self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME],
                           self.config.iscsi_update_password)
             self.dhcp = DNSMasq()
-            self.iscsi = IET(self.fs, self.config.iscsi_update_password)
+            # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
+            # Need to make this generic by passing specific config
+            self.iscsi = TGT(self.config.fs[constants.CEPH_CONFIG_FILE_KEY][
+                                 constants.CEPH_CONFIG_FILE_KEY],
+                             self.config.fs[constants.CEPH_CONFIG_FILE_KEY][
+                                 constants.CEPH_ID_KEY],
+                             self.config.iscsi_update_password)
         elif args.__len__() == 3:
             username, password, project = args
             self.config = config.get()
@@ -43,7 +48,12 @@ class BMI:
             logger.debug("Username is %s and Password is %s", self.username,
                          self.password)
             self.dhcp = DNSMasq()
-            self.iscsi = IET(self.fs, self.config.iscsi_update_password)
+            # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
+            self.iscsi = TGT(self.config.fs[constants.CEPH_CONFIG_FILE_KEY][
+                                 constants.CEPH_CONFIG_FILE_KEY],
+                             self.config.fs[constants.CEPH_CONFIG_FILE_KEY][
+                                 constants.CEPH_ID_KEY],
+                             self.config.iscsi_update_password)
 
     def __enter__(self):
         return self
@@ -208,7 +218,7 @@ class BMI:
                           clone_ceph_name)
             ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
             logger.debug("Contents of ceph_config = %s", str(ceph_config))
-            self.iscsi.create_mapping(clone_ceph_name)
+            self.iscsi.add_target(clone_ceph_name)
             logger.info("The create command was executed successfully")
             self.__register(node_name, img_name, clone_ceph_name)
             return self.__return_success(True)
@@ -256,14 +266,14 @@ class BMI:
             self.db.image.delete_with_name_from_project(node_name, self.project)
             ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
             logger.debug("Contents of ceph+config = %s", str(ceph_config))
-            self.iscsi.delete_mapping(ceph_img_name)
+            self.iscsi.remove_target(ceph_img_name)
             logger.info("The delete command was executed successfully")
             ret = self.fs.remove(str(ceph_img_name).encode("utf-8"))
             return self.__return_success(ret)
 
         except FileSystemException as e:
             logger.exception('')
-            self.iscsi.create_mapping(ceph_img_name)
+            self.iscsi.add_target(ceph_img_name)
             parent_name = self.fs.get_parent_info(ceph_img_name)[1]
 
             parent_id = self.db.image.fetch_id_with_name_from_project(
@@ -556,7 +566,7 @@ class BMI:
             if not self.is_admin:
                 raise exception.AuthorizationFailedException()
             ceph_img_name = self.__get_ceph_image_name(img)
-            self.iscsi.create_mapping(ceph_img_name)
+            self.iscsi.add_target(ceph_img_name)
             return self.__return_success(True)
         except (ISCSIException, DBException) as e:
             logger.exception('')
@@ -568,7 +578,7 @@ class BMI:
             if not self.is_admin:
                 raise exception.AuthorizationFailedException()
             ceph_img_name = self.__get_ceph_image_name(img)
-            self.iscsi.delete_mapping(ceph_img_name)
+            self.iscsi.remove_target(ceph_img_name)
             return self.__return_success(True)
         except (ISCSIException, DBException) as e:
             logger.exception('')
@@ -579,7 +589,7 @@ class BMI:
         try:
             if not self.is_admin:
                 raise exception.AuthorizationFailedException()
-            mappings = self.iscsi.show_mappings()
+            mappings = self.iscsi.list_targets()
             swapped_mappings = {}
             for k, v in mappings.iteritems():
                 img_id = self.__extract_id(k)
@@ -594,6 +604,8 @@ class BMI:
     @log
     def remake_mappings(self):
         try:
-            self.iscsi.remake_mappings()
+            self.iscsi.persist_targets()
         except (FileSystemException, ISCSIException) as e:
             logger.exception('')
+        except NotImplementedError:
+            pass
