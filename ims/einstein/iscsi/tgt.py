@@ -77,9 +77,11 @@ class TGT(ISCSI):
             return "Running in error state"
 
     def __generate_config_file(self, target_name):
-        config = io.open(self.TGT_ISCSI_CONFIG + target_name + ".conf", 'w')
-        for line in io.open("tgt_target.temp", 'r'):
+        config = open(self.TGT_ISCSI_CONFIG + target_name + ".conf", 'w')
+        for line in open("tgt_target.temp", 'r'):
             line = line.replace('${target_name}', target_name)
+            line = line.replace('${ceph_user}', self.fs_user)
+            line = line.replace('${ceph_config}', self.fs_config_loc)
             config.write(line)
         config.close()
 
@@ -108,7 +110,7 @@ class TGT(ISCSI):
             logger.info("Update config exception")
             raise iscsi_exceptions.UpdateConfigFailedException(e.message)
         except (iscsi_exceptions.MountException,
-                iscsi_exceptions.DuplicateException) as e:
+                iscsi_exceptions.DuplicatesException) as e:
             logger.info("Error exposing iscsi_target")
             raise e
     
@@ -123,7 +125,7 @@ class TGT(ISCSI):
             if target_name in targets:
                 os.remove(self.TGT_ISCSI_CONFIG+target_name+".conf")
                 tgtarglist = ["sudo", "-S","tgt-admin", "--execute"]
-                subprocess.Popen(tgtarglist, stdout=subprocess.PIPE,
+                proc=subprocess.Popen(tgtarglist, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE).communicate()
                 if proc.returncode != 0:
                     raise iscsi_exceptions.UpdateConfigFailedException(
@@ -137,7 +139,7 @@ class TGT(ISCSI):
             logger.info("Update config exception")
             raise iscsi_exceptions.UpdateConfigFailedException(e.message)
         except (iscsi_exceptions.MountException,
-                iscsi_exceptions.DuplicateException) as e:
+                iscsi_exceptions.DuplicatesException) as e:
                 # Do we still need the above exceptions? Duplicate
                 # exception can be avoided by checking lists as shown above
                 # Mouting is something that we are not doing now?
