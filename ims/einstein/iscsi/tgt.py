@@ -1,5 +1,6 @@
-import subprocess
 import re
+import subprocess
+
 from ims.common.log import *
 from ims.exception import *
 from ims.interfaces.iscsi import *
@@ -14,6 +15,8 @@ class TGT(ISCSI):
 
     # We should get all the config related to ceph in here.
     # Also, root_password is something that can be avoided.
+
+    # Also removed sudo everywhere since it was causing issues
     def __init__(self, fs_config_loc, fs_user, root_password):
         self.arglist = ["service", "tgtd"]
         self.TGT_ISCSI_CONFIG = "/etc/tgt/conf.d/"
@@ -27,9 +30,11 @@ class TGT(ISCSI):
         Have to parse the output and send a status code.
         :return:
         '''
-        arglist = self.arglist
-        arglist.append("start")
-        proc = subprocess.Popen(arglist,shell=True, stdout=subprocess.PIPE,
+        # arglist = self.arglist
+        # arglist.append("start")
+        # Need to fix shell=True everywhere
+        command = "service tgtd start"
+        proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         output, err = proc.communicate(self.root_password +
                                        "\n")
@@ -43,15 +48,16 @@ class TGT(ISCSI):
         Need to check if this
         :return:
         '''
-        arglist = self.arglist 
-        arglist.append("stop")
-        proc = subprocess.Popen(arglist,shell=True, stdout=subprocess.PIPE,
+        # arglist = self.arglist
+        # arglist.append("stop")
+        command = "service tgtd stop"
+        proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         output, err = proc.communicate(self.root_password + "\n")
         logger.debug("Output = %s, Error = %s", output, err)
         if self.show_status() is not 'Dead':
             raise iscsi_exceptions.StopFailedException()
-    
+
     @log
     def restart_server(self):
         '''
@@ -63,9 +69,10 @@ class TGT(ISCSI):
 
     @log
     def show_status(self):
-        arglist = self.arglist
-        arglist.append('status')
-        proc = subprocess.Popen(arglist,shell=True, stdout=subprocess.PIPE,
+        # arglist = self.arglist
+        # arglist.append('status')
+        command = "service tgtd status"
+        proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         status_string = proc.communicate(self.root_password + "\n")[0]
         if 'active (running)' in status_string:
@@ -79,8 +86,9 @@ class TGT(ISCSI):
     def __generate_config_file(self, target_name):
         config = open(self.TGT_ISCSI_CONFIG + target_name + ".conf", 'w')
         template_loc = os.path.abspath(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",".."))
-	for line in open(template_loc+"/tgt_target.temp", 'r'):
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                         ".."))
+        for line in open(template_loc + "/tgt_target.temp", 'r'):
             line = line.replace('${target_name}', target_name)
             line = line.replace('${ceph_user}', self.fs_user)
             line = line.replace('${ceph_config}', self.fs_config_loc)
@@ -98,10 +106,11 @@ class TGT(ISCSI):
             targets = self.list_targets()
             if target_name not in targets:
                 self.__generate_config_file(target_name)
-                #tgtarglist = ["sudo", "-S", "tgt-admin", "--execute"]
+                # tgtarglist = ["sudo", "-S", "tgt-admin", "--execute"]
                 command = "tgt-admin --execute".format(self.root_password)
-		proc = subprocess.Popen(command,shell=True, stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
+                proc = subprocess.Popen(command, shell=True,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE)
                 proc.communicate()
                 if proc.returncode != 0:
                     raise iscsi_exceptions.UpdateConfigFailedException(
@@ -116,7 +125,7 @@ class TGT(ISCSI):
                 iscsi_exceptions.DuplicatesException) as e:
             logger.info("Error exposing iscsi_target")
             raise e
-    
+
     @log
     def remove_target(self, target_name):
         '''
@@ -126,11 +135,12 @@ class TGT(ISCSI):
         try:
             targets = self.list_targets()
             if target_name in targets:
-                os.remove(self.TGT_ISCSI_CONFIG+target_name+".conf")
-                #tgtarglist = ["sudo", "-S","tgt-admin", "--execute"]
-		command = "tgt-admin -f --delete {0}".format(target_name)
-                proc=subprocess.Popen(command,shell=True, stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
+                os.remove(self.TGT_ISCSI_CONFIG + target_name + ".conf")
+                # tgtarglist = ["sudo", "-S","tgt-admin", "--execute"]
+                command = "tgt-admin -f --delete {0}".format(target_name)
+                proc = subprocess.Popen(command, shell=True,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE)
                 proc.communicate()
                 if proc.returncode != 0:
                     raise iscsi_exceptions.UpdateConfigFailedException(
@@ -145,12 +155,12 @@ class TGT(ISCSI):
             raise iscsi_exceptions.UpdateConfigFailedException(e.message)
         except (iscsi_exceptions.MountException,
                 iscsi_exceptions.DuplicatesException) as e:
-                # Do we still need the above exceptions? Duplicate
-                # exception can be avoided by checking lists as shown above
-                # Mouting is something that we are not doing now?
+            # Do we still need the above exceptions? Duplicate
+            # exception can be avoided by checking lists as shown above
+            # Mouting is something that we are not doing now?
             logger.info("Error exposing iscsi_target")
-            raise e               
-    
+            raise e
+
     @log
     def list_targets(self):
         '''
@@ -158,14 +168,14 @@ class TGT(ISCSI):
         list of targets
         :return:
         '''
-        #arglist = ["sudo", "-S", "tgt-admin", "-s"]
+        # arglist = ["sudo", "-S", "tgt-admin", "-s"]
         command = "tgt-admin -s".format(self.root_password)
-	proc = subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,
+        proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        #output, err = proc.communicate(self.root_password+"\n")
+        # output, err = proc.communicate(self.root_password+"\n")
         output, err = proc.communicate()
         logger.debug("Output = %s, Error = %s", output, err)
-        if proc.returncode !=0:
+        if proc.returncode != 0:
             raise iscsi_exceptions.InvalidConfigException("Listing targets \
                                                           failed")
             # This exception has to be modified. I prefer writing a new
@@ -173,5 +183,6 @@ class TGT(ISCSI):
         else:
             formatted_output = output.split("\n")
             target_list = [target.split(":")[1].strip() for target in
-            formatted_output if re.match("^Target [0-9]+:", target)]
+                           formatted_output if
+                           re.match("^Target [0-9]+:", target)]
             return target_list
