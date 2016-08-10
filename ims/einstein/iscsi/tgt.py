@@ -15,7 +15,7 @@ class TGT(ISCSI):
     # We should get all the config related to ceph in here.
     # Also, root_password is something that can be avoided.
     def __init__(self, fs_config_loc, fs_user, root_password):
-        self.arglist = ["sudo", "-S", "service", "tgtd"]
+        self.arglist = ["service", "tgtd"]
         self.TGT_ISCSI_CONFIG = "/etc/tgt/conf.d/"
         self.fs_config_loc = fs_config_loc
         self.fs_user = fs_user
@@ -29,7 +29,7 @@ class TGT(ISCSI):
         '''
         arglist = self.arglist
         arglist.append("start")
-        proc = subprocess.Popen(arglist, stdout=subprocess.PIPE,
+        proc = subprocess.Popen(arglist,shell=True, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         output, err = proc.communicate(self.root_password +
                                        "\n")
@@ -45,7 +45,7 @@ class TGT(ISCSI):
         '''
         arglist = self.arglist 
         arglist.append("stop")
-        proc = subprocess.Popen(arglist, stdout=subprocess.PIPE,
+        proc = subprocess.Popen(arglist,shell=True, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         output, err = proc.communicate(self.root_password + "\n")
         logger.debug("Output = %s, Error = %s", output, err)
@@ -65,7 +65,7 @@ class TGT(ISCSI):
     def show_status(self):
         arglist = self.arglist
         arglist.append('status')
-        proc = subprocess.Popen(arglist, stdout=subprocess.PIPE,
+        proc = subprocess.Popen(arglist,shell=True, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         status_string = proc.communicate(self.root_password + "\n")[0]
         if 'active (running)' in status_string:
@@ -78,7 +78,9 @@ class TGT(ISCSI):
 
     def __generate_config_file(self, target_name):
         config = open(self.TGT_ISCSI_CONFIG + target_name + ".conf", 'w')
-        for line in open("tgt_target.temp", 'r'):
+        template_loc = os.path.abspath(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",".."))
+	for line in open(template_loc+"/tgt_target.temp", 'r'):
             line = line.replace('${target_name}', target_name)
             line = line.replace('${ceph_user}', self.fs_user)
             line = line.replace('${ceph_config}', self.fs_config_loc)
@@ -96,10 +98,11 @@ class TGT(ISCSI):
             targets = self.list_targets()
             if target_name not in targets:
                 self.__generate_config_file(target_name)
-                tgtarglist = ["sudo", "-S", "tgt-admin", "--execute"]
-                proc = subprocess.Popen(tgtarglist, stdout=subprocess.PIPE,
+                #tgtarglist = ["sudo", "-S", "tgt-admin", "--execute"]
+                command = "tgt-admin --execute".format(self.root_password)
+		proc = subprocess.Popen(command,shell=True, stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-                proc.communicate(self.root_password + "\n")
+                proc.communicate()
                 if proc.returncode != 0:
                     raise iscsi_exceptions.UpdateConfigFailedException(
                         "Adding new target failed at creating target file \
@@ -108,7 +111,7 @@ class TGT(ISCSI):
                 raise iscsi_exceptions.NodeAlreadyInUseException()
         except (IOError, OSError) as e:
             logger.info("Update config exception")
-            raise iscsi_exceptions.UpdateConfigFailedException(e.message)
+            raise iscsi_exceptions.UpdateConfigFailedException(str(e))
         except (iscsi_exceptions.MountException,
                 iscsi_exceptions.DuplicatesException) as e:
             logger.info("Error exposing iscsi_target")
@@ -124,10 +127,11 @@ class TGT(ISCSI):
             targets = self.list_targets()
             if target_name in targets:
                 os.remove(self.TGT_ISCSI_CONFIG+target_name+".conf")
-                tgtarglist = ["sudo", "-S","tgt-admin", "--execute"]
-                proc=subprocess.Popen(tgtarglist, stdout=subprocess.PIPE,
+                #tgtarglist = ["sudo", "-S","tgt-admin", "--execute"]
+		command = "tgt-admin -f --delete {0}".format(target_name)
+                proc=subprocess.Popen(command,shell=True, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
-                proc.communicate(self.root_password + "\n")
+                proc.communicate()
                 if proc.returncode != 0:
                     raise iscsi_exceptions.UpdateConfigFailedException(
                         "Deleting target failed at deleting target file stage")
@@ -154,10 +158,12 @@ class TGT(ISCSI):
         list of targets
         :return:
         '''
-        arglist = ["sudo", "-S", "tgt-admin", "-s"]
-        proc = subprocess.Popen(arglist,stdout=subprocess.PIPE,
+        #arglist = ["sudo", "-S", "tgt-admin", "-s"]
+        command = "tgt-admin -s".format(self.root_password)
+	proc = subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        output, err = proc.communicate(self.root_password+"\n")
+        #output, err = proc.communicate(self.root_password+"\n")
+        output, err = proc.communicate()
         logger.debug("Output = %s, Error = %s", output, err)
         if proc.returncode !=0:
             raise iscsi_exceptions.InvalidConfigException("Listing targets \

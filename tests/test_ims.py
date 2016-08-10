@@ -1,8 +1,6 @@
 import imp
 import unittest
-
 import os
-
 import ims.common.config as config
 
 config.load()

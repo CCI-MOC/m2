@@ -27,9 +27,9 @@ class BMI:
             self.dhcp = DNSMasq()
             # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
             # Need to make this generic by passing specific config
-            self.iscsi = TGT(self.config.fs[constants.CEPH_CONFIG_FILE_KEY][
+            self.iscsi = TGT(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME][
                                  constants.CEPH_CONFIG_FILE_KEY],
-                             self.config.fs[constants.CEPH_CONFIG_FILE_KEY][
+                             self.config.fs[constants.CEPH_CONFIG_SECTION_NAME][
                                  constants.CEPH_ID_KEY],
                              self.config.iscsi_update_password)
         elif args.__len__() == 3:
@@ -49,9 +49,9 @@ class BMI:
                          self.password)
             self.dhcp = DNSMasq()
             # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
-            self.iscsi = TGT(self.config.fs[constants.CEPH_CONFIG_FILE_KEY][
+            self.iscsi = TGT(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME][
                                  constants.CEPH_CONFIG_FILE_KEY],
-                             self.config.fs[constants.CEPH_CONFIG_FILE_KEY][
+                             self.config.fs[constants.CEPH_CONFIG_SECTION_NAME][
                                  constants.CEPH_ID_KEY],
                              self.config.iscsi_update_password)
 
@@ -129,8 +129,8 @@ class BMI:
         path = self.config.ipxe_loc + node_name + ".ipxe"
         logger.debug("The Path for ipxe file is %s", path)
         try:
-            with io.open(path, 'w') as ipxe:
-                for line in io.open(template_loc + "/ipxe.temp", 'r'):
+            with open(path, 'w') as ipxe:
+                for line in open(template_loc + "/ipxe.temp", 'r'):
                     line = line.replace(constants.IPXE_TARGET_NAME, target_name)
                     line = line.replace(constants.IPXE_ISCSI_IP,
                                         self.config.iscsi_ip)
@@ -151,8 +151,8 @@ class BMI:
         path = self.config.pxelinux_loc + mac_addr
         logger.debug("The Path for mac addr file is %s", path)
         try:
-            with io.open(path, 'w') as mac:
-                for line in io.open(template_loc + "/mac.temp", 'r'):
+            with open(path, 'w') as mac:
+                for line in open(template_loc + "/mac.temp", 'r'):
                     line = line.replace(constants.MAC_IMG_NAME, img_name)
                     line = line.replace(constants.MAC_IPXE_NAME,
                                         node_name + ".ipxe")
