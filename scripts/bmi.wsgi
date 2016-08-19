@@ -6,4 +6,4 @@ import ims.picasso.rest as rest
 
 rest.setup_rpc()
 
-from ims.picasso.rest.app as application
+from ims.picasso.rest import app as application
