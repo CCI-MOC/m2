@@ -490,7 +490,7 @@ class BMI:
     def get_node_ip(self, node_name):
         try:
             mac_addr = self.hil.get_node_mac_addr(node_name)
-            return self.dhcp.get_ip(mac_addr)
+            return self.__return_success(self.dhcp.get_ip(mac_addr))
         except (HaaSException, DHCPException) as e:
             logger.exception('')
             return self.__return_error(e)

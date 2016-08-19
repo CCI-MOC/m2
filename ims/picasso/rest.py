@@ -11,9 +11,14 @@ logger = create_logger(__name__)
 
 
 @log
-def start():
+def setup_rpc():
     global rpc_client
     rpc_client = RPCClient()
+
+
+@log
+def start():
+    setup_rpc()
     cfg = config.get()
     app.run(host=cfg.bind_ip, port=cfg.bind_port)
 
