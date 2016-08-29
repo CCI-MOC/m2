@@ -67,7 +67,7 @@ def _rest_wrapper(method, command, parameters):
                 return ret[constants.MESSAGE_KEY], ret[
                     constants.STATUS_CODE_KEY]
         else:
-            return "Please use " + method, 444
+            return "Please use " + method, 405
 
     return wrapper
 

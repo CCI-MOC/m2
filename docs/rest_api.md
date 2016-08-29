@@ -51,11 +51,12 @@ PUT
 
 ####Responses:
 * 200. This means the provision call is successful.
-* Internal 500 with some junk characters. This means the request body is not proper.
-* 401. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
-* 403. This means a ceph connection problem.
+* 401. Authentication Failure
+* 403. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
 * 409. Image busy exception.
-* 444. You used a wrong request method like PUT instead of POST etc.
+* 405. You used a wrong request method like PUT instead of POST etc.
+* 400. If Request is a bad one.
+* 500. Internal BMI Error
  
 ####Example:
 Send a PUT Request with following body to http://<BMI_SERVER>:<PORT>/provision/
@@ -96,13 +97,12 @@ DELETE
 
 ####Responses:
 * 200. This means the delete node call is successful.
-* Internal 500 with some junk characters. This means the request body is not proper.
-* 401. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
-* 403. This means a ceph connection problem.
-* 409. Image busy exception.
-* 405. Image has snapshots. (We need to delete them before we delete image).
+* 401. Authentication Failure
+* 403. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
 * 404. Image not found exception.
-* 444. You used a wrong request method like PUT instead of POST etc.
+* 405. You used a wrong request method like PUT instead of POST etc.
+* 400. If Request is a bad one.
+* 500. Internal BMI Error
 
 ####Example:
 Send a DELETE Request with following body to http://<BMI_SERVER>:<PORT>/deprovision/
@@ -139,10 +139,11 @@ POST
 
 ####Respones:
 * 200. This means list node call is successful and it returns list of images available in your project.
-* Internal 500 with some junk characters. This means the request body is not proper.
-* 401. This means unauthorized access to project.
-* 403. This means a ceph connection problem.
-* 444. You used a wrong request method like PUT instead of POST etc.
+* 401. Authentication Failure
+* 403. This means unauthorized access to project.
+* 405. You used a wrong request method like PUT instead of POST etc.
+* 400. If Request is a bad one.
+* 500. Internal BMI Error
 
 This returns either a list of images in response body along with 200 response or other exceptions. 
 
@@ -183,12 +184,12 @@ PUT
 
 ####Response:
 * 200. This means the create snapshot call is successful.
-* Internal 500 with some junk characters. This means the request body is not proper.
-* 401. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
-* 403. This means a ceph connection problem.
-* 409. Image busy exception.
+* 401. Authentication Error
+* 403. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
 * 404. Image not found exception.
-* 444. You used a wrong request method like PUT instead of POST etc.
+* 405. You used a wrong request method like PUT instead of POST etc.
+* 400. If Request is a bad one.
+* 500. Internal BMI Error.
 
 ####Example:
 Send a PUT Request with following body to http://BMI_SERVER:PORT/create_snapshot/
@@ -225,12 +226,12 @@ POST
 
 ####Response:
 * 200. This means the list snapshot call is successful.
-* Internal 500 with some junk characters. This means the request body is not proper.
-* 401. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
-* 403. This means a ceph connection problem.
-* 409. Image busy exception.
+* 401. Authentication Error
+* 403. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
 * 404. Image not found exception.
-* 444. You used a wrong request method like PUT instead of POST etc.
+* 405. You used a wrong request method like PUT instead of POST etc.
+* 400. If Request is a bad one.
+* 500. Internal BMI Error
 
 ####Example:
 Send a POST Request with following body to http://BMI_SERVER:PORT/list_snapshots/
@@ -264,12 +265,12 @@ DELETE
 
 ####Response:
 * 200. This means the remove snapshot call is successful.
-* Internal 500 with some junk characters. This means the request body is not proper.
-* 401. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
-* 403. This means a ceph connection problem.
-* 409. Image busy exception.
+* 401. Authentication Error.
+* 403. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
 * 404. Image not found exception.
-* 444. You used a wrong request method like PUT instead of POST etc.
+* 405. You used a wrong request method like PUT instead of POST etc.
+* 400. If Request is a bad one.
+* 500. Internal BMI Error.
 
 ####Example:
 Send a DELETE Request with following body to http://BMI_SERVER:PORT/remove_image/

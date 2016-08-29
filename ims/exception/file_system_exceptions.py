@@ -30,7 +30,7 @@ class ConnectionException(FileSystemException):
 class ImageBusyException(FileSystemException):
     @property
     def status_code(self):
-        return 473
+        return 500
 
     def __init__(self, name):
         self.name = name
@@ -43,7 +43,7 @@ class ImageBusyException(FileSystemException):
 class ImageHasSnapshotException(FileSystemException):
     @property
     def status_code(self):
-        return 474
+        return 500
 
     def __init__(self, name):
         self.name = name
@@ -56,7 +56,7 @@ class ImageHasSnapshotException(FileSystemException):
 class ImageExistsException(FileSystemException):
     @property
     def status_code(self):
-        return 471
+        return 500
 
     def __init__(self, name):
         self.name = name
@@ -82,7 +82,7 @@ class ImageNotOpenedException(FileSystemException):
 class FunctionNotSupportedException(FileSystemException):
     @property
     def status_code(self):
-        return 476
+        return 500
 
     def __str__(self):
         return "Function is not Supported"
@@ -92,7 +92,7 @@ class FunctionNotSupportedException(FileSystemException):
 class ArgumentsOutOfRangeException(FileSystemException):
     @property
     def status_code(self):
-        return 477
+        return 500
 
     def __str__(self):
         return "Arguments are Out of Range"
