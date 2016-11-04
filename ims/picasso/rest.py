@@ -106,3 +106,8 @@ def list_snapshots():
            [constants.IMAGE_NAME_PARAMETER])
 def remove_image():
     pass
+
+
+@rest_call("/get_lkrn_sha/", "POST", constants.LKRN_SHA_COMMAND, [])
+def get_ipxe_lkrn_sha():
+    pass

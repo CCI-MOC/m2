@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import base64
+import hashlib
 import time
 
 from ims.database import *
@@ -379,6 +380,22 @@ class BMI:
         except (HaaSException, DBException) as e:
             logger.exception('')
             return self.__return_error(e)
+
+    @log
+    # Should be Improved a Lot
+    def lkrn_sha(self):
+        try:
+            with open(self.config.ipxe_loc + "ipxe.lkrn", 'r') as lkrn:
+                h = hashlib.sha256()
+                part = lkrn.read(1000)
+                while part != "":
+                    h.update(part)
+                    part = lkrn.read(1000)
+                return h.hexdigest()
+        except Exception as e:
+            logger.exception('')
+            return {constants.STATUS_CODE_KEY: 500,
+                    constants.MESSAGE_KEY: str(e)}
 
     @log
     def list_provisioned_nodes(self):

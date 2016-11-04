@@ -80,6 +80,7 @@ PROVISION_COMMAND = "provision"
 DEPROVISION_COMMAND = "deprovision"
 LIST_SNAPSHOTS_COMMAND = "list_snapshots"
 REMOVE_IMAGE_COMMAND = "remove_image"
+LKRN_SHA_COMMAND = "lkrn_sha"
 
 # Parameters
 NODE_NAME_PARAMETER = 'node'
