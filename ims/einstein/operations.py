@@ -391,7 +391,7 @@ class BMI:
                 while part != "":
                     h.update(part)
                     part = lkrn.read(1000)
-                return h.hexdigest()
+                return self.__return_success(h.hexdigest())
         except Exception as e:
             logger.exception('')
             return {constants.STATUS_CODE_KEY: 500,

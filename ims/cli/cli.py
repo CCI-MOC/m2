@@ -180,15 +180,15 @@ def list_images(project):
 
 @cli.command(name='sha_lkrn', short_help='Get SHA of LKRN')
 @click.argument(constants.PROJECT_PARAMETER)
-def get_lkrn_sha():
+def get_lkrn_sha(project):
     """
     Get SHA 256 of LKRN
 
     \b
 
     """
-    data = {}
-    res = requests.post(_url + "get_lkrn_sha/", data=data, auth=(
+    data = {constants.PROJECT_PARAMETER: project}
+    res = requests.post(_url + "get_lkrn_sha/",data=data, auth=(
         _username, _password))
     click.echo(res.content)
 
