@@ -20,18 +20,13 @@ class BMI:
             self.config = config.get()
             self.db = Database()
             self.__process_credentials(credentials)
-            self.hil = HIL(base_url=self.config.haas_url, usr=self.username,
+            self.hil = HIL(base_url=self.config.netiso[constants.HIL_URL_KEY], usr=self.username,
                            passwd=self.password)
-            self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME],
-                          self.config.iscsi_update_password)
+            self.fs = RBD(self.config.fs,
+                          self.config.iscsi[constants.ISCSI_PASSWORD_KEY])
             self.dhcp = DNSMasq()
-            # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
-            # Need to make this generic by passing specific config
-            self.iscsi = TGT(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME][
-                                 constants.CEPH_CONFIG_FILE_KEY],
-                             self.config.fs[constants.CEPH_CONFIG_SECTION_NAME][
-                                 constants.CEPH_ID_KEY],
-                             self.config.iscsi_update_password)
+            self.iscsi = self.__load_iscsi_driver()
+
         elif args.__len__() == 3:
             username, password, project = args
             self.config = config.get()
@@ -41,19 +36,14 @@ class BMI:
             self.db = Database()
             self.pid = self.__does_project_exist(self.project)
             self.is_admin = self.__check_admin()
-            self.hil = HIL(base_url=self.config.haas_url, usr=self.username,
+            self.hil = HIL(base_url=self.config.netiso[constants.HIL_URL_KEY], usr=self.username,
                            passwd=self.password)
-            self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME],
-                          self.config.iscsi_update_password)
+            self.fs = RBD(self.config.fs,
+                          self.config.iscsi[constants.ISCSI_PASSWORD_KEY])
             logger.debug("Username is %s and Password is %s", self.username,
                          self.password)
             self.dhcp = DNSMasq()
-            # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
-            self.iscsi = TGT(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME][
-                                 constants.CEPH_CONFIG_FILE_KEY],
-                             self.config.fs[constants.CEPH_CONFIG_SECTION_NAME][
-                                 constants.CEPH_ID_KEY],
-                             self.config.iscsi_update_password)
+            self.iscsi = self.__load_iscsi_driver()
 
     def __enter__(self):
         return self
@@ -77,6 +67,33 @@ class BMI:
     def __check_admin(self):
         return True
 
+    def __load_iscsi_driver(self):
+        iscsi = self.config.iscsi
+        # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
+        # self.iscsi = TGT(self.config.fs,self.config.iscsi)
+        iscsi_drivers = self.__get_available_drivers('iscsi')
+
+        iscsi_sections = iscsi.keys()
+        if iscsi_sections[0] in iscsi_drivers:
+            module = __import__(iscsi_sections[0])
+            class_ = getattr(module, iscsi_sections[0].upper())
+            return class_(self.config.fs,self.config.iscsi)
+
+        else:
+            # Should Raise some exception Related to driver not found
+            pass
+
+
+    def __get_available_drivers(self,package_name):
+        package_path = os.path.join(os.path.split(__file__)[0], package_name)
+        available_drivers = []
+        for f in os.listdir(package_path):
+            name, ext = os.path.splitext(f)
+            if name != '__init__':
+                available_drivers.append(name)
+
+        return available_drivers
+
     @trace
     def __get_ceph_image_name(self, name):
         img_id = self.db.image.fetch_id_with_name_from_project(name,
@@ -85,7 +102,7 @@ class BMI:
             logger.info("Raising Image Not Found Exception for %s", name)
             raise db_exceptions.ImageNotFoundException(name)
 
-        return str(self.config.uid) + "img" + str(img_id)
+        return str(self.config.bmi[constants.UID_KEY]) + "img" + str(img_id)
 
     def get_ceph_image_name_from_project(self, name, project_name):
         img_id = self.db.image.fetch_id_with_name_from_project(name,
@@ -94,7 +111,7 @@ class BMI:
             logger.info("Raising Image Not Found Exception for %s", name)
             raise db_exceptions.ImageNotFoundException(name)
 
-        return str(self.config.uid) + "img" + str(img_id)
+        return str(self.config.bmi[constants.UID_KEY]) + "img" + str(img_id)
 
     @trace
     def __extract_id(self, ceph_img_name):
@@ -106,11 +123,11 @@ class BMI:
     @trace
     def __process_credentials(self, credentials):
         base64_str, self.project = credentials
-        self.pid = self.__does_project_exist(self.project)
         self.username, self.password = tuple(
             base64.b64decode(base64_str).split(':'))
         logger.debug("Username is %s and Password is %s", self.username,
                      self.password)
+        self.pid = self.__does_project_exist(self.project)
         self.is_admin = self.__check_admin()
 
     @log
@@ -126,14 +143,14 @@ class BMI:
         template_loc = os.path.abspath(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
         logger.debug("Template LOC = %s", template_loc)
-        path = self.config.ipxe_loc + node_name + ".ipxe"
+        path = self.config.tftp[constants.IPXE_URL_KEY] + node_name + ".ipxe"
         logger.debug("The Path for ipxe file is %s", path)
         try:
             with open(path, 'w') as ipxe:
                 for line in open(template_loc + "/ipxe.temp", 'r'):
                     line = line.replace(constants.IPXE_TARGET_NAME, target_name)
                     line = line.replace(constants.IPXE_ISCSI_IP,
-                                        self.config.iscsi_ip)
+                                        self.config.iscsi[constants.ISCSI_IP_KEY])
                     ipxe.write(line)
             logger.info("Generated ipxe file")
             os.chmod(path, 0755)
@@ -148,7 +165,7 @@ class BMI:
         template_loc = os.path.abspath(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
         logger.debug("Template LOC = %s", template_loc)
-        path = self.config.pxelinux_loc + mac_addr
+        path = self.config.tftp[constants.PXELINUX_URL_KEY] + mac_addr
         logger.debug("The Path for mac addr file is %s", path)
         try:
             with open(path, 'w') as mac:
@@ -216,8 +233,6 @@ class BMI:
             ceph_img_name = self.__get_ceph_image_name(img_name)
             self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
                           clone_ceph_name)
-            ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
-            logger.debug("Contents of ceph_config = %s", str(ceph_config))
             self.iscsi.add_target(clone_ceph_name)
             logger.info("The create command was executed successfully")
             self.__register(node_name, img_name, clone_ceph_name)
@@ -229,7 +244,7 @@ class BMI:
             clone_ceph_name = self.__get_ceph_image_name(node_name)
             self.fs.remove(clone_ceph_name)
             self.db.image.delete_with_name_from_project(node_name, self.project)
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
+            time.sleep(constants.HIL_CALL_TIMEOUT)
             self.hil.detach_node_from_project_network(node_name, network,
                                                       nic)
             return self.__return_error(e)
@@ -238,14 +253,14 @@ class BMI:
             # Message is being handled by custom formatter
             logger.exception('')
             self.db.image.delete_with_name_from_project(node_name, self.project)
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
+            time.sleep(constants.HIL_CALL_TIMEOUT)
             self.hil.detach_node_from_project_network(node_name, network,
                                                       nic)
             return self.__return_error(e)
         except DBException as e:
             # Message is being handled by custom formatter
             logger.exception('')
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
+            time.sleep(constants.HIL_CALL_TIMEOUT)
             self.hil.detach_node_from_project_network(node_name, network,
                                                       nic)
             return self.__return_error(e)
@@ -264,8 +279,6 @@ class BMI:
                                                       network, nic)
             ceph_img_name = self.__get_ceph_image_name(node_name)
             self.db.image.delete_with_name_from_project(node_name, self.project)
-            ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
-            logger.debug("Contents of ceph+config = %s", str(ceph_config))
             self.iscsi.remove_target(ceph_img_name)
             logger.info("The delete command was executed successfully")
             ret = self.fs.remove(str(ceph_img_name).encode("utf-8"))
@@ -281,7 +294,7 @@ class BMI:
                 self.project)
             self.db.image.insert(node_name, self.pid, parent_id,
                                  id=self.__extract_id(ceph_img_name))
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
+            time.sleep(constants.HIL_CALL_TIMEOUT)
             self.hil.attach_node_to_project_network(node_name, network, nic)
             return self.__return_error(e)
         except ISCSIException as e:
@@ -292,12 +305,12 @@ class BMI:
                 self.project)
             self.db.image.insert(node_name, self.pid, parent_id,
                                  id=self.__extract_id(ceph_img_name))
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
+            time.sleep(constants.HIL_CALL_TIMEOUT)
             self.hil.attach_node_to_project_network(node_name, network, nic)
             return self.__return_error(e)
         except DBException as e:
             logger.exception('')
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
+            time.sleep(constants.HIL_CALL_TIMEOUT)
             self.hil.attach_node_to_project_network(node_name, network, nic)
             return self.__return_error(e)
         except HaaSException as e:

@@ -5,6 +5,8 @@ from ims.common.log import *
 from ims.exception import *
 from ims.interfaces.iscsi import *
 
+import ims.common.constants as constants
+
 logger = create_logger(__name__)
 
 
@@ -17,12 +19,13 @@ class TGT(ISCSI):
     # Also, root_password is something that can be avoided.
 
     # Also removed sudo everywhere since it was causing issues
-    def __init__(self, fs_config_loc, fs_user, root_password):
+    # def __init__(self, fs_config_loc, fs_user, root_password):
+    def __init__(self,iscsi_config,fs_config):
         self.arglist = ["service", "tgtd"]
         self.TGT_ISCSI_CONFIG = "/etc/tgt/conf.d/"
-        self.fs_config_loc = fs_config_loc
-        self.fs_user = fs_user
-        self.root_password = root_password
+        self.fs_config_loc = fs_config[constants.CEPH_CONFIG_FILE_KEY]
+        self.fs_user = fs_config[constants.CEPH_ID_KEY]
+        self.root_password = iscsi_config[constants.ISCSI_PASSWORD_KEY]
 
     @log
     def start_server(self):

@@ -5,6 +5,7 @@ from sqlalchemy.pool import NullPool
 from sqlalchemy.pool import SingletonThreadPool
 
 import ims.common.config as config
+import ims.common.constants as constants
 
 _cfg = config.get()
 
@@ -20,7 +21,7 @@ class DatabaseConnection:
     # sample_bmi.db should be changed to something more realistic
     # NullPool pool class is equivalent to no connection pool
     # Should be adapted to postgres SQL
-    engine = create_engine('sqlite:///' + _cfg.db_url,
+    engine = create_engine('sqlite:///' + _cfg.db[constants.DB_URL_KEY],
                            poolclass=SingletonThreadPool)
 
     # creates a session maker for creating sessions

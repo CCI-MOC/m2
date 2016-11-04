@@ -99,7 +99,7 @@ class HIL:
     @log
     def attach_node_to_project_network(self, node, network, nic):
         api = '/node/' + node + '/nic/' + nic + '/connect_network'
-        body = {"network": network, "channel": constants.HAAS_BMI_CHANNEL}
+        body = {"network": network, "channel": constants.HIL_BMI_CHANNEL}
         return self.__call_rest_api_with_body(api=api, body=body)
 
     @log

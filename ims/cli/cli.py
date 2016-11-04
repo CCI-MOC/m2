@@ -19,16 +19,16 @@ _cfg = config.get()
 
 _url = "http://{0}:{1}/".format(_cfg.bind_ip, _cfg.bind_port)
 
-if constants.HAAS_USERNAME_VARIABLE in os.environ:
-    _username = os.environ[constants.HAAS_USERNAME_VARIABLE]
+if constants.HIL_USERNAME_VARIABLE in os.environ:
+    _username = os.environ[constants.HIL_USERNAME_VARIABLE]
 else:
-    click.echo(constants.HAAS_USERNAME_VARIABLE + " Variable Not Set")
+    click.echo(constants.HIL_USERNAME_VARIABLE + " Variable Not Set")
     sys.exit(1)
 
-if constants.HAAS_PASSWORD_VARIABLE in os.environ:
-    _password = os.environ[constants.HAAS_PASSWORD_VARIABLE]
+if constants.HIL_PASSWORD_VARIABLE in os.environ:
+    _password = os.environ[constants.HIL_PASSWORD_VARIABLE]
 else:
-    click.echo(constants.HAAS_PASSWORD_VARIABLE + " Variable Not Set")
+    click.echo(constants.HIL_PASSWORD_VARIABLE + " Variable Not Set")
     sys.exit(1)
 
 

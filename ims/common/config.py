@@ -1,5 +1,4 @@
 import ConfigParser
-
 import os
 
 import ims.common.constants as constants
@@ -32,23 +31,20 @@ class __BMIConfig:
     # other instance variables are initialized as to not get AttributeErrors
     def __init__(self, filename):
         self.configfile = filename
+        self.bmi = {}
         self.fs = {}
-        self.uid = None
-        self.db_url = None
-        self.iscsi_update_password = None
-        self.iscsi_ip = None
-        self.haas_url = None
-        self.nameserver_ip = None
-        self.nameserver_port = None
-        self.rpcserver_ip = None
-        self.rpcserver_port = None
-        self.bind_ip = None
-        self.bind_port = None
-        self.logs_url = None
-        self.logs_debug = None
-        self.logs_verbose = None
-        self.pxelinux_loc = None
-        self.ipxe_loc = None
+        self.db = {}
+        self.logs = {}
+        self.rpc = {}
+        self.http = {}
+        self.iscsi = {}
+        self.tftp = {}
+        self.netiso = {}
+        self.tests = {}
+
+        self.fs_name = None
+        self.iscsi_name = None
+        self.netiso_name = None
 
     def parse_config(self):
         config = ConfigParser.SafeConfigParser()
@@ -56,58 +52,32 @@ class __BMIConfig:
             if not config.read(self.configfile):
                 raise IOError('cannot load ' + self.configfile)
 
-            self.uid = config.get(constants.BMI_CONFIG_SECTION_NAME,
-                                  constants.UID_KEY)
+            # Should Raise Exception if two fs, netiso, iscsi are present
+            for section in config.sections():
+                if section.startswith(constants.FS_PREFIX_CONFIG_NAME):
+                    self.fs_name = section[
+                                   len(constants.FS_PREFIX_CONFIG_NAME) + 1:]
+                    self.fs = dict(config.items(section))
+                elif section.startswith(constants.NETISO_PREFIX_CONFIG_NAME):
+                    self.netiso_name = section[
+                            len(constants.NETISO_PREFIX_CONFIG_NAME) + 1:]
+                    self.netiso = dict(config.items(section))
+                elif section.startswith(constants.ISCSI_PREFIX_CONFIG_NAME):
+                    self.iscsi_name = section[
+                            len(constants.ISCSI_PREFIX_CONFIG_NAME) + 1:]
+                    self.iscsi = dict(config.items(section))
 
-            self.is_service = config.get(constants.BMI_CONFIG_SECTION_NAME,
-                                         constants.SERVICE_KEY) == 'True'
+            self.tftp = dict(config.items(constants.TFTP_CONFIG_SECTION_NAME))
+            self.bmi = dict(config.items(constants.BMI_CONFIG_SECTION_NAME))
+            self.logs = dict(config.items(constants.LOGS_CONFIG_SECTION_NAME))
+            self.http = dict(config.items(constants.HTTP_CONFIG_SECTION_NAME))
+            self.rpc = dict(config.items(constants.RPC_CONFIG_SECTION_NAME))
+            self.db = dict(config.items(constants.DB_CONFIG_SECTION_NAME))
 
-            self.db_url = config.get(constants.DB_CONFIG_SECTION_NAME,
-                                     constants.DB_URL_KEY)
+            if constants.TESTS_CONFIG_SECTION_NAME in config.sections():
+                self.tests = dict(
+                    config.items(constants.TESTS_CONFIG_SECTION_NAME))
 
-            self.iscsi_update_password = config.get(
-                constants.ISCSI_CONFIG_SECTION_NAME,
-                constants.ISCSI_PASSWORD_KEY)
-
-            self.iscsi_ip = config.get(constants.ISCSI_CONFIG_SECTION_NAME,
-                                       constants.ISCSI_IP_KEY)
-
-            self.haas_url = config.get(constants.HAAS_CONFIG_SECTION_NAME,
-                                       constants.HAAS_URL_KEY)
-
-            self.nameserver_ip = config.get(constants.RPC_CONFIG_SECTION_NAME,
-                                            constants.RPC_NAME_SERVER_IP_KEY)
-            self.nameserver_port = int(
-                config.get(constants.RPC_CONFIG_SECTION_NAME,
-                           constants.RPC_NAME_SERVER_PORT_KEY))
-            self.rpcserver_ip = config.get(constants.RPC_CONFIG_SECTION_NAME,
-                                           constants.RPC_RPC_SERVER_IP_KEY)
-            self.rpcserver_port = int(
-                config.get(constants.RPC_CONFIG_SECTION_NAME,
-                           constants.RPC_RPC_SERVER_PORT_KEY))
-
-            self.bind_ip = config.get(constants.HTTP_CONFIG_SECTION_NAME,
-                                      constants.BIND_IP_KEY)
-            self.bind_port = config.get(constants.HTTP_CONFIG_SECTION_NAME,
-                                        constants.BIND_PORT_KEY)
-
-            self.logs_url = config.get(constants.LOGS_CONFIG_SECTION_NAME,
-                                       constants.LOGS_URL_KEY)
-            self.logs_debug = config.get(constants.LOGS_CONFIG_SECTION_NAME,
-                                         constants.LOGS_DEBUG_KEY) == 'True'
-            self.logs_verbose = config.get(constants.LOGS_CONFIG_SECTION_NAME,
-                                           constants.LOGS_VERBOSE_KEY) == 'True'
-            self.pxelinux_loc = config.get(constants.TFTP_CONFIG_SECTION_NAME,
-                                           constants.PXELINUX_URL_KEY)
-            self.ipxe_loc = config.get(constants.TFTP_CONFIG_SECTION_NAME,
-                                       constants.IPXE_URL_KEY)
-
-            for k, v in config.items(constants.FILESYSTEM_CONFIG_SECTION_NAME):
-                if v == 'True':
-                    self.fs[k] = {}
-
-                    for key, value in config.items(k):
-                        self.fs[k][key] = value
         # Didn't Test
         except ConfigParser.NoOptionError as e:
             raise config_exceptions.MissingOptionInConfigException(e.args[0])

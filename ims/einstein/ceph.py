@@ -18,7 +18,7 @@ logger = create_logger(__name__)
 class RBD:
     @log
     def __init__(self, config, password):
-        self.__validate(config)
+        self.__validate(config['ceph'])
         self.password = password
         self.cluster = self.__init_cluster()
         self.context = self.__init_context()
@@ -82,6 +82,7 @@ class RBD:
     def list_images(self):
         return self.rbd.list(self.context)
 
+    # Not Using Anywhere
     @log
     def create_image(self, img_id, img_size):
         try:
@@ -129,6 +130,7 @@ class RBD:
         except rbd.ImageHasSnapshots:
             raise file_system_exceptions.ImageHasSnapshotException(img_id)
 
+    # Not Using Anywhere
     @log
     def write(self, img_id, data, offset):
         try:
@@ -271,4 +273,5 @@ class RBD:
                 maps[parts[2]] = parts[4]
             return maps
         else:
+            # Exception should be raised
             pass
