@@ -3,11 +3,14 @@ import urlparse
 
 import requests
 
-import constants
-from exception import *
+import ims.common.constants as constants
+import ims.exception.haas_exceptions as haas_exceptions
+from ims.common.log import *
+
+logger = create_logger(__name__)
 
 
-class HaaS:
+class HIL:
     class Request:
         def __init__(self, method, data, auth=None):
             self.method = method
@@ -22,10 +25,12 @@ class HaaS:
                  "auth": self.auth})
 
     class Communicator:
+        @trace
         def __init__(self, url, request):
             self.url = url
             self.request = request
 
+        @trace
         def send_request(self):
             try:
                 if self.request.method == "get":
@@ -38,6 +43,7 @@ class HaaS:
             except requests.RequestException:
                 raise haas_exceptions.ConnectionException()
 
+        @trace
         def resp_parse(self, obj):
             if obj.status_code == 200:
                 try:
@@ -56,53 +62,67 @@ class HaaS:
                                                        obj.json()[
                                                            constants.MESSAGE_KEY])
 
+    @log
     def __init__(self, base_url, usr, passwd):
         self.base_url = base_url
         self.usr = usr
         self.passwd = passwd
 
+    @trace
     def __call_rest_api(self, api):
         link = urlparse.urljoin(self.base_url, api)
-        request = HaaS.Request('get', None, auth=(self.usr, self.passwd))
-        return HaaS.Communicator(link, request).send_request()
+        request = HIL.Request('get', None, auth=(self.usr, self.passwd))
+        return HIL.Communicator(link, request).send_request()
 
+    @trace
     def __call_rest_api_with_body(self, api, body):
         link = urlparse.urljoin(self.base_url, api)
-        request = HaaS.Request('post', body, auth=(self.usr, self.passwd))
-        return HaaS.Communicator(link, request).send_request()
+        request = HIL.Request('post', body, auth=(self.usr, self.passwd))
+        return HIL.Communicator(link, request).send_request()
 
+    @log
     def list_free_nodes(self):
         api = 'free_nodes'
         return self.__call_rest_api(api=api)
 
+    @log
     def query_project_nodes(self, project):
         api = '/project/' + project + '/nodes'
         return self.__call_rest_api(api=api)
 
+    @log
     def detach_node_from_project(self, project, node):
         api = 'project/' + project + '/detach_node'
         body = {"node": node}
         return self.__call_rest_api_with_body(api=api, body=body)
 
-    def attach_node_to_project_network(self, node,
-                                       network,
-                                       channel,
-                                       nic):
+    @log
+    def attach_node_to_project_network(self, node, network, nic):
         api = '/node/' + node + '/nic/' + nic + '/connect_network'
-        body = {"network": network, "channel": channel}
+        body = {"network": network, "channel": constants.HAAS_BMI_CHANNEL}
         return self.__call_rest_api_with_body(api=api, body=body)
 
+    @log
     def attach_node_haas_project(self, project, node):
         api = 'project/' + project + '/connect_node'
         body = {"node": node}
         return self.__call_rest_api_with_body(api=api, body=body)
 
+    @log
     def detach_node_from_project_network(self, node,
                                          network, nic):
         api = '/node/' + node + '/nic/' + nic + '/detach_network'
         body = {"network": network}
         return self.__call_rest_api_with_body(api=api, body=body)
 
+    @log
+    def get_node_mac_addr(self, node):
+        api = "node/" + node
+        node_info = self.__call_rest_api(api)
+        logger.debug("The Node Info = %s", node_info)
+        return node_info[constants.RETURN_VALUE_KEY]['nics'][0]['macaddr']
+
+    @log
     def validate_project(self, project):
         api = '/project/' + project + '/nodes'
         return self.__call_rest_api(api=api)
