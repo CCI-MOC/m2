@@ -178,6 +178,21 @@ def list_images(project):
         click.echo(res.content)
 
 
+@cli.command(name='sha_lkrn', short_help='Get SHA of LKRN')
+@click.argument(constants.PROJECT_PARAMETER)
+def get_lkrn_sha(project):
+    """
+    Get SHA 256 of LKRN
+
+    \b
+
+    """
+    data = {constants.PROJECT_PARAMETER: project}
+    res = requests.post(_url + "get_lkrn_sha/",data=data, auth=(
+        _username, _password))
+    click.echo(res.content)
+
+
 @cli.group(short_help='Snapshot Related Commands')
 def snap():
     """
@@ -650,6 +665,7 @@ def show_mappings(project):
     #     else:
     #         click.echo(ret[constants.MESSAGE_KEY])
     click.echo("Need to Re-Implement")
+
 
 @cli.command(name='upload', help='Upload Image to BMI')
 def upload():
