@@ -385,13 +385,30 @@ class BMI:
     # Should be Improved a Lot
     def lkrn_sha(self):
         try:
-            with open(self.config.ipxe_loc + "ipxe.lkrn", 'r') as lkrn:
-                h = hashlib.sha256()
+            lkrn_path = os.path.join(self.config.ipxe_loc, "ipxe.lkrn")
+            with open(lkrn_path, 'r') as lkrn:
+                h = hashlib.sha1()
                 part = lkrn.read(1000)
                 while part != "":
                     h.update(part)
                     part = lkrn.read(1000)
                 return self.__return_success(h.hexdigest())
+        except Exception as e:
+            logger.exception('')
+            return {constants.STATUS_CODE_KEY: 500,
+                    constants.MESSAGE_KEY: str(e)}
+
+    @log
+    def ipxe_sha(self, node_name):
+        try:
+            ipxe_path = os.path.join(self.config.ipxe_loc, node_name + ".ipxe")
+            with open(ipxe_path, 'r') as ipxe:
+                h = hashlib.sha1()
+                part = ipxe.read(1000)
+                while part != "":
+                    h.update(part)
+                    part = ipxe.read(1000)
+            return self.__return_success(h.hexdigest())
         except Exception as e:
             logger.exception('')
             return {constants.STATUS_CODE_KEY: 500,

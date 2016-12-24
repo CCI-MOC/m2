@@ -111,3 +111,9 @@ def remove_image():
 @rest_call("/get_lkrn_sha/", "POST", constants.LKRN_SHA_COMMAND, [])
 def get_lkrn_sha():
     pass
+
+
+@rest_call("/get_ipxe_sha/", "POST", constants.IPXE_SHA_COMMAND,
+           [constants.NODE_NAME_PARAMETER])
+def get_ipxe_sha():
+    pass

@@ -19,7 +19,8 @@ class RPCClient:
                 "list_images": "0",
                 "list_snapshots": "0",
                 "remove_image": "1",
-                "lkrn_sha":"0"
+                "lkrn_sha": "0",
+                "ipxe_sha": "1"
             }
         }
         # The script name and no. of arguments.
@@ -71,8 +72,8 @@ class RPCClient:
 
                 try:
                     execute_command = self.main_obj.execute_command(credentials,
-                                                                        command,
-                                                                        args)
+                                                                    command,
+                                                                    args)
                     return execute_command
                 except Pyro4.errors.CommunicationError as e:
                     self.main_obj = None
