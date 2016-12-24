@@ -18,6 +18,10 @@ class IET(ISCSI):
         self.password = password
 
     @log
+    def start_server(self):
+        pass
+
+    @log
     def add_target(self, ceph_img_name):
         rbd_name = None
         try:
@@ -79,7 +83,7 @@ class IET(ISCSI):
                     line = line.strip()
                     if line.startswith(constants.IET_TARGET_STARTING):
                         if target is None:
-                            target = line.split('.')[2]
+                            target = line.split(' ')[1]
                         else:
                             raise iscsi_exceptions.InvalidConfigException()
                     elif line.startswith(constants.IET_LUN_STARTING):
@@ -123,8 +127,9 @@ class IET(ISCSI):
 
     @log
     def restart_server(self):
-        command = "echo {0} | sudo -S service iscsitarget restart".format(
-            self.password)
+        # command = "echo {0} | sudo -S service iscsitarget restart".format(
+        #    self.password)
+        command = "service iscsitarget restart"
         p = subprocess.Popen(command, shell=True, stderr=subprocess.STDOUT,
                              stdout=subprocess.PIPE)
         output, err = p.communicate()
@@ -137,8 +142,9 @@ class IET(ISCSI):
 
     @log
     def stop_server(self):
-        command = "echo {0} | sudo -S service iscsitarget stop".format(
-            self.password)
+        # command = "echo {0} | sudo -S service iscsitarget stop".format(
+        #    self.password)
+        command = "service iscsitarget stop"
         p = subprocess.Popen(command, shell=True, stderr=subprocess.STDOUT,
                              stdout=subprocess.PIPE)
         output, err = p.communicate()
