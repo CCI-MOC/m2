@@ -18,7 +18,7 @@ logger = create_logger(__name__)
 class RBD:
     @log
     def __init__(self, config, password):
-        self.__validate(config['ceph'])
+        self.__validate(config)
         self.password = password
         self.cluster = self.__init_cluster()
         self.context = self.__init_context()

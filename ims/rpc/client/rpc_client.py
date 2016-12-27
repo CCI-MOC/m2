@@ -1,7 +1,6 @@
 import Pyro4
 import Pyro4.errors
 
-import ims.common.constants as constants
 from ims.common.log import *
 
 logger = create_logger(__name__)
@@ -31,8 +30,9 @@ class RPCClient:
     def __get_main_obj(self):
         try:
             # Locates the name server
-            self.name_server = Pyro4.locateNS(host=self.cfg.nameserver_ip,
-                                              port=self.cfg.nameserver_port)
+            self.name_server = Pyro4.locateNS(
+                host=self.cfg.rpc[constants.RPC_NAME_SERVER_IP_KEY],
+                port=int(self.cfg.rpc[constants.RPC_NAME_SERVER_PORT_KEY]))
             # Looks up for the registered service in the name server
             uri = self.name_server.lookup(constants.RPC_SERVER_NAME)
             self.main_obj = Pyro4.Proxy(uri)
@@ -70,8 +70,8 @@ class RPCClient:
 
                 try:
                     execute_command = self.main_obj.execute_command(credentials,
-                                                                        command,
-                                                                        args)
+                                                                    command,
+                                                                    args)
                     return execute_command
                 except Pyro4.errors.CommunicationError as e:
                     self.main_obj = None

@@ -6,8 +6,9 @@ from ims.database import *
 from ims.einstein.ceph import *
 from ims.einstein.dnsmasq import *
 from ims.einstein.hil import *
-from ims.einstein.iscsi import *
 from ims.exception import *
+from ims.einstein.iscsi import *
+from ims.interfaces.iscsi import ISCSI
 
 logger = create_logger(__name__)
 
@@ -70,30 +71,23 @@ class BMI:
         return True
 
     def __load_iscsi_driver(self):
-        iscsi = self.config.iscsi
+        iscsi = self.config.iscsi_name
         # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
         # self.iscsi = TGT(self.config.fs,self.config.iscsi)
-        iscsi_drivers = self.__get_available_drivers('iscsi')
-
-        iscsi_sections = iscsi.keys()
-        if iscsi_sections[0] in iscsi_drivers:
-            module = __import__(iscsi_sections[0])
-            class_ = getattr(module, iscsi_sections[0].upper())
-            return class_(self.config.fs, self.config.iscsi)
+        iscsi_drivers = self.__get_available_drivers(ISCSI)
+        print iscsi
+        print iscsi_drivers
+        for driver_class in iscsi_drivers:
+            if iscsi.upper() == driver_class.__name__:
+                return driver_class(self.config.fs, self.config.iscsi)
 
         else:
             # Should Raise some exception Related to driver not found
+            print "Driver not Found"
             pass
 
-    def __get_available_drivers(self, package_name):
-        package_path = os.path.join(os.path.split(__file__)[0], package_name)
-        available_drivers = []
-        for f in os.listdir(package_path):
-            name, ext = os.path.splitext(f)
-            if name != '__init__':
-                available_drivers.append(name)
-
-        return available_drivers
+    def __get_available_drivers(self, base_class):
+        return base_class.__subclasses__()
 
     @trace
     def __get_ceph_image_name(self, name):
@@ -627,4 +621,4 @@ class BMI:
 
 
 if __name__ == "__main__":
-    bmi = BMI()
+    bmi = BMI("haasadmin","admin1234","bmi_infra")

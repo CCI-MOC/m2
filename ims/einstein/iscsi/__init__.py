@@ -1,2 +1,2 @@
-from ims.einstein.iscsi.iet import *
-from ims.einstein.iscsi.tgt import *
+from ims.einstein.iscsi.iet import IET
+from ims.einstein.iscsi.tgt import TGT

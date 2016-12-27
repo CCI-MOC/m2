@@ -8,7 +8,6 @@ import requests
 from prettytable import PrettyTable
 
 import ims.common.config as config
-import ims.common.constants as constants
 
 config.load()
 
@@ -17,7 +16,8 @@ from ims.database import *
 
 _cfg = config.get()
 
-_url = "http://{0}:{1}/".format(_cfg.bind_ip, _cfg.bind_port)
+_url = "http://{0}:{1}/".format(_cfg.http[constants.BIND_IP_KEY],
+                                int(_cfg.http[constants.BIND_PORT_KEY]))
 
 if constants.HIL_USERNAME_VARIABLE in os.environ:
     _username = os.environ[constants.HIL_USERNAME_VARIABLE]
@@ -650,6 +650,7 @@ def show_mappings(project):
     #     else:
     #         click.echo(ret[constants.MESSAGE_KEY])
     click.echo("Need to Re-Implement")
+
 
 @cli.command(name='upload', help='Upload Image to BMI')
 def upload():

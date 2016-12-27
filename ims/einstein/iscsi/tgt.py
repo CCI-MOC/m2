@@ -19,12 +19,13 @@ class TGT(ISCSI):
     # Also, root_password is something that can be avoided.
 
     # Also removed sudo everywhere since it was causing issues
-    def __init__(self, fs_config_loc, fs_user, root_password):
+    def __init__(self, fs_config, iscsi_config):
         self.arglist = ["service", "tgtd"]
         self.TGT_ISCSI_CONFIG = "/etc/tgt/conf.d/"
-        self.fs_config_loc = fs_config_loc
-        self.fs_user = fs_user
-        self.root_password = root_password
+        self.fs_config_loc = fs_config[constants.CEPH_CONFIG_FILE_KEY]
+        self.fs_user = fs_config[constants.CEPH_ID_KEY]
+        self.pool = fs_config[constants.CEPH_POOL_KEY]
+        self.root_password = iscsi_config[constants.ISCSI_PASSWORD_KEY]
 
     @log
     def start_server(self):
@@ -91,6 +92,7 @@ class TGT(ISCSI):
             os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
                          ".."))
         for line in open(template_loc + "/tgt_target.temp", 'r'):
+            line = line.replace('${pool}',self.pool)
             line = line.replace('${target_name}', target_name)
             line = line.replace('${ceph_user}', self.fs_user)
             line = line.replace('${ceph_config}', self.fs_config_loc)
