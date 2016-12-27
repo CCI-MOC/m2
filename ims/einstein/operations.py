@@ -75,10 +75,8 @@ class BMI:
         # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
         # self.iscsi = TGT(self.config.fs,self.config.iscsi)
         iscsi_drivers = self.__get_available_drivers(ISCSI)
-        print iscsi
-        print iscsi_drivers
         for driver_class in iscsi_drivers:
-            if iscsi.upper() == driver_class.__name__:
+            if iscsi == driver_class.__name__.lower():
                 return driver_class(self.config.fs, self.config.iscsi)
 
         else:
