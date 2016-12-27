@@ -53,6 +53,7 @@ class __BMIConfig:
                 raise IOError('cannot load ' + self.configfile)
 
             # Should Raise Exception if two fs, netiso, iscsi are present
+            # Clueless about previous comment
             for section in config.sections():
                 if section.startswith(constants.FS_PREFIX_CONFIG_NAME):
                     self.fs_name = section[

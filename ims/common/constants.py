@@ -105,8 +105,8 @@ MAC_IPXE_NAME = "${ipxe.file}"
 CEPH_IMG_NAME = "${ceph_img_name}"
 RBD_NAME = "${rbd_name}"
 
-IET_MAPPING_TEMP = 'Target iqn.2015.${ceph_img_name}\n        ' \
-                   'Lun 0 Path=${rbd_name},Type=blockio,ScsiId=lun0,ScsiSN=lun0\n'
+IET_MAPPING_TEMP = 'Target ${ceph_img_name}\n        ' \
+                   'Lun 1 Path=${rbd_name},Type=blockio,ScsiId=lun1,ScsiSN=lun1\n'
 IET_ISCSI_CONFIG_LOC = '/etc/iet/ietd.conf'
 IET_ISCSI_CONFIG_TEMP_LOC = '/etc/iet/ietd.temp'
 IET_TARGET_STARTING = 'Target'

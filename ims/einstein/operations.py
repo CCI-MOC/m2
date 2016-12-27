@@ -20,7 +20,8 @@ class BMI:
             self.config = config.get()
             self.db = Database()
             self.__process_credentials(credentials)
-            self.hil = HIL(base_url=self.config.netiso[constants.HIL_URL_KEY], usr=self.username,
+            self.hil = HIL(base_url=self.config.netiso[constants.HIL_URL_KEY],
+                           usr=self.username,
                            passwd=self.password)
             self.fs = RBD(self.config.fs,
                           self.config.iscsi[constants.ISCSI_PASSWORD_KEY])
@@ -36,7 +37,8 @@ class BMI:
             self.db = Database()
             self.pid = self.__does_project_exist(self.project)
             self.is_admin = self.__check_admin()
-            self.hil = HIL(base_url=self.config.netiso[constants.HIL_URL_KEY], usr=self.username,
+            self.hil = HIL(base_url=self.config.netiso[constants.HIL_URL_KEY],
+                           usr=self.username,
                            passwd=self.password)
             self.fs = RBD(self.config.fs,
                           self.config.iscsi[constants.ISCSI_PASSWORD_KEY])
@@ -77,14 +79,13 @@ class BMI:
         if iscsi_sections[0] in iscsi_drivers:
             module = __import__(iscsi_sections[0])
             class_ = getattr(module, iscsi_sections[0].upper())
-            return class_(self.config.fs,self.config.iscsi)
+            return class_(self.config.fs, self.config.iscsi)
 
         else:
             # Should Raise some exception Related to driver not found
             pass
 
-
-    def __get_available_drivers(self,package_name):
+    def __get_available_drivers(self, package_name):
         package_path = os.path.join(os.path.split(__file__)[0], package_name)
         available_drivers = []
         for f in os.listdir(package_path):
@@ -150,7 +151,8 @@ class BMI:
                 for line in open(template_loc + "/ipxe.temp", 'r'):
                     line = line.replace(constants.IPXE_TARGET_NAME, target_name)
                     line = line.replace(constants.IPXE_ISCSI_IP,
-                                        self.config.iscsi[constants.ISCSI_IP_KEY])
+                                        self.config.iscsi[
+                                            constants.ISCSI_IP_KEY])
                     ipxe.write(line)
             logger.info("Generated ipxe file")
             os.chmod(path, 0755)
@@ -622,3 +624,7 @@ class BMI:
             logger.exception('')
         except NotImplementedError:
             pass
+
+
+if __name__ == "__main__":
+    bmi = BMI()
