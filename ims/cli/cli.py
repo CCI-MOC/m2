@@ -2,17 +2,20 @@
 
 import json
 import sys
-
+import os
 import click
 import requests
 from prettytable import PrettyTable
 
+import ims.common.constants as constants
 import ims.common.config as config
+
 
 config.load()
 
 from ims.einstein.operations import BMI
-from ims.database import *
+# from ims.database.database import Database
+from ims.exception.exception import BMIException
 
 _cfg = config.get()
 
@@ -75,8 +78,7 @@ def provision(project, node, img, network, nic):
     NODE    = The Node to Provision
     IMG     = The Name of the Image to Provision
     NETWORK = The Name of the Provisioning Network
-    CHANNEL = The Channel to Provision On (For HIL It is 'vlan/native')
-    NIC     = The NIC to use for Network Boot (For HIL IT is 'enp130s0f0')
+    NIC     = The NIC to use for Network Boot
     """
     data = {constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,

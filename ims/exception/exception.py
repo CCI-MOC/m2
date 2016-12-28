@@ -18,7 +18,7 @@ class FileSystemException(BMIException):
 
 
 # The base class for all exceptions related to HaaS
-class HaaSException(BMIException):
+class NetIsoException(BMIException):
     __metaclass__ = ABCMeta
 
 
@@ -52,14 +52,29 @@ class AuthorizationFailedException(BMIException):
     def __str__(self):
         return "User Does Not Have Admin Role"
 
+
 class RegistrationFailedException(BMIException):
     @property
     def status_code(self):
         return 500
 
-    def __init__(self,node,error):
+    def __init__(self, node, error):
         self.node = node
         self.error = error
 
     def __str__(self):
-        return "Failed to register "+self.node+" due to "+self.error
+        return "Failed to register " + self.node + " due to " + self.error
+
+
+class DriverNotFoundException(BMIException):
+    @property
+    def status_code(self):
+        return 500
+
+    # component is iscsi, netiso, etc
+    def __init__(self, component, driver_name):
+        self.component = component
+        self.driver_name = driver_name
+
+    def __str__(self):
+        return "Failed to find " + self.driver_name + " for " + self.component

@@ -5,7 +5,7 @@ import requests
 
 import ims.common.constants as constants
 import ims.exception.haas_exceptions as haas_exceptions
-from ims.common.log import *
+from ims.common.log import create_logger, log, trace
 
 logger = create_logger(__name__)
 

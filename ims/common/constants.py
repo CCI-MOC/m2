@@ -28,8 +28,7 @@ TESTS_CONFIG_SECTION_NAME = 'tests'
 
 # Non FS Keys in Config File
 HIL_URL_KEY = 'url'
-ISCSI_PASSWORD_KEY = 'password'
-ISCSI_IP_KEY = 'ip'
+
 
 # DB
 DB_URL_KEY = 'url'
@@ -40,11 +39,6 @@ CEPH_POOL_KEY = 'pool'
 CEPH_CONFIG_FILE_KEY = 'conf_file'
 CEPH_KEY_RING_KEY = 'keyring'
 
-# ISCSI
-ISCSI_UPDATE_SUCCESS = 'successfully'
-ISCSI_UPDATE_FAILURE = 'already'
-ISCSI_CREATE_COMMAND = 'create'
-ISCSI_DELETE_COMMAND = 'delete'
 
 # RPC
 RPC_NAME_SERVER_IP_KEY = 'name_server_ip'

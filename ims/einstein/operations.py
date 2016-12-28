@@ -2,12 +2,19 @@
 import base64
 import time
 
-from ims.database import *
-from ims.einstein.ceph import *
-from ims.einstein.dnsmasq import *
-from ims.einstein.hil import *
-from ims.exception import *
-from ims.einstein.iscsi import *
+import os
+
+import ims.common.config as config
+import ims.common.constants as constants
+import ims.exception.db_exceptions as db_exceptions
+from ims.common.log import log, create_logger, trace
+from ims.database.database import Database
+from ims.einstein.ceph import RBD
+from ims.einstein.dnsmasq import DNSMasq
+from ims.einstein.hil import HIL
+from ims.exception.exception import ISCSIException, FileSystemException, \
+    NetIsoException, RegistrationFailedException, DriverNotFoundException, \
+    DBException, DHCPException, AuthorizationFailedException
 from ims.interfaces.iscsi import ISCSI
 
 logger = create_logger(__name__)
@@ -24,8 +31,7 @@ class BMI:
             self.hil = HIL(base_url=self.config.netiso[constants.HIL_URL_KEY],
                            usr=self.username,
                            passwd=self.password)
-            self.fs = RBD(self.config.fs,
-                          self.config.iscsi[constants.ISCSI_PASSWORD_KEY])
+            self.fs = RBD(self.config.fs)
             self.dhcp = DNSMasq()
             self.iscsi = self.__load_iscsi_driver()
 
@@ -41,8 +47,7 @@ class BMI:
             self.hil = HIL(base_url=self.config.netiso[constants.HIL_URL_KEY],
                            usr=self.username,
                            passwd=self.password)
-            self.fs = RBD(self.config.fs,
-                          self.config.iscsi[constants.ISCSI_PASSWORD_KEY])
+            self.fs = RBD(self.config.fs)
             logger.debug("Username is %s and Password is %s", self.username,
                          self.password)
             self.dhcp = DNSMasq()
@@ -80,9 +85,7 @@ class BMI:
                 return driver_class(self.config.fs, self.config.iscsi)
 
         else:
-            # Should Raise some exception Related to driver not found
-            print "Driver not Found"
-            pass
+            raise DriverNotFoundException("ISCSI", iscsi)
 
     def __get_available_drivers(self, base_class):
         return base_class.__subclasses__()
@@ -143,8 +146,7 @@ class BMI:
                 for line in open(template_loc + "/ipxe.temp", 'r'):
                     line = line.replace(constants.IPXE_TARGET_NAME, target_name)
                     line = line.replace(constants.IPXE_ISCSI_IP,
-                                        self.config.iscsi[
-                                            constants.ISCSI_IP_KEY])
+                                        self.iscsi.get_ip())
                     ipxe.write(line)
             logger.info("Generated ipxe file")
             os.chmod(path, 0755)
@@ -152,7 +154,7 @@ class BMI:
         except (OSError, IOError) as e:
             logger.info("Raising Registration Failed Exception for %s",
                         node_name)
-            raise RegistrationFailedException(node_name, e.message)
+            raise RegistrationFailedException(node_name, str(e))
 
     @log
     def __generate_mac_addr_file(self, img_name, node_name, mac_addr):
@@ -174,7 +176,7 @@ class BMI:
         except (OSError, IOError) as e:
             logger.info("Raising Registration Failed Exception for %s",
                         node_name)
-            raise RegistrationFailedException(node_name, e.message)
+            raise RegistrationFailedException(node_name, str(e))
 
     # Parses the Exception and returns the dict that should be returned to user
     @log
@@ -258,7 +260,7 @@ class BMI:
             self.hil.detach_node_from_project_network(node_name, network,
                                                       nic)
             return self.__return_error(e)
-        except HaaSException as e:
+        except NetIsoException as e:
             # Message is being handled by custom formatter
             logger.exception('')
             return self.__return_error(e)
@@ -307,7 +309,7 @@ class BMI:
             time.sleep(constants.HIL_CALL_TIMEOUT)
             self.hil.attach_node_to_project_network(node_name, network, nic)
             return self.__return_error(e)
-        except HaaSException as e:
+        except NetIsoException as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -338,7 +340,7 @@ class BMI:
                                     constants.DEFAULT_SNAPSHOT_NAME)
             return self.__return_success(True)
 
-        except (HaaSException, DBException, FileSystemException) as e:
+        except (NetIsoException, DBException, FileSystemException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -352,7 +354,7 @@ class BMI:
             snapshots = self.db.image.fetch_snapshots_from_project(self.project)
             return self.__return_success(snapshots)
 
-        except (HaaSException, DBException, FileSystemException) as e:
+        except (NetIsoException, DBException, FileSystemException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -371,7 +373,7 @@ class BMI:
             self.fs.remove(ceph_img_name)
             self.db.image.delete_with_name_from_project(img_name, self.project)
             return self.__return_success(True)
-        except (HaaSException, DBException, FileSystemException) as e:
+        except (NetIsoException, DBException, FileSystemException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -383,7 +385,7 @@ class BMI:
             names = self.db.image.fetch_images_from_project(self.project)
             return self.__return_success(names)
 
-        except (HaaSException, DBException) as e:
+        except (NetIsoException, DBException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -469,7 +471,7 @@ class BMI:
     def delete_image(self, project, img):
         try:
             if not self.is_admin:
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             self.db.image.delete_with_name_from_project(img, project)
             return self.__return_success(True)
         except (DBException, AuthorizationFailedException) as e:
@@ -480,7 +482,7 @@ class BMI:
     def add_image(self, project, img, id, snap, parent, public):
         try:
             if not self.is_admin:
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             parent_id = None
             if parent is not None:
                 parent_id = self.db.image.fetch_id_with_name_from_project(
@@ -498,7 +500,7 @@ class BMI:
         try:
             mac_addr = self.hil.get_node_mac_addr(node_name)
             return self.__return_success(self.dhcp.get_ip(mac_addr))
-        except (HaaSException, DHCPException) as e:
+        except (NetIsoException, DHCPException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -506,7 +508,7 @@ class BMI:
     def copy_image(self, img1, dest_project, img2=None):
         try:
             if not self.is_admin and (self.project != dest_project):
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             dest_pid = self.__does_project_exist(dest_project)
             self.db.image.copy_image(self.project, img1, dest_pid, img2)
             if img2 is not None:
@@ -526,7 +528,7 @@ class BMI:
     def move_image(self, img1, dest_project, img2):
         try:
             if not self.is_admin and (self.project != dest_project):
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             dest_pid = self.__does_project_exist(dest_project)
             self.db.image.move_image(self.project, img1, dest_pid, img2)
             return self.__return_success(True)
@@ -538,7 +540,7 @@ class BMI:
     def add_project(self, project, network, id):
         try:
             if not self.is_admin:
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             self.db.project.insert(project, network, id)
             return self.__return_success(True)
         except (DBException, AuthorizationFailedException) as e:
@@ -549,7 +551,7 @@ class BMI:
     def delete_project(self, project):
         try:
             if not self.is_admin:
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             self.db.project.delete_with_name(project)
             return self.__return_success(True)
         except (DBException, AuthorizationFailedException) as e:
@@ -560,7 +562,7 @@ class BMI:
     def list_projects(self):
         try:
             if not self.is_admin:
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             projects = self.db.project.fetch_projects()
             return self.__return_success(projects)
         except (DBException, AuthorizationFailedException) as e:
@@ -571,7 +573,7 @@ class BMI:
     def mount_image(self, img):
         try:
             if not self.is_admin:
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             ceph_img_name = self.__get_ceph_image_name(img)
             self.iscsi.add_target(ceph_img_name)
             return self.__return_success(True)
@@ -583,7 +585,7 @@ class BMI:
     def umount_image(self, img):
         try:
             if not self.is_admin:
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             ceph_img_name = self.__get_ceph_image_name(img)
             self.iscsi.remove_target(ceph_img_name)
             return self.__return_success(True)
@@ -595,7 +597,7 @@ class BMI:
     def show_mounted(self):
         try:
             if not self.is_admin:
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             mappings = self.iscsi.list_targets()
             swapped_mappings = {}
             for k, v in mappings.iteritems():
@@ -616,7 +618,3 @@ class BMI:
             logger.exception('')
         except NotImplementedError:
             pass
-
-
-if __name__ == "__main__":
-    bmi = BMI("haasadmin","admin1234","bmi_infra")

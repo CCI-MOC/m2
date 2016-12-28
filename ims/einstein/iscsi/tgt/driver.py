@@ -1,15 +1,20 @@
 import subprocess
 
+import os
 import re
 import sh
 
-from ims.common.log import *
-from ims.exception import *
-from ims.interfaces.iscsi import *
+import ims.common.constants as constants
+import ims.einstein.iscsi.tgt.constants as tgt_constants
+
+from ims.common.log import log, create_logger
+from ims.exception import iscsi_exceptions
+from ims.interfaces.iscsi import ISCSI
 
 logger = create_logger(__name__)
 
 
+# Need to disable sudo tty for to work currently
 class TGT(ISCSI):
     '''
         Class for implementing TGT
@@ -20,12 +25,16 @@ class TGT(ISCSI):
 
     # Also removed sudo everywhere since it was causing issues
     def __init__(self, fs_config, iscsi_config):
-        self.arglist = ["service", "tgtd"]
-        self.TGT_ISCSI_CONFIG = "/etc/tgt/conf.d/"
-        self.fs_config_loc = fs_config[constants.CEPH_CONFIG_FILE_KEY]
-        self.fs_user = fs_config[constants.CEPH_ID_KEY]
+
+        self.ceph_config = fs_config[constants.CEPH_CONFIG_FILE_KEY]
+        self.ceph_id = fs_config[constants.CEPH_ID_KEY]
         self.pool = fs_config[constants.CEPH_POOL_KEY]
-        self.root_password = iscsi_config[constants.ISCSI_PASSWORD_KEY]
+        self.ip = iscsi_config[tgt_constants.ISCSI_IP_KEY]
+        self.root_password = iscsi_config[tgt_constants.ISCSI_PASSWORD_KEY]
+
+    @property
+    def get_ip(self):
+        return self.ip
 
     @log
     def start_server(self):
@@ -87,15 +96,17 @@ class TGT(ISCSI):
             return "Running in error state"
 
     def __generate_config_file(self, target_name):
-        config = open(self.TGT_ISCSI_CONFIG + target_name + ".conf", 'w')
+        config = open(tgt_constants.TGT_ISCSI_CONFIG + target_name + ".conf",
+                      'w')
         template_loc = os.path.abspath(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
                          ".."))
-        for line in open(template_loc + "/tgt_target.temp", 'r'):
-            line = line.replace('${pool}',self.pool)
-            line = line.replace('${target_name}', target_name)
-            line = line.replace('${ceph_user}', self.fs_user)
-            line = line.replace('${ceph_config}', self.fs_config_loc)
+        for line in open(
+                os.path.join(template_loc, tgt_constants.TGT_TEMP_NAME), 'r'):
+            line = line.replace(tgt_constants.TGT_POOL_NAME, self.pool)
+            line = line.replace(tgt_constants.TGT_TARGET_NAME, target_name)
+            line = line.replace(tgt_constants.TGT_CEPH_ID, self.ceph_id)
+            line = line.replace(tgt_constants.TGT_CEPH_CONFIG, self.ceph_config)
             config.write(line)
         config.close()
 
@@ -120,7 +131,7 @@ class TGT(ISCSI):
                 #     raise iscsi_exceptions.UpdateConfigFailedException(
                 #         "Adding new target failed at creating target file \
                 #         stage")
-                tgt_admin = sh.Command("/usr/sbin/tgt-admin")
+                tgt_admin = sh.Command(tgt_constants.TGT_ADMIN_PATH)
                 with sh.sudo:
                     tgt_admin(execute=True)
             else:
@@ -147,7 +158,8 @@ class TGT(ISCSI):
         try:
             targets = self.list_targets()
             if target_name in targets:
-                os.remove(self.TGT_ISCSI_CONFIG + target_name + ".conf")
+                os.remove(
+                    tgt_constants.TGT_ISCSI_CONFIG + target_name + ".conf")
                 # tgtarglist = ["sudo", "-S","tgt-admin", "--execute"]
                 # command = "tgt-admin -f --delete {0}".format(target_name)
                 # proc = subprocess.Popen(command, shell=True,
@@ -157,7 +169,7 @@ class TGT(ISCSI):
                 # if proc.returncode != 0:
                 #     raise iscsi_exceptions.UpdateConfigFailedException(
                 #         "Deleting target failed at deleting target file stage")
-                tgt_admin = sh.Command("/usr/sbin/tgt-admin")
+                tgt_admin = sh.Command(tgt_constants.TGT_ADMIN_PATH)
                 with sh.sudo:
                     tgt_admin(f=True, delete=target_name)
             else:
@@ -194,7 +206,7 @@ class TGT(ISCSI):
         # output, err = proc.communicate()
         try:
             output = "Nothing"
-            tgt_admin = sh.Command("/usr/sbin/tgt-admin")
+            tgt_admin = sh.Command(tgt_constants.TGT_ADMIN_PATH)
             with sh.sudo:
                 output = tgt_admin(s=True)
             logger.debug("Output = %s", output)

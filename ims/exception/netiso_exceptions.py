@@ -1,8 +1,8 @@
-from exception import HaaSException
+from ims.exception.exception import NetIsoException
 
 
 # this exception should be raised when haas reports an authorization failure
-class AuthorizationFailedException(HaaSException):
+class AuthorizationFailedException(NetIsoException):
     @property
     def status_code(self):
         return 403
@@ -12,7 +12,7 @@ class AuthorizationFailedException(HaaSException):
 
 
 # this exception should be raised when haas reports an authentication failure
-class AuthenticationFailedException(HaaSException):
+class AuthenticationFailedException(NetIsoException):
     @property
     def status_code(self):
         return 401
@@ -22,7 +22,7 @@ class AuthenticationFailedException(HaaSException):
 
 
 # this exception should be raised when some connection issues pop up when communicating with haas
-class ConnectionException(HaaSException):
+class ConnectionException(NetIsoException):
     @property
     def status_code(self):
         return 500
@@ -32,7 +32,7 @@ class ConnectionException(HaaSException):
 
 
 # this exception is a wrapper for any other haas exception that may pop up
-class UnknownException(HaaSException):
+class UnknownException(NetIsoException):
     @property
     def status_code(self):
         return 500
