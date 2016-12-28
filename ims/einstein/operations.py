@@ -1,5 +1,7 @@
 #!/usr/bin/python
 import base64
+import importlib
+import inspect
 import time
 
 import os
@@ -15,7 +17,6 @@ from ims.einstein.hil import HIL
 from ims.exception.exception import ISCSIException, FileSystemException, \
     NetIsoException, RegistrationFailedException, DriverNotFoundException, \
     DBException, DHCPException, AuthorizationFailedException
-from ims.interfaces.iscsi import ISCSI
 
 logger = create_logger(__name__)
 
@@ -33,7 +34,9 @@ class BMI:
                            passwd=self.password)
             self.fs = RBD(self.config.fs)
             self.dhcp = DNSMasq()
-            self.iscsi = self.__load_iscsi_driver()
+            self.iscsi = self.__load_driver(
+                self.config.iscsi[constants.DRIVER_KEY])(self.config.fs,
+                                                         self.config.iscsi)
 
         elif args.__len__() == 3:
             username, password, project = args
@@ -51,7 +54,8 @@ class BMI:
             logger.debug("Username is %s and Password is %s", self.username,
                          self.password)
             self.dhcp = DNSMasq()
-            self.iscsi = self.__load_iscsi_driver()
+            self.iscsi = self.__load_driver(
+                self.config.iscsi[constants.DRIVER_KEY])
 
     def __enter__(self):
         return self
@@ -75,20 +79,19 @@ class BMI:
     def __check_admin(self):
         return True
 
-    def __load_iscsi_driver(self):
-        iscsi = self.config.iscsi_name
+    def __load_driver(self, driver_path):
         # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
         # self.iscsi = TGT(self.config.fs,self.config.iscsi)
-        iscsi_drivers = self.__get_available_drivers(ISCSI)
-        for driver_class in iscsi_drivers:
-            if iscsi == driver_class.__name__.lower():
-                return driver_class(self.config.fs, self.config.iscsi)
-
-        else:
-            raise DriverNotFoundException("ISCSI", iscsi)
-
-    def __get_available_drivers(self, base_class):
-        return base_class.__subclasses__()
+        try:
+            mod = importlib.import_module(driver_path)
+            get_driver = getattr(mod, 'get_driver_class')
+            cls = get_driver()
+            if not inspect.isclass(cls):
+                raise DriverNotFoundException(
+                    driver_path)  # Probably more specific message
+            return cls
+        except (ImportError, AttributeError):
+            raise DriverNotFoundException(driver_path)
 
     @trace
     def __get_ceph_image_name(self, name):
@@ -139,14 +142,15 @@ class BMI:
         template_loc = os.path.abspath(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
         logger.debug("Template LOC = %s", template_loc)
-        path = self.config.tftp[constants.IPXE_URL_KEY] + node_name + ".ipxe"
+        path = os.path.join(self.config.tftp[constants.IPXE_URL_KEY],
+                            node_name + ".ipxe")
         logger.debug("The Path for ipxe file is %s", path)
         try:
             with open(path, 'w') as ipxe:
-                for line in open(template_loc + "/ipxe.temp", 'r'):
+                for line in open(os.path.join(template_loc, "ipxe.temp"), 'r'):
                     line = line.replace(constants.IPXE_TARGET_NAME, target_name)
                     line = line.replace(constants.IPXE_ISCSI_IP,
-                                        self.iscsi.get_ip())
+                                        self.iscsi.ip)
                     ipxe.write(line)
             logger.info("Generated ipxe file")
             os.chmod(path, 0755)
@@ -161,7 +165,8 @@ class BMI:
         template_loc = os.path.abspath(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
         logger.debug("Template LOC = %s", template_loc)
-        path = self.config.tftp[constants.PXELINUX_URL_KEY] + mac_addr
+        path = os.path.join(self.config.tftp[constants.PXELINUX_URL_KEY],
+                            mac_addr)
         logger.debug("The Path for mac addr file is %s", path)
         try:
             with open(path, 'w') as mac:

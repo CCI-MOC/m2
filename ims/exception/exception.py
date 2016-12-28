@@ -71,10 +71,8 @@ class DriverNotFoundException(BMIException):
     def status_code(self):
         return 500
 
-    # component is iscsi, netiso, etc
-    def __init__(self, component, driver_name):
-        self.component = component
+    def __init__(self, driver_name):
         self.driver_name = driver_name
 
     def __str__(self):
-        return "Failed to find " + self.driver_name + " for " + self.component
+        return "Failed to find " + self.driver_name

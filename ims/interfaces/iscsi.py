@@ -7,7 +7,7 @@ class ISCSI(object):
     __metaclass__ = ABCMeta
 
     @abstractproperty
-    def get_ip(self):
+    def ip(self):
         pass
 
     @abstractmethod

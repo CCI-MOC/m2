@@ -4,7 +4,7 @@ import urlparse
 import requests
 
 import ims.common.constants as constants
-import ims.exception.haas_exceptions as haas_exceptions
+import ims.exception.netiso_exceptions as netiso_exceptions
 from ims.common.log import create_logger, log, trace
 
 logger = create_logger(__name__)
@@ -41,7 +41,7 @@ class HIL:
                         requests.post(self.url, data=self.request.data,
                                       auth=self.request.auth))
             except requests.RequestException:
-                raise haas_exceptions.ConnectionException()
+                raise netiso_exceptions.ConnectionException()
 
         @trace
         def resp_parse(self, obj):
@@ -54,12 +54,12 @@ class HIL:
             elif obj.status_code > 200 and obj.status_code < 400:
                 return {constants.STATUS_CODE_KEY: obj.status_code}
             elif obj.status_code == 401:
-                raise haas_exceptions.AuthenticationFailedException()
+                raise netiso_exceptions.AuthenticationFailedException()
             elif obj.status_code == 403:
-                raise haas_exceptions.AuthorizationFailedException()
+                raise netiso_exceptions.AuthorizationFailedException()
             elif obj.status_code >= 400:
-                raise haas_exceptions.UnknownException(obj.status_code,
-                                                       obj.json()[
+                raise netiso_exceptions.UnknownException(obj.status_code,
+                                                         obj.json()[
                                                            constants.MESSAGE_KEY])
 
     @log

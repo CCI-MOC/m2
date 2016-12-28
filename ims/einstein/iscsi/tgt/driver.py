@@ -4,14 +4,17 @@ import os
 import re
 import sh
 
+import constants as tgt_constants
 import ims.common.constants as constants
-import ims.einstein.iscsi.tgt.constants as tgt_constants
-
 from ims.common.log import log, create_logger
 from ims.exception import iscsi_exceptions
 from ims.interfaces.iscsi import ISCSI
 
 logger = create_logger(__name__)
+
+
+def get_driver_class():
+    return TGT
 
 
 # Need to disable sudo tty for to work currently
@@ -29,12 +32,12 @@ class TGT(ISCSI):
         self.ceph_config = fs_config[constants.CEPH_CONFIG_FILE_KEY]
         self.ceph_id = fs_config[constants.CEPH_ID_KEY]
         self.pool = fs_config[constants.CEPH_POOL_KEY]
-        self.ip = iscsi_config[tgt_constants.ISCSI_IP_KEY]
+        self.provision_net_ip = iscsi_config[tgt_constants.ISCSI_IP_KEY]
         self.root_password = iscsi_config[tgt_constants.ISCSI_PASSWORD_KEY]
 
     @property
-    def get_ip(self):
-        return self.ip
+    def ip(self):
+        return self.provision_net_ip
 
     @log
     def start_server(self):
@@ -98,9 +101,7 @@ class TGT(ISCSI):
     def __generate_config_file(self, target_name):
         config = open(tgt_constants.TGT_ISCSI_CONFIG + target_name + ".conf",
                       'w')
-        template_loc = os.path.abspath(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
-                         ".."))
+        template_loc = os.path.split(os.path.abspath(__file__))[0]
         for line in open(
                 os.path.join(template_loc, tgt_constants.TGT_TEMP_NAME), 'r'):
             line = line.replace(tgt_constants.TGT_POOL_NAME, self.pool)

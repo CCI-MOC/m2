@@ -1,7 +1,9 @@
 import ConfigParser
+
 import os
 
 import ims.common.constants as constants
+import ims.exception.config_exceptions as config_exceptions
 from ims.exception.exception import ConfigException
 
 __config = None
@@ -42,32 +44,16 @@ class __BMIConfig:
         self.netiso = {}
         self.tests = {}
 
-        self.fs_name = None
-        self.iscsi_name = None
-        self.netiso_name = None
-
     def parse_config(self):
         config = ConfigParser.SafeConfigParser()
         try:
             if not config.read(self.configfile):
                 raise IOError('cannot load ' + self.configfile)
 
-            # Should Raise Exception if two fs, netiso, iscsi are present
-            # Clueless about previous comment
-            for section in config.sections():
-                if section.startswith(constants.FS_PREFIX_CONFIG_NAME):
-                    self.fs_name = section[
-                                   len(constants.FS_PREFIX_CONFIG_NAME) + 1:]
-                    self.fs = dict(config.items(section))
-                elif section.startswith(constants.NETISO_PREFIX_CONFIG_NAME):
-                    self.netiso_name = section[
-                            len(constants.NETISO_PREFIX_CONFIG_NAME) + 1:]
-                    self.netiso = dict(config.items(section))
-                elif section.startswith(constants.ISCSI_PREFIX_CONFIG_NAME):
-                    self.iscsi_name = section[
-                            len(constants.ISCSI_PREFIX_CONFIG_NAME) + 1:]
-                    self.iscsi = dict(config.items(section))
-
+            self.fs = dict(config.items(constants.FS_CONFIG_SECTION_NAME))
+            self.netiso = dict(
+                config.items(constants.NETISO_CONFIG_SECTION_NAME))
+            self.iscsi = dict(config.items(constants.ISCSI_CONFIG_SECTION_NAME))
             self.tftp = dict(config.items(constants.TFTP_CONFIG_SECTION_NAME))
             self.bmi = dict(config.items(constants.BMI_CONFIG_SECTION_NAME))
             self.logs = dict(config.items(constants.LOGS_CONFIG_SECTION_NAME))
@@ -82,3 +68,14 @@ class __BMIConfig:
         # Didn't Test
         except ConfigParser.NoOptionError as e:
             raise config_exceptions.MissingOptionInConfigException(e.args[0])
+
+    def __check_for_drivers(self):
+        if constants.DRIVER_KEY not in self.fs:
+            raise config_exceptions.DriverKeyNotFoundException(
+                constants.FS_CONFIG_SECTION_NAME)
+        if constants.DRIVER_KEY not in self.netiso:
+            raise config_exceptions.DriverKeyNotFoundException(
+                constants.NETISO_CONFIG_SECTION_NAME)
+        if constants.DRIVER_KEY not in self.iscsi:
+            raise config_exceptions.DriverKeyNotFoundException(
+                constants.ISCSI_CONFIG_SECTION_NAME)
