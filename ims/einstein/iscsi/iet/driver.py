@@ -29,7 +29,7 @@ class IET(ISCSI):
         try:
             mappings = self.list_targets()
             if ceph_img_name in mappings:
-                raise iscsi_exceptions.NodeAlreadyInUseException()
+                raise iscsi_exceptions.TargetExistsException()
             rbd_name = self.fs.map(ceph_img_name)
             self.__add_mapping(ceph_img_name, rbd_name)
             self.restart_server()
@@ -52,7 +52,7 @@ class IET(ISCSI):
         try:
             iscsi_mappings = self.list_targets()
             if ceph_img_name not in iscsi_mappings:
-                raise iscsi_exceptions.NodeAlreadyUnmappedException()
+                raise iscsi_exceptions.TargetDoesntExistException()
             self.stop_server()
             # self.__check_status(False)
             mappings = self.fs.showmapped()

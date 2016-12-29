@@ -32,8 +32,8 @@ class TGT(ISCSI):
         self.ceph_config = fs_config[constants.CEPH_CONFIG_FILE_KEY]
         self.ceph_id = fs_config[constants.CEPH_ID_KEY]
         self.pool = fs_config[constants.CEPH_POOL_KEY]
-        self.provision_net_ip = iscsi_config[tgt_constants.ISCSI_IP_KEY]
-        self.root_password = iscsi_config[tgt_constants.ISCSI_PASSWORD_KEY]
+        self.provision_net_ip = iscsi_config[tgt_constants.TGT_ISCSI_IP_KEY]
+        self.root_password = iscsi_config[tgt_constants.TGT_ISCSI_PASSWORD_KEY]
 
     @property
     def ip(self):
@@ -136,19 +136,13 @@ class TGT(ISCSI):
                 with sh.sudo:
                     tgt_admin(execute=True)
             else:
-                raise iscsi_exceptions.NodeAlreadyInUseException()
+                raise iscsi_exceptions.TargetExistsException()
 
         except sh.ErrorReturnCode as e:
-            print str(e)
-            raise iscsi_exceptions.UpdateConfigFailedException(
-                "Adding new target failed at creating target file stage")
+            raise iscsi_exceptions.TargetCreationFailedException(str(e))
         except (IOError, OSError) as e:
-            logger.info("Update config exception")
-            raise iscsi_exceptions.UpdateConfigFailedException(str(e))
-        except (iscsi_exceptions.MountException,
-                iscsi_exceptions.DuplicatesException) as e:
-            logger.info("Error exposing iscsi_target")
-            raise e
+            logger.info("Target Creation Failed Due to "+str(e))
+            raise iscsi_exceptions.TargetCreationFailedException(str(e))
 
     @log
     def remove_target(self, target_name):
@@ -174,23 +168,15 @@ class TGT(ISCSI):
                 with sh.sudo:
                     tgt_admin(f=True, delete=target_name)
             else:
-                raise iscsi_exceptions.NodeAlreadyUnmappedException()
+                raise iscsi_exceptions.TargetDoesntExistException()
                 # The above should be something like NodeAlreadyDeleted
         except sh.ErrorReturnCode as e:
-            raise iscsi_exceptions.UpdateConfigFailedException(
-                "Deleting target failed at deleting target file stage")
+            raise iscsi_exceptions.TargetDeletionFailedException(str(e))
         except (IOError, OSError) as e:
             # For checking if we have access to directory for file
             # creation/deletion
-            logger.info("Update config exception")
-            raise iscsi_exceptions.UpdateConfigFailedException(e.message)
-        except (iscsi_exceptions.MountException,
-                iscsi_exceptions.DuplicatesException) as e:
-            # Do we still need the above exceptions? Duplicate
-            # exception can be avoided by checking lists as shown above
-            # Mouting is something that we are not doing now?
-            logger.info("Error exposing iscsi_target")
-            raise e
+            logger.info("Target Deletion Failed Due to "+str(e))
+            raise iscsi_exceptions.TargetDeletionFailedException(str(e))
 
     @log
     def list_targets(self):
@@ -217,7 +203,4 @@ class TGT(ISCSI):
                            re.match("^Target [0-9]+:", target)]
             return target_list
         except sh.ErrorReturnCode as e:
-            raise iscsi_exceptions.InvalidConfigException("Listing targets \
-                                                                      failed")
-            # This exception has to be modified. I prefer writing a new
-            # exception which is something like iscsi_communication exception
+            raise iscsi_exceptions.ListTargetFailedException(str(e))

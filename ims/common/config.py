@@ -44,6 +44,7 @@ class __BMIConfig:
         self.netiso = {}
         self.tests = {}
 
+    # Should Check Mandatory sections
     def parse_config(self):
         config = ConfigParser.SafeConfigParser()
         try:

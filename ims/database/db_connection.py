@@ -9,6 +9,14 @@ import ims.common.constants as constants
 _cfg = config.get()
 
 
+# ISSUE
+# This Class is not creating the engine once as previously expected
+# Although there is no harm in creating the engine and session maker multiple
+# times, it doesnt make sense when it comes to multi threading stuff as there
+# is supposed to be one engine and one session per request.
+
+# Will Probably need to build Engine Abstraction To Solve it properly
+
 # The class which represents the BMI database
 # It is responsible for creating and closing sessions
 class DatabaseConnection:
