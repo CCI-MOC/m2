@@ -231,6 +231,8 @@ class RBD:
             # Should be changed to special exception
             raise file_system_exceptions.ImageNotFoundException(img_id)
 
+    # Better Move to IET Driver as it is only using it
+    # Also will allow to decouple as this doesnt use rbd client
     @log
     def map(self, ceph_img_name):
         # command = "echo {0} | sudo -S rbd --keyring {1} --id {2} map {3}/{4}".format(
