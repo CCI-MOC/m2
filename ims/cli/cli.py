@@ -182,15 +182,34 @@ def list_images(project):
 @click.argument(constants.PROJECT_PARAMETER)
 def get_lkrn_sha(project):
     """
-    Get SHA 256 of LKRN
+    Get SHA1 of LKRN
 
     \b
-
+    Arguments:
+    PROJECT  = The HIL Project attached to your credentials
     """
     data = {constants.PROJECT_PARAMETER: project}
-    res = requests.post(_url + "get_lkrn_sha/",data=data, auth=(
+    res = requests.post(_url + "get_lkrn_sha/", data=data, auth=(
         _username, _password))
-    click.echo(res.content)
+    click.echo(res.content.replace('"', ""))
+
+
+@cli.command(name='sha_ipxe', short_help='Get SHA of IPXE')
+@click.argument(constants.PROJECT_PARAMETER)
+@click.argument(constants.NODE_NAME_PARAMETER)
+def get_ipxe_sha(project, node):
+    """
+    Get SHA1 of LKRN
+
+    \b
+    Arguments:
+    PROJECT  = The HIL Project attached to your credentials
+    """
+    data = {constants.PROJECT_PARAMETER: project,
+            constants.NODE_NAME_PARAMETER: node}
+    res = requests.post(_url + "get_ipxe_sha/", data=data, auth=(
+        _username, _password))
+    click.echo(res.content.replace('"', ""))
 
 
 @cli.group(short_help='Snapshot Related Commands')
