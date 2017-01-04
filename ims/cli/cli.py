@@ -2,19 +2,18 @@
 
 import json
 import sys
-import os
+
 import click
+import os
 import requests
 from prettytable import PrettyTable
 
-import ims.common.constants as constants
 import ims.common.config as config
-
+import ims.common.constants as constants
 
 config.load()
 
 from ims.einstein.operations import BMI
-# from ims.database.database import Database
 from ims.exception.exception import BMIException
 
 _cfg = config.get()
@@ -22,16 +21,16 @@ _cfg = config.get()
 _url = "http://{0}:{1}/".format(_cfg.http[constants.BIND_IP_KEY],
                                 int(_cfg.http[constants.BIND_PORT_KEY]))
 
-if constants.HIL_USERNAME_VARIABLE in os.environ:
-    _username = os.environ[constants.HIL_USERNAME_VARIABLE]
+if constants.HIL_USERNAME_ENV_VARIABLE in os.environ:
+    _username = os.environ[constants.HIL_USERNAME_ENV_VARIABLE]
 else:
-    click.echo(constants.HIL_USERNAME_VARIABLE + " Variable Not Set")
+    click.echo(constants.HIL_USERNAME_ENV_VARIABLE + " Variable Not Set")
     sys.exit(1)
 
-if constants.HIL_PASSWORD_VARIABLE in os.environ:
-    _password = os.environ[constants.HIL_PASSWORD_VARIABLE]
+if constants.HIL_PASSWORD_ENV_VARIABLE in os.environ:
+    _password = os.environ[constants.HIL_PASSWORD_ENV_VARIABLE]
 else:
-    click.echo(constants.HIL_PASSWORD_VARIABLE + " Variable Not Set")
+    click.echo(constants.HIL_PASSWORD_ENV_VARIABLE + " Variable Not Set")
     sys.exit(1)
 
 

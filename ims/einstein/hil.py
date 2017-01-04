@@ -51,7 +51,7 @@ class HIL:
                             constants.RETURN_VALUE_KEY: obj.json()}
                 except ValueError:
                     return {constants.STATUS_CODE_KEY: obj.status_code}
-            elif obj.status_code > 200 and obj.status_code < 400:
+            elif 200 < obj.status_code < 400:
                 return {constants.STATUS_CODE_KEY: obj.status_code}
             elif obj.status_code == 401:
                 raise netiso_exceptions.AuthenticationFailedException()

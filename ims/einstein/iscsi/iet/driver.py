@@ -13,6 +13,9 @@ logger = create_logger(__name__)
 
 
 # Do Not Use!!
+# This Driver is not working currently will update in future PRs
+# Also __check_status is required, but it is causing issues due to which
+# it is commented out.
 class IET(ISCSI):
     @log
     def __init__(self, fs, password):

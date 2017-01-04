@@ -81,7 +81,7 @@ class RBD:
     def list_images(self):
         return self.rbd.list(self.context)
 
-    # Not Using Anywhere
+    # Not Using Anywhere, but will use in upload feature
     @log
     def create_image(self, img_id, img_size):
         try:
@@ -129,7 +129,7 @@ class RBD:
         except rbd.ImageHasSnapshots:
             raise file_system_exceptions.ImageHasSnapshotException(img_id)
 
-    # Not Using Anywhere
+    # Not Using Anywhere, but will use in upload feature
     @log
     def write(self, img_id, data, offset):
         try:
@@ -275,14 +275,13 @@ class RBD:
 
     @log
     def showmapped(self):
-        output = sh.rbd.showmapped()
-        if output.exit_code == 0:
+        try:
+            output = sh.rbd.showmapped()
             lines = output.split('\n')[1:-1]
             maps = {}
             for line in lines:
                 parts = line.split()
                 maps[parts[2]] = parts[4]
             return maps
-        else:
-            # Exception should be raised
-            pass
+        except sh.ErrorReturnCode as e:
+            raise file_system_exceptions.ShowMappedFailedException(str(e))

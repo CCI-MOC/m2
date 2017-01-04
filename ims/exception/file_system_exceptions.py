@@ -148,6 +148,18 @@ class UnmapFailedException(FileSystemException):
         return "Unmap Failed for " + self.name
 
 
+class ShowMappedFailedException(FileSystemException):
+    @property
+    def status_code(self):
+        return 500
+
+    def __init__(self, error):
+        self.error = error
+
+    def __str__(self):
+        return "Show mapped failed due to " + self.error
+
+
 # this exception class is the abstract class for any ceph specific exceptions
 class CephFileSystemException(FileSystemException):
     __metaclass__ = ABCMeta
