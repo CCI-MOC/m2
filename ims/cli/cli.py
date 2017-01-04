@@ -185,7 +185,8 @@ def get_lkrn_sha(project):
     Get SHA1 of LKRN
 
     \b
-
+    Arguments:
+    PROJECT  = The HIL Project attached to your credentials
     """
     data = {constants.PROJECT_PARAMETER: project}
     res = requests.post(_url + "get_lkrn_sha/", data=data, auth=(
@@ -201,7 +202,8 @@ def get_ipxe_sha(project, node):
     Get SHA1 of LKRN
 
     \b
-
+    Arguments:
+    PROJECT  = The HIL Project attached to your credentials
     """
     data = {constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node}
