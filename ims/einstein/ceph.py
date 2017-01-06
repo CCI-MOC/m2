@@ -235,41 +235,25 @@ class RBD:
     # Also will allow to decouple as this doesnt use rbd client
     @log
     def map(self, ceph_img_name):
-        # command = "echo {0} | sudo -S rbd --keyring {1} --id {2} map {3}/{4}".format(
-        #     self.password, self.keyring, self.rid, self.pool, ceph_img_name)
-        # p = subprocess.Popen(command, shell=True,
-        #                      stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-        # output, err = p.communicate()
-        # output = sh.rbd.map(ceph_img_name, keyring=self.keyring, id=self.rid,
-        #            pool=self.pool)
         try:
+            output = ""
             with sh.sudo:
                 output = sh.rbd.map(ceph_img_name, keyring=self.keyring,
                                     id=self.rid,
                                     pool=self.pool)
-                return output.strip()
-                # if p.returncode == 0:
-                #     if output.find("sudo") != -1:
-                #         return output.split(":")[1].strip()
-                #     else:
-                #         return output.strip()
+            logger.debug("Output = %s", output)
+            return output.strip()
         except sh.ErrorReturnCode:
             raise file_system_exceptions.MapFailedException(ceph_img_name)
 
     @log
     def unmap(self, rbd_name):
-        # command = "echo {0} | sudo -S rbd --keyring {1} --id {2} unmap {3}".format(
-        #     self.password, self.keyring, self.rid, rbd_name)
-        # p = subprocess.Popen(command, shell=True,
-        #                      stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-        # output, err = p.communicate()
         try:
+            output = ""
             with sh.sudo:
                 output = sh.rbd.unmap(rbd_name, keyring=self.keyring,
                                       id=self.rid)
-        # if p.returncode == 0:
-        #     return output.strip()
-        # else:
+            logger.debug("Output = %s", output)
         except sh.ErrorReturnCode:
             raise file_system_exceptions.UnmapFailedException(rbd_name)
 
@@ -277,6 +261,7 @@ class RBD:
     def showmapped(self):
         try:
             output = sh.rbd.showmapped()
+            logger.debug("Output = %s", output)
             lines = output.split('\n')[1:-1]
             maps = {}
             for line in lines:
