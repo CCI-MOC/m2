@@ -4,7 +4,7 @@ The Bare Metal Imaging (BMI) is a core component of the Massachusetts Open Cloud
 (i)provisions numerous nodes as quickly as possible while preserving support for multitenancy using Hardware as a Service (HaaS) and 
 (ii)introduces the image management techniques that are supported by virtual machines, with little to no impact on application performance.
 
-Motivation:
+Motivation
 
 Imagine thousands of nodes in a data center that supports a multitenant bare metal cloud. We need a central image management service that can quickly image the nodes to meet the customer’s needs. Upon completion of a customer’s project, the data center administrator should ideally be able to reallocate the resources within few minutes to use them for another customer. As of now, these techniques are in use for Virtual Machines (VMs), but not for bare metal systems. This project aims to bridge this gap by creating a service that can address the above mentioned issues.
 
