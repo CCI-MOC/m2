@@ -21,7 +21,8 @@ class AuthenticationFailedException(HaaSException):
         return "Authentication Failed"
 
 
-# this exception should be raised when some connection issues pop up when communicating with haas
+# this exception should be raised when some connection issues pop up when
+# communicating with haas
 class ConnectionException(HaaSException):
     @property
     def status_code(self):
@@ -43,4 +44,5 @@ class UnknownException(HaaSException):
 
     def __str__(self):
         return "Got status code " + str(
-            self.haas_status_code) + " from HaaS with message : " + self.message
+            self.haas_status_code) + " from HaaS with message" \
+                                     " : " + self.message

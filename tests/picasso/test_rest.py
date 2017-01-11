@@ -6,7 +6,6 @@ import requests
 
 import ims.common.constants as constants
 import ims.einstein.ceph as ceph
-from ims.database import *
 from ims.einstein.operations import BMI
 
 _cfg = config.get()
@@ -66,7 +65,7 @@ class TestDeprovision(TestCase):
         self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK,NIC)
+        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
         time.sleep(constants.HAAS_CALL_TIMEOUT)
 
     def test_run(self):
@@ -76,7 +75,8 @@ class TestDeprovision(TestCase):
                 constants.NIC_PARAMETER: NIC}
         res = requests.delete(url + "deprovision/", data=data,
                               auth=(
-                              CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
+                                  CORRECT_HAAS_USERNAME,
+                                  CORRECT_HAAS_PASSWORD))
         self.assertEqual(res.status_code, 200)
         time.sleep(constants.HAAS_CALL_TIMEOUT)
 
@@ -95,7 +95,7 @@ class TestCreateSnapshot(TestCase):
         self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK,NIC)
+        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
         time.sleep(constants.HAAS_CALL_TIMEOUT)
 
     def test_run(self):
@@ -113,7 +113,8 @@ class TestCreateSnapshot(TestCase):
                 has_image = True
         self.assertTrue(has_image)
 
-        with ceph.RBD(_cfg.fs[constants.CEPH_CONFIG_SECTION_NAME],_cfg.iscsi_update_password) as fs:
+        with ceph.RBD(_cfg.fs[constants.CEPH_CONFIG_SECTION_NAME],
+                      _cfg.iscsi_update_password) as fs:
             img_id = self.good_bmi.get_ceph_image_name_from_project(
                 NEW_SNAP_NAME, PROJECT)
             fs.get_image(img_id)
@@ -136,7 +137,7 @@ class TestListSnapshots(TestCase):
         self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK,NIC)
+        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
         time.sleep(constants.HAAS_CALL_TIMEOUT)
 
         self.good_bmi.create_snapshot(NODE_NAME, NEW_SNAP_NAME)
@@ -144,7 +145,8 @@ class TestListSnapshots(TestCase):
     def test_run(self):
         data = {constants.PROJECT_PARAMETER: PROJECT}
         res = requests.post(url + "list_snapshots/", data=data,
-                            auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
+                            auth=(CORRECT_HAAS_USERNAME,
+                                  CORRECT_HAAS_PASSWORD))
         self.assertEqual(res.status_code, 200)
         js = res.json()
         self.assertEqual(res.status_code, 200)
@@ -184,7 +186,8 @@ class TestListImages(TestCase):
     def test_run(self):
         data = {constants.PROJECT_PARAMETER: PROJECT}
         res = requests.post(url + "list_images/", data=data,
-                            auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
+                            auth=(CORRECT_HAAS_USERNAME,
+                                  CORRECT_HAAS_PASSWORD))
         js = res.json()
         self.assertEqual(res.status_code, 200)
         self.assertEqual(js[0], EXIST_IMG_NAME)

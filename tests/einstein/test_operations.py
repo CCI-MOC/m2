@@ -4,7 +4,6 @@ from unittest import TestCase
 
 import ims.common.constants as constants
 import ims.einstein.ceph as ceph
-from ims.database import *
 from ims.einstein.operations import BMI
 
 _cfg = config.get()
@@ -168,7 +167,8 @@ class TestListImages(TestCase):
     def test_run(self):
         response = self.good_bmi.list_images()
         self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
-        self.assertEqual(response[constants.RETURN_VALUE_KEY], [EXIST_IMG_NAME])
+        self.assertEqual(response[constants.RETURN_VALUE_KEY],
+                         [EXIST_IMG_NAME])
 
     def tearDown(self):
         self.good_bmi.remove_image(EXIST_IMG_NAME)

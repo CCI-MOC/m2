@@ -161,22 +161,21 @@ class IET(ISCSI):
         failed_mount = []
         duplicates = []
         for part in parts:
-            if part.strip().startswith("Active"):
-                line_parts = part.strip().split()
+            s_part = part.strip()
+            if s_part.startswith("Active"):
+                line_parts = s_part.split()
                 if line_parts[1] + line_parts[2] == "active(running)":
                     active = True
                 if line_parts[1] + line_parts[2] == "inactive(dead)":
                     active = False
-            elif part.strip().find("created target") != -1:
-                line = part.strip()[
-                       part.strip().find("created target"):].split()
+            elif s_part.find("created target") != -1:
+                line = s_part[s_part.find("created target"):].split()
                 targets.append(line[2].split(".")[2])
-            elif part.strip().find("unable to create logical unit") != -1:
+            elif s_part.find("unable to create logical unit") != -1:
                 target = targets.pop()
                 failed_mount.append(target)
-            elif part.strip().find("duplicated target") != -1:
-                line = part.strip()[
-                       part.strip().find("duplicated target"):].split()
+            elif s_part.find("duplicated target") != -1:
+                line = s_part[s_part.find("duplicated target"):].split()
                 duplicates.append(line[2].split(".")[2])
 
         if failed_mount:

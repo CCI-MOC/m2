@@ -117,7 +117,8 @@ class BMIFormatter(logging.Formatter):
 
     def format(self, record):
         normal_formatter = logging.Formatter(
-            '\n%(levelname)s - %(asctime)s - File "%(pathname)s", line %(lineno)d in %(funcName)s\n%(message)s')
+            '\n%(levelname)s - %(asctime)s - File "%(pathname)s", line '
+            '%(lineno)d in %(funcName)s\n%(message)s')
         decorator_formatter = logging.Formatter(
             '\n%(levelname)s - %(asctime)s - %(message)s')
         extra = record.__dict__

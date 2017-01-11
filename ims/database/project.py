@@ -9,16 +9,17 @@ from ims.database.db_connection import DatabaseConnection
 logger = create_logger(__name__)
 
 
-# This class is responsible for doing CRUD operations on the Project Table in DB
-# This class was written as per the Repository Model which allows us to change the DB in the future without changing
-# business code
+# This class is responsible for doing CRUD operations on the Project Table in
+# DB. This class was written as per the Repository Model which allows us to
+# change the DB in the future without changing business code
 class ProjectRepository:
     @trace
     def __init__(self, connection):
         self.connection = connection
 
     # inserts the arguments into the table
-    # commits after insertion otherwise rollback occurs after which exception is bubbled up
+    # commits after insertion otherwise rollback occurs after which exception
+    # is bubbled up
     @log
     def insert(self, name, provision_network, id=None):
         try:
@@ -34,7 +35,8 @@ class ProjectRepository:
             raise db_exceptions.ORMException(e.message)
 
     # deletes project with name
-    # commits after deletion otherwise rollback occurs after which exception is bubbled up
+    # commits after deletion otherwise rollback occurs after which exception is
+    # bubbled up
     @log
     def delete_with_name(self, name):
         try:
@@ -71,8 +73,8 @@ class ProjectRepository:
 
 # This class represents the project table
 # the Column variables are the columns in the table
-# the relationship variable is loaded eagerly as the session is terminated after the object is retrieved
-# The relationship is also delete on cascade
+# the relationship variable is loaded eagerly as the session is terminated
+# after the object is retrieved. The relationship is also delete on cascade
 # images relationship is a reverse relation for easy traversal if required
 class Project(DatabaseConnection.Base):
     __tablename__ = "project"
@@ -82,7 +84,7 @@ class Project(DatabaseConnection.Base):
     name = Column(String, nullable=False, unique=True)
     provision_network = Column(String, nullable=False)
 
-    # Relationships in the table, this one back populates to project in Image Class, eagerly loaded
-    # and cascade on delete is enabled
+    # Relationships in the table, this one back populates to project in Image
+    # Class, eagerly loaded and cascade on delete is enabled
     images = relationship("Image", back_populates="project",
                           cascade="all, delete, delete-orphan")
