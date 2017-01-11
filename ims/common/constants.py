@@ -14,22 +14,26 @@ HAAS_PASSWORD_VARIABLE = 'HAAS_PASSWORD'
 # Config section names
 BMI_CONFIG_SECTION_NAME = 'bmi'
 DB_CONFIG_SECTION_NAME = 'db'
-FILESYSTEM_CONFIG_SECTION_NAME = 'filesystem'
-HAAS_CONFIG_SECTION_NAME = 'haas'
-CEPH_CONFIG_SECTION_NAME = 'ceph'
+FS_CONFIG_SECTION_NAME = 'filesystem'
+NET_ISOLATOR_CONFIG_SECTION_NAME = 'net_isolator'
 ISCSI_CONFIG_SECTION_NAME = 'iscsi'
 RPC_CONFIG_SECTION_NAME = 'rpc'
 HTTP_CONFIG_SECTION_NAME = 'http'
 LOGS_CONFIG_SECTION_NAME = 'logs'
 TFTP_CONFIG_SECTION_NAME = 'tftp'
+TESTS_CONFIG_SECTION_NAME = 'tests'
 
-# Non FS Keys in Config File
-HAAS_URL_KEY = 'url'
+DRIVER_KEY = 'driver'
+
+# Network Isolator Keys
+NET_ISOLATOR_URL_KEY = 'url'
+
+# ISCSI Keys
 ISCSI_PASSWORD_KEY = 'password'
 ISCSI_IP_KEY = 'ip'
 
 # DB
-DB_URL_KEY = 'url'
+DB_PATH_KEY = 'path'
 
 # Ceph Keys in Config File
 CEPH_ID_KEY = 'id'
@@ -56,13 +60,13 @@ BIND_IP_KEY = 'bind_ip'
 BIND_PORT_KEY = 'bind_port'
 
 # LOGS
-LOGS_URL_KEY = 'url'
+LOGS_PATH_KEY = 'path'
 LOGS_DEBUG_KEY = 'debug'
 LOGS_VERBOSE_KEY = 'verbose'
 
 # TFTP
-PXELINUX_URL_KEY = 'pxelinux_url'
-IPXE_URL_KEY = 'ipxe_url'
+PXELINUX_PATH_KEY = 'pxelinux_path'
+IPXE_PATH_KEY = 'ipxe_path'
 
 # BMI
 UID_KEY = 'uid'

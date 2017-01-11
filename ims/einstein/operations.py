@@ -25,45 +25,43 @@ class BMI:
     def __init__(self, *args):
         if args.__len__() == 1:
             credentials = args[0]
-            self.config = config.get()
+            self.cfg = config.get()
             self.db = Database()
             self.__process_credentials(credentials)
-            self.hil = HIL(base_url=self.config.haas_url, usr=self.username,
-                           passwd=self.password)
-            self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME],
-                          self.config.iscsi_update_password)
+            self.hil = HIL(
+                base_url=self.cfg.net_isolator[constants.NET_ISOLATOR_URL_KEY],
+                usr=self.username,
+                passwd=self.password)
+            self.fs = RBD(self.cfg.fs,
+                          self.cfg.iscsi[constants.ISCSI_PASSWORD_KEY])
             self.dhcp = DNSMasq()
             # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
             # Need to make this generic by passing specific config
-            self.iscsi = TGT(
-                self.config.fs[constants.CEPH_CONFIG_SECTION_NAME][
-                    constants.CEPH_CONFIG_FILE_KEY],
-                self.config.fs[constants.CEPH_CONFIG_SECTION_NAME][
-                    constants.CEPH_ID_KEY],
-                self.config.iscsi_update_password)
+            self.iscsi = TGT(self.cfg.fs[constants.CEPH_CONFIG_FILE_KEY],
+                             self.cfg.fs[constants.CEPH_ID_KEY],
+                             self.cfg.iscsi[constants.ISCSI_PASSWORD_KEY])
         elif args.__len__() == 3:
             username, password, project = args
-            self.config = config.get()
+            self.cfg = config.get()
             self.username = username
             self.password = password
             self.proj = project
             self.db = Database()
             self.pid = self.__does_project_exist(self.proj)
             self.is_admin = self.__check_admin()
-            self.hil = HIL(base_url=self.config.haas_url, usr=self.username,
-                           passwd=self.password)
-            self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME],
-                          self.config.iscsi_update_password)
+            self.hil = HIL(
+                base_url=self.cfg.net_isolator[constants.NET_ISOLATOR_URL_KEY],
+                usr=self.username,
+                passwd=self.password)
+            self.fs = RBD(self.cfg.fs,
+                          self.cfg.iscsi[constants.ISCSI_PASSWORD_KEY])
             logger.debug("Username is %s and Password is %s", self.username,
                          self.password)
             self.dhcp = DNSMasq()
             # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
-            self.iscsi = TGT(
-                self.config.fs[constants.CEPH_CONFIG_SECTION_NAME][
-                    constants.CEPH_CONFIG_FILE_KEY],
-                self.config.fs[constants.CEPH_CONFIG_SECTION_NAME][
-                    constants.CEPH_ID_KEY],
-                self.config.iscsi_update_password)
+            self.iscsi = TGT(self.cfg.fs[constants.CEPH_CONFIG_FILE_KEY],
+                             self.cfg.fs[constants.CEPH_ID_KEY],
+                             self.cfg.iscsi[constants.ISCSI_PASSWORD_KEY])
 
     def __enter__(self):
         return self
@@ -95,7 +93,7 @@ class BMI:
             logger.info("Raising Image Not Found Exception for %s", name)
             raise db_exceptions.ImageNotFoundException(name)
 
-        return str(self.config.uid) + "img" + str(img_id)
+        return str(self.cfg.bmi[constants.UID_KEY]) + "img" + str(img_id)
 
     def get_ceph_image_name_from_project(self, name, project_name):
         img_id = self.db.image.fetch_id_with_name_from_project(name,
@@ -104,7 +102,7 @@ class BMI:
             logger.info("Raising Image Not Found Exception for %s", name)
             raise db_exceptions.ImageNotFoundException(name)
 
-        return str(self.config.uid) + "img" + str(img_id)
+        return str(self.cfg.bmi[constants.UID_KEY]) + "img" + str(img_id)
 
     @trace
     def __extract_id(self, ceph_img_name):
@@ -136,7 +134,7 @@ class BMI:
         template_loc = os.path.abspath(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
         logger.debug("Template LOC = %s", template_loc)
-        path = self.config.ipxe_loc + node_name + ".ipxe"
+        path = self.cfg.tftp[constants.IPXE_PATH_KEY] + node_name + ".ipxe"
         logger.debug("The Path for ipxe file is %s", path)
         try:
             with open(path, 'w') as ipxe:
@@ -144,7 +142,8 @@ class BMI:
                     line = line.replace(constants.IPXE_TARGET_NAME,
                                         target_name)
                     line = line.replace(constants.IPXE_ISCSI_IP,
-                                        self.config.iscsi_ip)
+                                        self.cfg.iscsi[
+                                            constants.ISCSI_IP_KEY])
                     ipxe.write(line)
             logger.info("Generated ipxe file")
             os.chmod(path, 0755)
@@ -159,7 +158,7 @@ class BMI:
         template_loc = os.path.abspath(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
         logger.debug("Template LOC = %s", template_loc)
-        path = self.config.pxelinux_loc + mac_addr
+        path = self.cfg.tftp[constants.PXELINUX_PATH_KEY] + mac_addr
         logger.debug("The Path for mac addr file is %s", path)
         try:
             with open(path, 'w') as mac:
@@ -228,7 +227,7 @@ class BMI:
             ceph_img_name = self.__get_ceph_image_name(img_name)
             self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
                           clone_ceph_name)
-            ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
+            ceph_config = self.cfg.fs
             logger.debug("Contents of ceph_config = %s", str(ceph_config))
             self.iscsi.add_target(clone_ceph_name)
             logger.info("The create command was executed successfully")
@@ -276,7 +275,7 @@ class BMI:
                                                       network, nic)
             ceph_img_name = self.__get_ceph_image_name(node_name)
             self.db.image.delete_with_name_from_project(node_name, self.proj)
-            ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
+            ceph_config = self.cfg.fs
             logger.debug("Contents of ceph+config = %s", str(ceph_config))
             self.iscsi.remove_target(ceph_img_name)
             logger.info("The delete command was executed successfully")
