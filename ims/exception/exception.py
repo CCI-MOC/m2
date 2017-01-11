@@ -52,14 +52,15 @@ class AuthorizationFailedException(BMIException):
     def __str__(self):
         return "User Does Not Have Admin Role"
 
+
 class RegistrationFailedException(BMIException):
     @property
     def status_code(self):
         return 500
 
-    def __init__(self,node,error):
+    def __init__(self, node, error):
         self.node = node
         self.error = error
 
     def __str__(self):
-        return "Failed to register "+self.node+" due to "+self.error
+        return "Failed to register " + self.node + " due to " + self.error

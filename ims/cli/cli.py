@@ -4,6 +4,7 @@ import json
 import sys
 
 import click
+import os
 import requests
 from prettytable import PrettyTable
 
@@ -13,7 +14,7 @@ import ims.common.constants as constants
 config.load()
 
 from ims.einstein.operations import BMI
-from ims.database import *
+from ims.exception.exception import BMIException
 
 _cfg = config.get()
 
@@ -650,6 +651,7 @@ def show_mappings(project):
     #     else:
     #         click.echo(ret[constants.MESSAGE_KEY])
     click.echo("Need to Re-Implement")
+
 
 @cli.command(name='upload', help='Upload Image to BMI')
 def upload():

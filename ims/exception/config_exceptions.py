@@ -1,4 +1,4 @@
-from exception import ConfigException
+from ims.exception.exception import ConfigException
 
 
 class MissingOptionInConfigException(ConfigException):

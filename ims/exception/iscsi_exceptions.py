@@ -1,4 +1,4 @@
-from exception import ISCSIException
+from ims.exception.exception import ISCSIException
 
 
 # this exception should be raised when the shell script is called on a node that is already in use

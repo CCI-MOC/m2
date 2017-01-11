@@ -1,8 +1,9 @@
 import Pyro4
 import Pyro4.errors
 
+import ims.common.config as config
 import ims.common.constants as constants
-from ims.common.log import *
+from ims.common.log import create_logger, log, trace
 
 logger = create_logger(__name__)
 
@@ -70,8 +71,8 @@ class RPCClient:
 
                 try:
                     execute_command = self.main_obj.execute_command(credentials,
-                                                                        command,
-                                                                        args)
+                                                                    command,
+                                                                    args)
                     return execute_command
                 except Pyro4.errors.CommunicationError as e:
                     self.main_obj = None

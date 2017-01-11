@@ -2,9 +2,9 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import relationship
 
-from ims.common.log import *
+import ims.exception.db_exceptions as db_exceptions
+from ims.common.log import create_logger, log, trace
 from ims.database.db_connection import DatabaseConnection
-from ims.exception import *
 
 logger = create_logger(__name__)
 

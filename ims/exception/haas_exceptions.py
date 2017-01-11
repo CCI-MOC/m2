@@ -1,4 +1,4 @@
-from exception import HaaSException
+from ims.exception.exception import HaaSException
 
 
 # this exception should be raised when haas reports an authorization failure
