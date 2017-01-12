@@ -35,11 +35,9 @@ class BMI:
             self.fs = RBD(self.cfg.fs,
                           self.cfg.iscsi[constants.ISCSI_PASSWORD_KEY])
             self.dhcp = DNSMasq()
-            # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
-            # Need to make this generic by passing specific config
             self.iscsi = TGT(self.cfg.fs[constants.CEPH_CONFIG_FILE_KEY],
                              self.cfg.fs[constants.CEPH_ID_KEY],
-                             self.cfg.iscsi[constants.ISCSI_PASSWORD_KEY])
+                             self.cfg.fs[constants.CEPH_POOL_KEY])
         elif args.__len__() == 3:
             username, password, project = args
             self.cfg = config.get()
@@ -58,10 +56,9 @@ class BMI:
             logger.debug("Username is %s and Password is %s", self.username,
                          self.password)
             self.dhcp = DNSMasq()
-            # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
             self.iscsi = TGT(self.cfg.fs[constants.CEPH_CONFIG_FILE_KEY],
                              self.cfg.fs[constants.CEPH_ID_KEY],
-                             self.cfg.iscsi[constants.ISCSI_PASSWORD_KEY])
+                             self.cfg.fs[constants.CEPH_POOL_KEY])
 
     def __enter__(self):
         return self
