@@ -1,5 +1,7 @@
 #!/usr/bin/python
 import base64
+import importlib
+import inspect
 import time
 
 import os
@@ -12,10 +14,10 @@ from ims.database.database import Database
 from ims.einstein.ceph import RBD
 from ims.einstein.dnsmasq import DNSMasq
 from ims.einstein.hil import HIL
-from ims.einstein.iscsi.tgt import TGT
 from ims.exception.exception import RegistrationFailedException, \
     FileSystemException, DBException, HaaSException, ISCSIException, \
-    AuthorizationFailedException, DHCPException
+    AuthorizationFailedException, DHCPException, DriverNotFoundException
+from ims.interfaces.iscsi import ISCSI
 
 logger = create_logger(__name__)
 
@@ -32,12 +34,13 @@ class BMI:
                 base_url=self.cfg.net_isolator[constants.NET_ISOLATOR_URL_KEY],
                 usr=self.username,
                 passwd=self.password)
-            self.fs = RBD(self.cfg.fs,
-                          self.cfg.iscsi[constants.ISCSI_PASSWORD_KEY])
+            self.fs = RBD(self.cfg.fs)
             self.dhcp = DNSMasq()
-            self.iscsi = TGT(self.cfg.fs[constants.CEPH_CONFIG_FILE_KEY],
-                             self.cfg.fs[constants.CEPH_ID_KEY],
-                             self.cfg.fs[constants.CEPH_POOL_KEY])
+
+            iscsi_driver = self.cfg.iscsi[constants.DRIVER_KEY]
+            iscsi_cls = self.__load_driver(ISCSI, iscsi_driver)
+            self.iscsi = iscsi_cls(self.cfg.fs, self.cfg.iscsi)
+
         elif args.__len__() == 3:
             username, password, project = args
             self.cfg = config.get()
@@ -51,14 +54,14 @@ class BMI:
                 base_url=self.cfg.net_isolator[constants.NET_ISOLATOR_URL_KEY],
                 usr=self.username,
                 passwd=self.password)
-            self.fs = RBD(self.cfg.fs,
-                          self.cfg.iscsi[constants.ISCSI_PASSWORD_KEY])
+            self.fs = RBD(self.cfg.fs)
             logger.debug("Username is %s and Password is %s", self.username,
                          self.password)
             self.dhcp = DNSMasq()
-            self.iscsi = TGT(self.cfg.fs[constants.CEPH_CONFIG_FILE_KEY],
-                             self.cfg.fs[constants.CEPH_ID_KEY],
-                             self.cfg.fs[constants.CEPH_POOL_KEY])
+
+            iscsi_driver = self.cfg.iscsi[constants.DRIVER_KEY]
+            iscsi_cls = self.__load_driver(ISCSI, iscsi_driver)
+            self.iscsi = iscsi_cls(self.cfg.fs, self.cfg.iscsi)
 
     def __enter__(self):
         return self
@@ -81,6 +84,22 @@ class BMI:
     # it properly)
     def __check_admin(self):
         return True
+
+    def __load_driver(self, driver_type, driver_path):
+        try:
+            mod = importlib.import_module(driver_path)
+            get_driver = getattr(mod, constants.GET_DRIVER_METHOD)
+            cls = get_driver()
+            if not inspect.isclass(cls):
+                raise DriverNotFoundException(driver_type.__name__,
+                                              driver_path)
+            if not issubclass(cls, driver_type):
+                raise DriverNotFoundException(driver_type.__name__,
+                                              driver_path)
+            return cls
+        except (ImportError, AttributeError):
+            raise DriverNotFoundException(driver_type.__name__,
+                                          driver_path)
 
     @trace
     def __get_ceph_image_name(self, name):
@@ -138,9 +157,7 @@ class BMI:
                 for line in open(template_loc + "/ipxe.temp", 'r'):
                     line = line.replace(constants.IPXE_TARGET_NAME,
                                         target_name)
-                    line = line.replace(constants.IPXE_ISCSI_IP,
-                                        self.cfg.iscsi[
-                                            constants.ISCSI_IP_KEY])
+                    line = line.replace(constants.IPXE_ISCSI_IP, self.iscsi.ip)
                     ipxe.write(line)
             logger.info("Generated ipxe file")
             os.chmod(path, 0755)

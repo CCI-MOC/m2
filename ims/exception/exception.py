@@ -64,3 +64,17 @@ class RegistrationFailedException(BMIException):
 
     def __str__(self):
         return "Failed to register " + self.node + " due to " + self.error
+
+
+class DriverNotFoundException(BMIException):
+    @property
+    def status_code(self):
+        return 500
+
+    def __init__(self, driver_type, driver_path):
+        self.d_type = driver_type
+        self.d_path = driver_path
+
+    def __str__(self):
+        return "Driver at {0} of type {1} not found".format(self.d_path,
+                                                            self.d_type)

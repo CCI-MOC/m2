@@ -28,10 +28,6 @@ DRIVER_KEY = 'driver'
 # Network Isolator Keys
 NET_ISOLATOR_URL_KEY = 'url'
 
-# ISCSI Keys
-ISCSI_PASSWORD_KEY = 'password'
-ISCSI_IP_KEY = 'ip'
-
 # DB
 DB_PATH_KEY = 'path'
 
@@ -122,3 +118,5 @@ DEFAULT_SNAPSHOT_NAME = "snapshot"
 BMI_ADMIN_PROJECT = "bmi_infra"
 
 HAAS_BMI_CHANNEL = "vlan/native"
+
+GET_DRIVER_METHOD = 'get_driver_class'

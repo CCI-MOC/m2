@@ -18,9 +18,9 @@ logger = create_logger(__name__)
 # handling code in methods
 class RBD:
     @log
-    def __init__(self, config, password):
+    def __init__(self, config):
         self.__validate(config)
-        self.password = password
+        self.password = ""  # Will be removed in IET PR
         self.cluster = self.__init_cluster()
         self.context = self.__init_context()
         self.rbd = rbd.RBD()
@@ -231,6 +231,7 @@ class RBD:
             # Should be changed to special exception
             raise file_system_exceptions.ImageNotFoundException(img_id)
 
+    # Used by only IET
     @log
     def map(self, ceph_img_name):
         command = "echo {0} | sudo -S rbd --keyring {1} --id {2} map " \
