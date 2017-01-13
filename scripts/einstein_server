@@ -6,8 +6,9 @@ import ims.common.config as config
 
 config.load()
 
-from ims.rpc.server.name_server import *
-from ims.rpc.server.rpc_server import *
+from ims.rpc.server.name_server import start_name_server
+from ims.rpc.server.rpc_server import start_rpc_server
+from ims.common.log import create_logger
 
 logger = create_logger(__name__)
 

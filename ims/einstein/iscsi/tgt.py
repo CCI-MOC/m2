@@ -1,9 +1,11 @@
-import re
 import subprocess
 
-from ims.common.log import *
-from ims.exception import *
-from ims.interfaces.iscsi import *
+import os
+import re
+
+import ims.exception.iscsi_exceptions as iscsi_exceptions
+from ims.common.log import create_logger, log
+from ims.interfaces.iscsi import ISCSI
 
 logger = create_logger(__name__)
 

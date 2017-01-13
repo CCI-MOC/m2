@@ -1,8 +1,10 @@
 import Pyro4
+
+import ims.common.config as config
 import ims.common.constants as constants
-from ims.common.log import *
+from ims.common.log import create_logger, log
 from ims.einstein.operations import BMI
-from ims.exception import *
+from ims.exception.exception import BMIException
 
 logger = create_logger(__name__)
 

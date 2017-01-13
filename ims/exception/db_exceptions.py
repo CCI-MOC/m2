@@ -1,4 +1,4 @@
-from exception import DBException
+from ims.exception.exception import DBException
 
 
 # this exception should be raised when a project is not found in the db

@@ -3,7 +3,8 @@ import ConfigParser
 import os
 
 import ims.common.constants as constants
-from ims.exception import *
+import ims.exception.config_exceptions as config_exceptions
+from ims.exception.exception import ConfigException
 
 __config = None
 
