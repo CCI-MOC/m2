@@ -99,16 +99,6 @@ IPXE_TARGET_NAME = "${target_name}"
 IPXE_ISCSI_IP = "${iscsi_ip}"
 MAC_IMG_NAME = "${img_name}"
 MAC_IPXE_NAME = "${ipxe.file}"
-CEPH_IMG_NAME = "${ceph_img_name}"
-RBD_NAME = "${rbd_name}"
-
-IET_MAPPING_TEMP = 'Target iqn.2015.${ceph_img_name}\n        ' \
-                   'Lun 0 Path=${rbd_name},Type=blockio,ScsiId=lun0,ScsiSN=' \
-                   'lun0\n'
-IET_ISCSI_CONFIG_LOC = '/etc/iet/ietd.conf'
-IET_ISCSI_CONFIG_TEMP_LOC = '/etc/iet/ietd.temp'
-IET_TARGET_STARTING = 'Target'
-IET_LUN_STARTING = "Lun"
 
 DNSMASQ_LEASES_LOC = '/var/lib/misc/dnsmasq.leases'
 

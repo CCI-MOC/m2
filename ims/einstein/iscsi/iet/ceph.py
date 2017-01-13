@@ -1,52 +1,50 @@
+import constants as iet_constants
+import ims.common.constants as constants
+import ims.common.shell as shell
+import ims.exception.config_exceptions as config_exceptions
 from ims.common.log import log, create_logger
 
 logger = create_logger(__name__)
 
 
 # Used by only IET
-@log
-def map(self, ceph_img_name):
-    command = "rbd --keyring {1} --id {2} map {3}/{4}".format(self.keyring,
-                                                              self.rid,
-                                                              self.pool,
-                                                              ceph_img_name)
-    p = subprocess.Popen(command, shell=True,
-                         stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-    output, err = p.communicate()
-    # output = sh.rbd.map(ceph_img_name, keyring=self.keyring, id=self.rid,
-    #            pool=self.pool)
-    if p.returncode == 0:
-        if output.find("sudo") != -1:
-            return output.split(":")[1].strip()
-        else:
-            return output.strip()
-    else:
-        raise file_system_exceptions.MapFailedException(ceph_img_name)
+class RBD:
+    def __init__(self, fs_config):
+        self.__validate(fs_config)
 
+    def __validate(self, fs_config):
+        try:
+            self.rid = fs_config[iet_constants.CEPH_ID_KEY]
+            self.pool = fs_config[iet_constants.CEPH_POOL_KEY]
+            self.keyring = fs_config[iet_constants.CEPH_KEY_RING_KEY]
+        except KeyError as e:
+            section = constants.FS_CONFIG_SECTION_NAME
+            raise config_exceptions.MissingOptionInConfigException(str(e),
+                                                                   section)
 
-@log
-def unmap(self, rbd_name):
-    command = "echo {0} | sudo -S rbd --keyring {1} --id {2} unmap " \
-              "{3}".format(self.password, self.keyring, self.rid, rbd_name)
-    p = subprocess.Popen(command, shell=True,
-                         stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-    output, err = p.communicate()
-    # output = sh.rbd.unmap(rbd_name, keyring=self.keyring, id=self.rid)
-    if p.returncode == 0:
-        return output.strip()
-    else:
-        raise file_system_exceptions.UnmapFailedException(rbd_name)
+    @log
+    def map(self, ceph_img_name):
+        command = iet_constants.MAP_COMMAND.format(self.keyring,
+                                                   self.rid,
+                                                   self.pool,
+                                                   ceph_img_name)
+        output = shell.call(command, sudo=True)
+        return output
 
+    @log
+    def unmap(self, rbd_name):
+        command = iet_constants.UNMAP_COMMAND.format(self.keyring,
+                                                     self.rid,
+                                                     rbd_name)
+        output = shell.call(command, sudo=True)
+        return output
 
-@log
-def showmapped(self):
-    output = sh.rbd.showmapped()
-    if output.exit_code == 0:
+    @log
+    def showmapped(self):
+        output = shell.call(iet_constants.LIST_MAPPED_COMMAND)
         lines = output.split('\n')[1:-1]
         maps = {}
         for line in lines:
             parts = line.split()
             maps[parts[2]] = parts[4]
         return maps
-    else:
-        pass

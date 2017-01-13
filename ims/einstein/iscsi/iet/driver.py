@@ -1,24 +1,37 @@
 import subprocess
 
 import os
-import re
-import sh
 
+import constants as iet_constants
 import ims.common.constants as constants
-import ims.exception.file_system_exceptions as file_system_exceptions
+import ims.common.shell as shell
+import ims.exception.config_exceptions as config_exceptions
 import ims.exception.iscsi_exceptions as iscsi_exceptions
+from ceph import RBD
 from ims.common.log import create_logger, log
 from ims.interfaces.iscsi import ISCSI
 
 logger = create_logger(__name__)
 
 
-# Dont Use IET until fixed in future PR
+# Not Tested so beware!!
 class IET(ISCSI):
     @log
-    def __init__(self, fs, password):
-        self.fs = fs
-        self.password = password
+    def __init__(self, fs_config, iscsi_config):
+        self.fs = RBD(fs_config)
+        self.__validate(iscsi_config)
+
+    def __validate(self, iscsi_config):
+        try:
+            self.iscsi_ip = iscsi_config[iet_constants.ISCSI_IP_KEY]
+        except KeyError as e:
+            section = constants.FS_CONFIG_SECTION_NAME
+            raise config_exceptions.MissingOptionInConfigException(str(e),
+                                                                   section)
+
+    @property
+    def ip(self):
+        return self.iscsi_ip
 
     @log
     def add_target(self, ceph_img_name):
@@ -26,22 +39,21 @@ class IET(ISCSI):
         try:
             mappings = self.list_targets()
             if ceph_img_name in mappings:
-                raise iscsi_exceptions.NodeAlreadyInUseException()
+                raise iscsi_exceptions.TargetExistsException()
             rbd_name = self.fs.map(ceph_img_name)
             self.__add_mapping(ceph_img_name, rbd_name)
             self.restart_server()
-            self.__check_status(True)
-        except iscsi_exceptions.UpdateConfigFailedException as e:
+        except subprocess.CalledProcessError as e:
+            raise iscsi_exceptions.TargetCreationFailed(str(e))
+        except IOError as e:
             maps = self.fs.showmapped()
             self.fs.unmap(maps[ceph_img_name])
-            raise e
-        except (iscsi_exceptions.MountException,
-                iscsi_exceptions.DuplicatesException,
-                iscsi_exceptions.RestartFailedException) as e:
+            raise iscsi_exceptions.TargetCreationFailed(str(e))
+        except iscsi_exceptions.RestartFailedException as e:
             self.__remove_mapping(ceph_img_name, rbd_name)
             maps = self.fs.showmapped()
             self.fs.unmap(maps[ceph_img_name])
-            raise e
+            raise iscsi_exceptions.TargetCreationFailed(str(e))
 
     @log
     def remove_target(self, ceph_img_name):
@@ -49,150 +61,115 @@ class IET(ISCSI):
         try:
             iscsi_mappings = self.list_targets()
             if ceph_img_name not in iscsi_mappings:
-                raise iscsi_exceptions.NodeAlreadyUnmappedException()
+                raise iscsi_exceptions.TargetDoesntExistException()
             self.stop_server()
-            self.__check_status(False)
             mappings = self.fs.showmapped()
             self.__remove_mapping(ceph_img_name, mappings[ceph_img_name])
             self.fs.unmap(mappings[ceph_img_name])
             self.restart_server()
-            self.__check_status(True)
-        except iscsi_exceptions.UpdateConfigFailedException as e:
+        except (IOError, OSError) as e:
             self.restart_server()
-            raise e
-        except file_system_exceptions.UnmapFailedException as e:
+            raise iscsi_exceptions.TargetDeletionFailed(str(e))
+        except subprocess.CalledProcessError as e:
             self.__add_mapping(ceph_img_name, mappings(ceph_img_name))
             self.restart_server()
-            raise e
-        except (iscsi_exceptions.MountException,
-                iscsi_exceptions.DuplicatesException,
-                iscsi_exceptions.RestartFailedException) as e:
+            raise iscsi_exceptions.TargetDeletionFailed(str(e))
+        except iscsi_exceptions.RestartFailedException as e:
             self.fs.map(ceph_img_name)
             self.__add_mapping(ceph_img_name, mappings(ceph_img_name))
-            self.restart_server()
-            raise e
+            self.restart_server()  # Kind of weird that trying to restart again
+            raise iscsi_exceptions.TargetDeletionFailed(str(e))
 
     @log
     def list_targets(self):
         mappings = {}
         try:
-            with open(constants.IET_ISCSI_CONFIG_LOC, 'r') as fi:
+            with open(iet_constants.IET_ISCSI_CONFIG_LOC, 'r') as fi:
                 target = None
                 for line in fi:
                     line = line.strip()
-                    if line.startswith(constants.IET_TARGET_STARTING):
+                    if line.startswith(iet_constants.IET_TARGET_STARTING):
                         if target is None:
-                            target = line.split('.')[2]
+                            target = line.split(' ')[1]
                         else:
-                            raise iscsi_exceptions.InvalidConfigException()
-                    elif line.startswith(constants.IET_LUN_STARTING):
+                            raise iscsi_exceptions.ListTargetFailedException(
+                                "Invalid Targets File")
+                    elif line.startswith(iet_constants.IET_LUN_STARTING):
                         if target is not None:
                             mappings[target] = line.split(',')[0].split('=')[1]
                             target = None
                         else:
-                            raise iscsi_exceptions.InvalidConfigException()
+                            raise iscsi_exceptions.ListTargetFailedException(
+                                "Invalid Targets File")
 
             return mappings
         except IOError as e:
-            logger.info("Raising Read Config Failed Exception")
-            raise iscsi_exceptions.ReadConfigFailedException(e.message)
+            logger.info("List Targets Failed")
+            raise iscsi_exceptions.ListTargetFailedException(str(e))
 
     @log
     def __add_mapping(self, ceph_img_name, rbd_name):
-        try:
-            with open(constants.IET_ISCSI_CONFIG_LOC, 'a') as fi:
-                fi.write(
-                    constants.IET_MAPPING_TEMP.replace(constants.CEPH_IMG_NAME,
-                                                       ceph_img_name).replace(
-                        constants.RBD_NAME, rbd_name))
-        except IOError as e:
-            logger.info("Raising Update Config Failed Exception")
-            raise iscsi_exceptions.UpdateConfigFailedException(e.message)
+        template_line = iet_constants.IET_MAPPING_TEMP
+        with open(iet_constants.IET_ISCSI_CONFIG_LOC, 'a') as fi:
+            template_line = template_line.replace(iet_constants.CEPH_IMG_NAME,
+                                                  ceph_img_name)
+            template_line = template_line.replace(iet_constants.RBD_NAME,
+                                                  rbd_name)
+            fi.write(template_line)
 
     @log
     def __remove_mapping(self, ceph_img_name, rbd_name):
-        try:
-            with open(constants.IET_ISCSI_CONFIG_LOC, 'r') as fi:
-                with open(constants.IET_ISCSI_CONFIG_TEMP_LOC, 'w') as temp:
-                    for line in fi:
-                        if line.find(ceph_img_name) == -1 and line.find(
-                                rbd_name) == -1:
-                            temp.write(line)
-            os.rename(constants.IET_ISCSI_CONFIG_TEMP_LOC,
-                      constants.IET_ISCSI_CONFIG_LOC)
-        except IOError as e:
-            logger.info("Raising Update Config Failed Exception")
-            raise iscsi_exceptions.UpdateConfigFailedException(e.message)
+        with open(iet_constants.IET_ISCSI_CONFIG_LOC, 'r') as fi:
+            with open(iet_constants.IET_ISCSI_CONFIG_TEMP_LOC, 'w') as temp:
+                for line in fi:
+                    if line.find(ceph_img_name) == -1 and line.find(
+                            rbd_name) == -1:
+                        temp.write(line)
+        os.rename(iet_constants.IET_ISCSI_CONFIG_TEMP_LOC,
+                  iet_constants.IET_ISCSI_CONFIG_LOC)
 
     @log
     def restart_server(self):
-        command = "echo {0} | sudo -S service iscsitarget restart".format(
-            self.password)
-        p = subprocess.Popen(command, shell=True, stderr=subprocess.STDOUT,
-                             stdout=subprocess.PIPE)
-        output, err = p.communicate()
-        # output = sh.service.iscsitarget.restart()
-        if p.returncode == 0:
-            return output.strip()
-        else:
+        try:
+            output = shell.call(iet_constants.RESTART_COMMAND, sudo=True)
+            logger.debug("Output = %s", output)
+            if self.show_status() is not iet_constants.ACTIVE_STATUS:
+                raise iscsi_exceptions.RestartFailedException()
+        except subprocess.CalledProcessError as e:
             logger.info("Raising Restart Failed Exception")
             raise iscsi_exceptions.RestartFailedException()
 
     @log
     def stop_server(self):
-        command = "echo {0} | sudo -S service iscsitarget stop".format(
-            self.password)
-        p = subprocess.Popen(command, shell=True, stderr=subprocess.STDOUT,
-                             stdout=subprocess.PIPE)
-        output, err = p.communicate()
-        # output = sh.service.iscsitarget.stop()
-        if p.returncode == 0:
-            return output.strip()
+        try:
+            output = shell.call(iet_constants.STOP_COMMAND, sudo=True)
+            logger.debug("Output = %s", output)
+            if self.show_status() is not iet_constants.DEAD_STATE:
+                raise iscsi_exceptions.StopFailedException()
+        except subprocess.CalledProcessError as e:
+            logger.info("Raising Stop Failed Exception")
+            raise iscsi_exceptions.StopFailedException()
+
+    def start_server(self):
+        try:
+            output = shell.call(iet_constants.START_COMMAND, sudo=True)
+            logger.debug("Output = %s", output)
+            if self.show_status() is not iet_constants.ACTIVE_STATUS:
+                raise iscsi_exceptions.StartFailedException()
+        except subprocess.CalledProcessError as e:
+            logger.info("Raising Start Failed Exception")
+            raise iscsi_exceptions.StartFailedException()
+
+    def show_status(self):
+        status_string = shell.call(iet_constants.STATUS_COMMAND, sudo=True)
+        logger.debug("Output = %s", status_string)
+        if iet_constants.ACTIVE_STATUS in status_string:
+            return iet_constants.ACTIVE_STATE
+        elif iet_constants.INACTIVE_STATUS in status_string:
+            return iet_constants.DEAD_STATE
+        # Have to check if there are any other states
         else:
-            logger.info("Raising Stop Failed Exception")
-            raise iscsi_exceptions.StopFailedException()
-
-    def __check_status(self, on):
-        output = sh.service.iscsitarget.status(_ok_code=[0, 3])
-        ansi_escape = re.compile(r'\x1b[^m]*m')
-        output = ansi_escape.sub('', output.strip())
-        parts = output.split("\n")
-        active = not on
-        targets = []
-        failed_mount = []
-        duplicates = []
-        for part in parts:
-            s_part = part.strip()
-            if s_part.startswith("Active"):
-                line_parts = s_part.split()
-                if line_parts[1] + line_parts[2] == "active(running)":
-                    active = True
-                if line_parts[1] + line_parts[2] == "inactive(dead)":
-                    active = False
-            elif s_part.find("created target") != -1:
-                line = s_part[s_part.find("created target"):].split()
-                targets.append(line[2].split(".")[2])
-            elif s_part.find("unable to create logical unit") != -1:
-                target = targets.pop()
-                failed_mount.append(target)
-            elif s_part.find("duplicated target") != -1:
-                line = s_part[s_part.find("duplicated target"):].split()
-                duplicates.append(line[2].split(".")[2])
-
-        if failed_mount:
-            logger.info("Raising Mount Exception for %s", failed_mount)
-            raise iscsi_exceptions.MountException(failed_mount)
-
-        if duplicates:
-            logger.info("Raising Mount Exception for %s", duplicates)
-            raise iscsi_exceptions.DuplicatesException(duplicates)
-
-        if not active and on:
-            logger.info("Raising Restart Failed Exception")
-            raise iscsi_exceptions.RestartFailedException()
-        elif not on and active:
-            logger.info("Raising Stop Failed Exception")
-            raise iscsi_exceptions.StopFailedException()
+            return iet_constants.ERROR_STATE
 
     def persist_targets(self):
 
