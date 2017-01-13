@@ -1,16 +1,21 @@
-import re
 import subprocess
 
+import os
+import re
 import sh
 
 import ims.common.constants as constants
-from ims.common.log import *
-from ims.exception import *
-from ims.interfaces.iscsi import *
+from ims.common.log import log, create_logger
+from ims.exception import iscsi_exceptions, file_system_exceptions
+from ims.interfaces.iscsi import ISCSI
 
 logger = create_logger(__name__)
 
 
+# Do Not Use!!
+# This Driver is not working currently will update in future PRs
+# Also __check_status is required, but it is causing issues due to which
+# it is commented out.
 class IET(ISCSI):
     @log
     def __init__(self, fs, password):
@@ -18,16 +23,20 @@ class IET(ISCSI):
         self.password = password
 
     @log
+    def start_server(self):
+        pass
+
+    @log
     def add_target(self, ceph_img_name):
         rbd_name = None
         try:
             mappings = self.list_targets()
             if ceph_img_name in mappings:
-                raise iscsi_exceptions.NodeAlreadyInUseException()
+                raise iscsi_exceptions.TargetExistsException()
             rbd_name = self.fs.map(ceph_img_name)
             self.__add_mapping(ceph_img_name, rbd_name)
             self.restart_server()
-            self.__check_status(True)
+            # self.__check_status(True)
         except iscsi_exceptions.UpdateConfigFailedException as e:
             maps = self.fs.showmapped()
             self.fs.unmap(maps[ceph_img_name])
@@ -46,14 +55,14 @@ class IET(ISCSI):
         try:
             iscsi_mappings = self.list_targets()
             if ceph_img_name not in iscsi_mappings:
-                raise iscsi_exceptions.NodeAlreadyUnmappedException()
+                raise iscsi_exceptions.TargetDoesntExistException()
             self.stop_server()
-            self.__check_status(False)
+            # self.__check_status(False)
             mappings = self.fs.showmapped()
             self.__remove_mapping(ceph_img_name, mappings[ceph_img_name])
             self.fs.unmap(mappings[ceph_img_name])
             self.restart_server()
-            self.__check_status(True)
+            # self.__check_status(True)
         except iscsi_exceptions.UpdateConfigFailedException as e:
             self.restart_server()
             raise e
@@ -79,7 +88,7 @@ class IET(ISCSI):
                     line = line.strip()
                     if line.startswith(constants.IET_TARGET_STARTING):
                         if target is None:
-                            target = line.split('.')[2]
+                            target = line.split(' ')[1]
                         else:
                             raise iscsi_exceptions.InvalidConfigException()
                     elif line.startswith(constants.IET_LUN_STARTING):
@@ -123,8 +132,9 @@ class IET(ISCSI):
 
     @log
     def restart_server(self):
-        command = "echo {0} | sudo -S service iscsitarget restart".format(
-            self.password)
+        # command = "echo {0} | sudo -S service iscsitarget restart".format(
+        #    self.password)
+        command = "service iscsitarget restart"
         p = subprocess.Popen(command, shell=True, stderr=subprocess.STDOUT,
                              stdout=subprocess.PIPE)
         output, err = p.communicate()
@@ -137,8 +147,9 @@ class IET(ISCSI):
 
     @log
     def stop_server(self):
-        command = "echo {0} | sudo -S service iscsitarget stop".format(
-            self.password)
+        # command = "echo {0} | sudo -S service iscsitarget stop".format(
+        #    self.password)
+        command = "service iscsitarget stop"
         p = subprocess.Popen(command, shell=True, stderr=subprocess.STDOUT,
                              stdout=subprocess.PIPE)
         output, err = p.communicate()

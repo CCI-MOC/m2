@@ -1,4 +1,4 @@
-from exception import DHCPException
+from ims.exception.exception import DHCPException
 
 
 class MacAddrNotFoundException(DHCPException):

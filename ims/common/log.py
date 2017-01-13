@@ -6,13 +6,14 @@ import traceback
 import os
 
 import ims.common.config as config
+import ims.common.constants as constants
 
 loggers = {}
 
 _cfg = config.get()
-_base_url = _cfg.logs_url
-_debug = _cfg.logs_debug
-_verbose = _cfg.logs_verbose
+_base_url = _cfg.logs[constants.LOGS_URL_KEY]
+_debug = _cfg.logs[constants.LOGS_DEBUG_KEY] == 'True'
+_verbose = _cfg.logs[constants.LOGS_VERBOSE_KEY] == 'True'
 
 
 def log(func):

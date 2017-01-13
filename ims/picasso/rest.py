@@ -3,7 +3,11 @@ import json
 from flask import Flask
 from flask import request
 
-from ims.rpc.client.rpc_client import *
+from ims.common.log import log, create_logger, trace
+from ims.rpc.client.rpc_client import RPCClient
+
+import ims.common.config as config
+import ims.common.constants as constants
 
 app = Flask(__name__)
 rpc_client = None
@@ -20,7 +24,8 @@ def setup_rpc():
 def start():
     setup_rpc()
     cfg = config.get()
-    app.run(host=cfg.bind_ip, port=cfg.bind_port)
+    app.run(host=cfg.http[constants.BIND_IP_KEY],
+            port=int(cfg.http[constants.BIND_PORT_KEY]))
 
 
 @log

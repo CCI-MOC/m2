@@ -4,6 +4,7 @@ import json
 import sys
 
 import click
+import os
 import requests
 from prettytable import PrettyTable
 
@@ -13,22 +14,23 @@ import ims.common.constants as constants
 config.load()
 
 from ims.einstein.operations import BMI
-from ims.database import *
+from ims.exception.exception import BMIException
 
 _cfg = config.get()
 
-_url = "http://{0}:{1}/".format(_cfg.bind_ip, _cfg.bind_port)
+_url = "http://{0}:{1}/".format(_cfg.http[constants.BIND_IP_KEY],
+                                int(_cfg.http[constants.BIND_PORT_KEY]))
 
-if constants.HAAS_USERNAME_VARIABLE in os.environ:
-    _username = os.environ[constants.HAAS_USERNAME_VARIABLE]
+if constants.HIL_USERNAME_ENV_VARIABLE in os.environ:
+    _username = os.environ[constants.HIL_USERNAME_ENV_VARIABLE]
 else:
-    click.echo(constants.HAAS_USERNAME_VARIABLE + " Variable Not Set")
+    click.echo(constants.HIL_USERNAME_ENV_VARIABLE + " Variable Not Set")
     sys.exit(1)
 
-if constants.HAAS_PASSWORD_VARIABLE in os.environ:
-    _password = os.environ[constants.HAAS_PASSWORD_VARIABLE]
+if constants.HIL_PASSWORD_ENV_VARIABLE in os.environ:
+    _password = os.environ[constants.HIL_PASSWORD_ENV_VARIABLE]
 else:
-    click.echo(constants.HAAS_PASSWORD_VARIABLE + " Variable Not Set")
+    click.echo(constants.HIL_PASSWORD_ENV_VARIABLE + " Variable Not Set")
     sys.exit(1)
 
 
@@ -75,8 +77,7 @@ def provision(project, node, img, network, nic):
     NODE    = The Node to Provision
     IMG     = The Name of the Image to Provision
     NETWORK = The Name of the Provisioning Network
-    CHANNEL = The Channel to Provision On (For HIL It is 'vlan/native')
-    NIC     = The NIC to use for Network Boot (For HIL IT is 'enp130s0f0')
+    NIC     = The NIC to use for Network Boot
     """
     data = {constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
@@ -650,6 +651,7 @@ def show_mappings(project):
     #     else:
     #         click.echo(ret[constants.MESSAGE_KEY])
     click.echo("Need to Re-Implement")
+
 
 @cli.command(name='upload', help='Upload Image to BMI')
 def upload():

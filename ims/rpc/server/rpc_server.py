@@ -1,8 +1,11 @@
 import Pyro4
-import ims.common.constants as constants
-from ims.common.log import *
+
+from ims.common.log import log,create_logger
 from ims.einstein.operations import BMI
-from ims.exception import *
+from ims.exception.exception import BMIException
+
+import ims.common.constants as constants
+import ims.common.config as config
 
 logger = create_logger(__name__)
 
@@ -37,14 +40,15 @@ class MainServer:
 @log
 def start_rpc_server():
     cfg = config.get()
-    if cfg.is_service:
+    if cfg.bmi[constants.SERVICE_KEY] == 'True':
         server = MainServer()
         server.remake_mappings()
-    Pyro4.config.HOST = cfg.rpcserver_ip
+    Pyro4.config.HOST = cfg.rpc[constants.RPC_RPC_SERVER_IP_KEY]
     # Starting the Pyro daemon, locating and registering object with name server.
-    daemon = Pyro4.Daemon(port=cfg.rpcserver_port)
+    daemon = Pyro4.Daemon(port=int(cfg.rpc[constants.RPC_RPC_SERVER_PORT_KEY]))
     # find the name server
-    ns = Pyro4.locateNS(host=cfg.nameserver_ip, port=cfg.nameserver_port)
+    ns = Pyro4.locateNS(host=cfg.rpc[constants.RPC_NAME_SERVER_IP_KEY],
+                        port=int(cfg.rpc[constants.RPC_NAME_SERVER_PORT_KEY]))
     # register the greeting maker as a Pyro object
     uri = daemon.register(MainServer)
     # register the object with a name in the name server

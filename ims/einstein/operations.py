@@ -1,13 +1,22 @@
 #!/usr/bin/python
 import base64
+import importlib
+import inspect
 import time
 
-from ims.database import *
-from ims.einstein.ceph import *
-from ims.einstein.dnsmasq import *
-from ims.einstein.hil import *
-from ims.einstein.iscsi import *
-from ims.exception import *
+import os
+
+import ims.common.config as config
+import ims.common.constants as constants
+import ims.exception.db_exceptions as db_exceptions
+from ims.common.log import log, create_logger, trace
+from ims.database.database import Database
+from ims.einstein.ceph import RBD
+from ims.einstein.dnsmasq import DNSMasq
+from ims.einstein.hil import HIL
+from ims.exception.exception import ISCSIException, FileSystemException, \
+    NetIsoException, RegistrationFailedException, DriverNotFoundException, \
+    DBException, DHCPException, AuthorizationFailedException
 
 logger = create_logger(__name__)
 
@@ -20,18 +29,15 @@ class BMI:
             self.config = config.get()
             self.db = Database()
             self.__process_credentials(credentials)
-            self.hil = HIL(base_url=self.config.haas_url, usr=self.username,
+            self.hil = HIL(base_url=self.config.netiso[constants.HIL_URL_KEY],
+                           usr=self.username,
                            passwd=self.password)
-            self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME],
-                          self.config.iscsi_update_password)
+            self.fs = RBD(self.config.fs)
             self.dhcp = DNSMasq()
-            # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
-            # Need to make this generic by passing specific config
-            self.iscsi = TGT(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME][
-                                 constants.CEPH_CONFIG_FILE_KEY],
-                             self.config.fs[constants.CEPH_CONFIG_SECTION_NAME][
-                                 constants.CEPH_ID_KEY],
-                             self.config.iscsi_update_password)
+            self.iscsi = self.__load_driver(
+                self.config.iscsi[constants.DRIVER_KEY])(self.config.fs,
+                                                         self.config.iscsi)
+
         elif args.__len__() == 3:
             username, password, project = args
             self.config = config.get()
@@ -41,19 +47,15 @@ class BMI:
             self.db = Database()
             self.pid = self.__does_project_exist(self.project)
             self.is_admin = self.__check_admin()
-            self.hil = HIL(base_url=self.config.haas_url, usr=self.username,
+            self.hil = HIL(base_url=self.config.netiso[constants.HIL_URL_KEY],
+                           usr=self.username,
                            passwd=self.password)
-            self.fs = RBD(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME],
-                          self.config.iscsi_update_password)
+            self.fs = RBD(self.config.fs)
             logger.debug("Username is %s and Password is %s", self.username,
                          self.password)
             self.dhcp = DNSMasq()
-            # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
-            self.iscsi = TGT(self.config.fs[constants.CEPH_CONFIG_SECTION_NAME][
-                                 constants.CEPH_CONFIG_FILE_KEY],
-                             self.config.fs[constants.CEPH_CONFIG_SECTION_NAME][
-                                 constants.CEPH_ID_KEY],
-                             self.config.iscsi_update_password)
+            self.iscsi = self.__load_driver(
+                self.config.iscsi[constants.DRIVER_KEY])
 
     def __enter__(self):
         return self
@@ -77,6 +79,20 @@ class BMI:
     def __check_admin(self):
         return True
 
+    def __load_driver(self, driver_path):
+        # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
+        # self.iscsi = TGT(self.config.fs,self.config.iscsi)
+        try:
+            mod = importlib.import_module(driver_path)
+            get_driver = getattr(mod, 'get_driver_class')
+            cls = get_driver()
+            if not inspect.isclass(cls):
+                raise DriverNotFoundException(
+                    driver_path)  # Probably more specific message
+            return cls
+        except (ImportError, AttributeError):
+            raise DriverNotFoundException(driver_path)
+
     @trace
     def __get_ceph_image_name(self, name):
         img_id = self.db.image.fetch_id_with_name_from_project(name,
@@ -85,7 +101,7 @@ class BMI:
             logger.info("Raising Image Not Found Exception for %s", name)
             raise db_exceptions.ImageNotFoundException(name)
 
-        return str(self.config.uid) + "img" + str(img_id)
+        return str(self.config.bmi[constants.UID_KEY]) + "img" + str(img_id)
 
     def get_ceph_image_name_from_project(self, name, project_name):
         img_id = self.db.image.fetch_id_with_name_from_project(name,
@@ -94,7 +110,7 @@ class BMI:
             logger.info("Raising Image Not Found Exception for %s", name)
             raise db_exceptions.ImageNotFoundException(name)
 
-        return str(self.config.uid) + "img" + str(img_id)
+        return str(self.config.bmi[constants.UID_KEY]) + "img" + str(img_id)
 
     @trace
     def __extract_id(self, ceph_img_name):
@@ -106,11 +122,11 @@ class BMI:
     @trace
     def __process_credentials(self, credentials):
         base64_str, self.project = credentials
-        self.pid = self.__does_project_exist(self.project)
         self.username, self.password = tuple(
             base64.b64decode(base64_str).split(':'))
         logger.debug("Username is %s and Password is %s", self.username,
                      self.password)
+        self.pid = self.__does_project_exist(self.project)
         self.is_admin = self.__check_admin()
 
     @log
@@ -126,14 +142,15 @@ class BMI:
         template_loc = os.path.abspath(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
         logger.debug("Template LOC = %s", template_loc)
-        path = self.config.ipxe_loc + node_name + ".ipxe"
+        path = os.path.join(self.config.tftp[constants.IPXE_URL_KEY],
+                            node_name + ".ipxe")
         logger.debug("The Path for ipxe file is %s", path)
         try:
             with open(path, 'w') as ipxe:
-                for line in open(template_loc + "/ipxe.temp", 'r'):
+                for line in open(os.path.join(template_loc, "ipxe.temp"), 'r'):
                     line = line.replace(constants.IPXE_TARGET_NAME, target_name)
                     line = line.replace(constants.IPXE_ISCSI_IP,
-                                        self.config.iscsi_ip)
+                                        self.iscsi.ip)
                     ipxe.write(line)
             logger.info("Generated ipxe file")
             os.chmod(path, 0755)
@@ -141,14 +158,15 @@ class BMI:
         except (OSError, IOError) as e:
             logger.info("Raising Registration Failed Exception for %s",
                         node_name)
-            raise RegistrationFailedException(node_name, e.message)
+            raise RegistrationFailedException(node_name, str(e))
 
     @log
     def __generate_mac_addr_file(self, img_name, node_name, mac_addr):
         template_loc = os.path.abspath(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
         logger.debug("Template LOC = %s", template_loc)
-        path = self.config.pxelinux_loc + mac_addr
+        path = os.path.join(self.config.tftp[constants.PXELINUX_URL_KEY],
+                            mac_addr)
         logger.debug("The Path for mac addr file is %s", path)
         try:
             with open(path, 'w') as mac:
@@ -163,7 +181,7 @@ class BMI:
         except (OSError, IOError) as e:
             logger.info("Raising Registration Failed Exception for %s",
                         node_name)
-            raise RegistrationFailedException(node_name, e.message)
+            raise RegistrationFailedException(node_name, str(e))
 
     # Parses the Exception and returns the dict that should be returned to user
     @log
@@ -216,8 +234,6 @@ class BMI:
             ceph_img_name = self.__get_ceph_image_name(img_name)
             self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
                           clone_ceph_name)
-            ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
-            logger.debug("Contents of ceph_config = %s", str(ceph_config))
             self.iscsi.add_target(clone_ceph_name)
             logger.info("The create command was executed successfully")
             self.__register(node_name, img_name, clone_ceph_name)
@@ -229,7 +245,7 @@ class BMI:
             clone_ceph_name = self.__get_ceph_image_name(node_name)
             self.fs.remove(clone_ceph_name)
             self.db.image.delete_with_name_from_project(node_name, self.project)
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
+            time.sleep(constants.HIL_CALL_TIMEOUT)
             self.hil.detach_node_from_project_network(node_name, network,
                                                       nic)
             return self.__return_error(e)
@@ -238,18 +254,18 @@ class BMI:
             # Message is being handled by custom formatter
             logger.exception('')
             self.db.image.delete_with_name_from_project(node_name, self.project)
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
+            time.sleep(constants.HIL_CALL_TIMEOUT)
             self.hil.detach_node_from_project_network(node_name, network,
                                                       nic)
             return self.__return_error(e)
         except DBException as e:
             # Message is being handled by custom formatter
             logger.exception('')
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
+            time.sleep(constants.HIL_CALL_TIMEOUT)
             self.hil.detach_node_from_project_network(node_name, network,
                                                       nic)
             return self.__return_error(e)
-        except HaaSException as e:
+        except NetIsoException as e:
             # Message is being handled by custom formatter
             logger.exception('')
             return self.__return_error(e)
@@ -264,8 +280,6 @@ class BMI:
                                                       network, nic)
             ceph_img_name = self.__get_ceph_image_name(node_name)
             self.db.image.delete_with_name_from_project(node_name, self.project)
-            ceph_config = self.config.fs[constants.CEPH_CONFIG_SECTION_NAME]
-            logger.debug("Contents of ceph+config = %s", str(ceph_config))
             self.iscsi.remove_target(ceph_img_name)
             logger.info("The delete command was executed successfully")
             ret = self.fs.remove(str(ceph_img_name).encode("utf-8"))
@@ -281,7 +295,7 @@ class BMI:
                 self.project)
             self.db.image.insert(node_name, self.pid, parent_id,
                                  id=self.__extract_id(ceph_img_name))
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
+            time.sleep(constants.HIL_CALL_TIMEOUT)
             self.hil.attach_node_to_project_network(node_name, network, nic)
             return self.__return_error(e)
         except ISCSIException as e:
@@ -292,15 +306,15 @@ class BMI:
                 self.project)
             self.db.image.insert(node_name, self.pid, parent_id,
                                  id=self.__extract_id(ceph_img_name))
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
+            time.sleep(constants.HIL_CALL_TIMEOUT)
             self.hil.attach_node_to_project_network(node_name, network, nic)
             return self.__return_error(e)
         except DBException as e:
             logger.exception('')
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
+            time.sleep(constants.HIL_CALL_TIMEOUT)
             self.hil.attach_node_to_project_network(node_name, network, nic)
             return self.__return_error(e)
-        except HaaSException as e:
+        except NetIsoException as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -331,7 +345,7 @@ class BMI:
                                     constants.DEFAULT_SNAPSHOT_NAME)
             return self.__return_success(True)
 
-        except (HaaSException, DBException, FileSystemException) as e:
+        except (NetIsoException, DBException, FileSystemException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -345,7 +359,7 @@ class BMI:
             snapshots = self.db.image.fetch_snapshots_from_project(self.project)
             return self.__return_success(snapshots)
 
-        except (HaaSException, DBException, FileSystemException) as e:
+        except (NetIsoException, DBException, FileSystemException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -364,7 +378,7 @@ class BMI:
             self.fs.remove(ceph_img_name)
             self.db.image.delete_with_name_from_project(img_name, self.project)
             return self.__return_success(True)
-        except (HaaSException, DBException, FileSystemException) as e:
+        except (NetIsoException, DBException, FileSystemException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -376,7 +390,7 @@ class BMI:
             names = self.db.image.fetch_images_from_project(self.project)
             return self.__return_success(names)
 
-        except (HaaSException, DBException) as e:
+        except (NetIsoException, DBException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -462,7 +476,7 @@ class BMI:
     def delete_image(self, project, img):
         try:
             if not self.is_admin:
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             self.db.image.delete_with_name_from_project(img, project)
             return self.__return_success(True)
         except (DBException, AuthorizationFailedException) as e:
@@ -473,7 +487,7 @@ class BMI:
     def add_image(self, project, img, id, snap, parent, public):
         try:
             if not self.is_admin:
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             parent_id = None
             if parent is not None:
                 parent_id = self.db.image.fetch_id_with_name_from_project(
@@ -491,7 +505,7 @@ class BMI:
         try:
             mac_addr = self.hil.get_node_mac_addr(node_name)
             return self.__return_success(self.dhcp.get_ip(mac_addr))
-        except (HaaSException, DHCPException) as e:
+        except (NetIsoException, DHCPException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -499,7 +513,7 @@ class BMI:
     def copy_image(self, img1, dest_project, img2=None):
         try:
             if not self.is_admin and (self.project != dest_project):
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             dest_pid = self.__does_project_exist(dest_project)
             self.db.image.copy_image(self.project, img1, dest_pid, img2)
             if img2 is not None:
@@ -519,7 +533,7 @@ class BMI:
     def move_image(self, img1, dest_project, img2):
         try:
             if not self.is_admin and (self.project != dest_project):
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             dest_pid = self.__does_project_exist(dest_project)
             self.db.image.move_image(self.project, img1, dest_pid, img2)
             return self.__return_success(True)
@@ -531,7 +545,7 @@ class BMI:
     def add_project(self, project, network, id):
         try:
             if not self.is_admin:
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             self.db.project.insert(project, network, id)
             return self.__return_success(True)
         except (DBException, AuthorizationFailedException) as e:
@@ -542,7 +556,7 @@ class BMI:
     def delete_project(self, project):
         try:
             if not self.is_admin:
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             self.db.project.delete_with_name(project)
             return self.__return_success(True)
         except (DBException, AuthorizationFailedException) as e:
@@ -553,7 +567,7 @@ class BMI:
     def list_projects(self):
         try:
             if not self.is_admin:
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             projects = self.db.project.fetch_projects()
             return self.__return_success(projects)
         except (DBException, AuthorizationFailedException) as e:
@@ -564,7 +578,7 @@ class BMI:
     def mount_image(self, img):
         try:
             if not self.is_admin:
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             ceph_img_name = self.__get_ceph_image_name(img)
             self.iscsi.add_target(ceph_img_name)
             return self.__return_success(True)
@@ -576,7 +590,7 @@ class BMI:
     def umount_image(self, img):
         try:
             if not self.is_admin:
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             ceph_img_name = self.__get_ceph_image_name(img)
             self.iscsi.remove_target(ceph_img_name)
             return self.__return_success(True)
@@ -588,7 +602,7 @@ class BMI:
     def show_mounted(self):
         try:
             if not self.is_admin:
-                raise exception.AuthorizationFailedException()
+                raise AuthorizationFailedException()
             mappings = self.iscsi.list_targets()
             swapped_mappings = {}
             for k, v in mappings.iteritems():

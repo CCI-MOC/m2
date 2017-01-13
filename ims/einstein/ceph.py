@@ -1,14 +1,14 @@
 #! /bin/python
-import subprocess
 from contextlib import contextmanager
 
 import rados
 import rbd
 import sh
+import os
 
-import ims.common.constants as constants
 import ims.exception.file_system_exceptions as file_system_exceptions
-from ims.common.log import *
+import ims.common.constants as constants
+from ims.common.log import log, create_logger, trace
 
 logger = create_logger(__name__)
 
@@ -17,9 +17,8 @@ logger = create_logger(__name__)
 # handling code in methods
 class RBD:
     @log
-    def __init__(self, config, password):
+    def __init__(self, config):
         self.__validate(config)
-        self.password = password
         self.cluster = self.__init_cluster()
         self.context = self.__init_context()
         self.rbd = rbd.RBD()
@@ -82,6 +81,7 @@ class RBD:
     def list_images(self):
         return self.rbd.list(self.context)
 
+    # Not Using Anywhere, but will use in upload feature
     @log
     def create_image(self, img_id, img_size):
         try:
@@ -129,6 +129,7 @@ class RBD:
         except rbd.ImageHasSnapshots:
             raise file_system_exceptions.ImageHasSnapshotException(img_id)
 
+    # Not Using Anywhere, but will use in upload feature
     @log
     def write(self, img_id, data, offset):
         try:
@@ -230,45 +231,42 @@ class RBD:
             # Should be changed to special exception
             raise file_system_exceptions.ImageNotFoundException(img_id)
 
+    # Better Move to IET Driver as it is only using it
+    # Also will allow to decouple as this doesnt use rbd client
     @log
     def map(self, ceph_img_name):
-        command = "echo {0} | sudo -S rbd --keyring {1} --id {2} map {3}/{4}".format(
-            self.password, self.keyring, self.rid, self.pool, ceph_img_name)
-        p = subprocess.Popen(command, shell=True,
-                             stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-        output, err = p.communicate()
-        # output = sh.rbd.map(ceph_img_name, keyring=self.keyring, id=self.rid,
-        #            pool=self.pool)
-        if p.returncode == 0:
-            if output.find("sudo") != -1:
-                return output.split(":")[1].strip()
-            else:
-                return output.strip()
-        else:
+        try:
+            output = ""
+            with sh.sudo:
+                output = sh.rbd.map(ceph_img_name, keyring=self.keyring,
+                                    id=self.rid,
+                                    pool=self.pool)
+            logger.debug("Output = %s", output)
+            return output.strip()
+        except sh.ErrorReturnCode:
             raise file_system_exceptions.MapFailedException(ceph_img_name)
 
     @log
     def unmap(self, rbd_name):
-        command = "echo {0} | sudo -S rbd --keyring {1} --id {2} unmap {3}".format(
-            self.password, self.keyring, self.rid, rbd_name)
-        p = subprocess.Popen(command, shell=True,
-                             stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-        output, err = p.communicate()
-        # output = sh.rbd.unmap(rbd_name, keyring=self.keyring, id=self.rid)
-        if p.returncode == 0:
-            return output.strip()
-        else:
+        try:
+            output = ""
+            with sh.sudo:
+                output = sh.rbd.unmap(rbd_name, keyring=self.keyring,
+                                      id=self.rid)
+            logger.debug("Output = %s", output)
+        except sh.ErrorReturnCode:
             raise file_system_exceptions.UnmapFailedException(rbd_name)
 
     @log
     def showmapped(self):
-        output = sh.rbd.showmapped()
-        if output.exit_code == 0:
+        try:
+            output = sh.rbd.showmapped()
+            logger.debug("Output = %s", output)
             lines = output.split('\n')[1:-1]
             maps = {}
             for line in lines:
                 parts = line.split()
                 maps[parts[2]] = parts[4]
             return maps
-        else:
-            pass
+        except sh.ErrorReturnCode as e:
+            raise file_system_exceptions.ShowMappedFailedException(str(e))

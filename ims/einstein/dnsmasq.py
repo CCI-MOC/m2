@@ -1,4 +1,4 @@
-from ims.exception.dhcp_exceptions import *
+import ims.exception.dhcp_exceptions as dhcp_exceptions
 import ims.common.constants as constants
 
 class DNSMasq:
@@ -8,4 +8,4 @@ class DNSMasq:
                 parts = line.strip().split(' ')
                 if parts[1] == mac_addr and parts[4] == '01:' + mac_addr:
                     return parts[2]
-            raise MacAddrNotFoundException(mac_addr)
+            raise dhcp_exceptions.MacAddrNotFoundException(mac_addr)
