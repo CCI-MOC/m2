@@ -1,7 +1,4 @@
-import unittest
 from unittest import TestCase
-
-from ims.database import *
 
 
 class TestInsert(TestCase):
@@ -42,6 +39,7 @@ class TestInsert(TestCase):
         self.db.project.delete_with_name('project 1')
         self.db.close()
 
+
 class TestDelete(TestCase):
     @trace
     def setUp(self):
@@ -59,6 +57,7 @@ class TestDelete(TestCase):
         self.db.project.delete_with_name('project 1')
         self.db.close()
 
+
 class TestFetch(TestCase):
     @trace
     def setUp(self):
@@ -67,7 +66,7 @@ class TestFetch(TestCase):
         self.db.image.insert('image 1', 1)
         self.db.image.insert('image 2', 1, is_public=True)
         self.db.image.insert('image 3', 1, parent_id=1)
-        self.db.image.insert('image 4', 1, is_snapshot=True,parent_id=1)
+        self.db.image.insert('image 4', 1, is_snapshot=True, parent_id=1)
 
     def test_run(self):
         images = self.db.image.fetch_images_from_project('project 1')

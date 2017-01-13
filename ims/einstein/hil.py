@@ -58,9 +58,10 @@ class HIL:
             elif obj.status_code == 403:
                 raise haas_exceptions.AuthorizationFailedException()
             elif obj.status_code >= 400:
+                # For PEP8
+                error_msg = obj.json()[constants.MESSAGE_KEY]
                 raise haas_exceptions.UnknownException(obj.status_code,
-                                                       obj.json()[
-                                                           constants.MESSAGE_KEY])
+                                                       error_msg)
 
     @log
     def __init__(self, base_url, usr, passwd):

@@ -50,8 +50,8 @@ def cli():
     Cloud and a image management system(ims) that
 
     \b
-    (1) Provisions numerous nodes as quickly as possible while preserving support
-    for multitenancy using Hardware Isolation Layer (HIL) and
+    (1) Provisions numerous nodes as quickly as possible while preserving
+    support for multitenancy using Hardware Isolation Layer (HIL) and
 
     \b
     (2) Introduces the image management techniques that are supported by
@@ -103,7 +103,7 @@ def deprovision(project, node, network, nic):
     PROJECT = The HIL Project attached to your credentials
     NODE    = The Node to Provision
     NETWORK = The Name of the Provisioning Network
-    NIC     = The NIC that was used for Network Boot (For HIL IT is 'enp130s0f0')
+    NIC     = The NIC that was used for Network Boot
     """
     data = {constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
@@ -274,7 +274,8 @@ def list_projects():
     with BMI(_username, _password, constants.BMI_ADMIN_PROJECT) as bmi:
         ret = bmi.list_projects()
         if ret[constants.STATUS_CODE_KEY] == 200:
-            table = PrettyTable(field_names=["Id", "Name", "Provision Network"])
+            table = PrettyTable(
+                field_names=["Id", "Name", "Provision Network"])
             projects = ret[constants.RETURN_VALUE_KEY]
             for project in projects:
                 table.add_row(project)

@@ -97,7 +97,8 @@ class __BMIConfig:
             self.logs_debug = config.get(constants.LOGS_CONFIG_SECTION_NAME,
                                          constants.LOGS_DEBUG_KEY) == 'True'
             self.logs_verbose = config.get(constants.LOGS_CONFIG_SECTION_NAME,
-                                           constants.LOGS_VERBOSE_KEY) == 'True'
+                                           constants.LOGS_VERBOSE_KEY)
+            self.logs_verbose = self.logs_verbose == 'True'
             self.pxelinux_loc = config.get(constants.TFTP_CONFIG_SECTION_NAME,
                                            constants.PXELINUX_URL_KEY)
             self.ipxe_loc = config.get(constants.TFTP_CONFIG_SECTION_NAME,

@@ -13,15 +13,16 @@ logger = create_logger(__name__)
 
 
 # This class is responsible for doing CRUD operations on the Image Table in DB
-# This class was written as per the Repository Model which allows us to change the DB in the future without changing
-# business code
+# This class was written as per the Repository Model which allows us to change
+# the DB in the future without changing business code
 class ImageRepository:
     @trace
     def __init__(self, connection):
         self.connection = connection
 
     # inserts the arguments into table
-    # Commits if inserted successfully otherwise rollbacks if some issue occured and bubbles the exception
+    # Commits if inserted successfully otherwise rollbacks if some issue
+    # occured and bubbles the exception
     @log
     def insert(self, image_name, project_id, parent_id=None, is_public=False,
                is_snapshot=False, id=None):
@@ -41,7 +42,8 @@ class ImageRepository:
             raise db_exceptions.ORMException(e.message)
 
     # deletes images with name under the given project name
-    # commits if deletion was successful otherwise rollback occurs and exception is bubbled up
+    # commits if deletion was successful otherwise rollback occurs and
+    # exception is bubbled up
     @log
     def delete_with_name_from_project(self, name, project_name):
         try:
@@ -145,8 +147,9 @@ class ImageRepository:
             raise db_exceptions.ORMException(e.message)
 
     # Fetch the list of images which are public
-    # Was a dictionary changed it for test cases, dont see a reason as to why we need a dict
-    # We are returning a dictionary of format {image_name : <img_name> , project_name : <proj_name>}
+    # Was a dictionary changed it for test cases, dont see a reason as to why
+    # we need a dict. We are returning a dictionary of format
+    # {image_name : <img_name> , project_name : <proj_name>}
     @log
     def fetch_names_with_public(self):
         try:
@@ -272,9 +275,10 @@ class ImageRepository:
 
 # This class represents the image table
 # the Column variables are the columns in the table
-# the relationship variables is loaded eagerly as the session is terminated after the object is retrieved
-# The snaphosts relationship is also delete on cascade (Commented)
-# snapshots relationship is a reverse relation for easy traversal if required (Commented)
+# the relationship variables is loaded eagerly as the session is terminated
+# after the object is retrieved. The snaphosts relationship is also delete on
+# cascade (Commented).Snapshots relationship is a reverse relation for easy
+# traversal if required (Commented)
 class Image(DatabaseConnection.Base):
     __tablename__ = "image"
 
@@ -295,7 +299,9 @@ class Image(DatabaseConnection.Base):
     # Users should not be able to create images with same name in a given
     # project. So we are creating a unique constraint.
     __table_args__ = (UniqueConstraint("project_id", "name",
-                                       name="_project_id_image_name_unique_constraint"),)
+                                       name="_project_id_image_name_unique"
+                                            "_constraint"),)
 
     # Removed snapshot class for now
-    # snapshots = relationship("Snapshot", back_populates="image", lazy="joined", cascade="all, delete, delete-orphan")
+    # snapshots = relationship("Snapshot", back_populates="image",
+    # lazy="joined", cascade="all, delete, delete-orphan")

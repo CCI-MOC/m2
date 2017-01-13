@@ -1,4 +1,3 @@
-import unittest
 from unittest import TestCase
 
 from ims.database.database import *

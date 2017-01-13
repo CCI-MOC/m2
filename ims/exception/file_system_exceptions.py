@@ -16,7 +16,8 @@ class ImageNotFoundException(FileSystemException):
         return self.name + " Not Found"
 
 
-# This exception should be raised if some connection issues occured when communicating with file system
+# This exception should be raised if some connection issues occured when
+# communicating with file system
 class ConnectionException(FileSystemException):
     @property
     def status_code(self):
@@ -26,7 +27,8 @@ class ConnectionException(FileSystemException):
         return "Not Able to Connect to File System"
 
 
-# this exception should be raised when some operation is called on an image which is busy
+# this exception should be raised when some operation is called on an image
+# which is busy
 class ImageBusyException(FileSystemException):
     @property
     def status_code(self):
@@ -39,7 +41,8 @@ class ImageBusyException(FileSystemException):
         return self.name + " is Busy (Could have Clones)"
 
 
-# this exception should be raised when some operation is called on an image that has snapshots
+# this exception should be raised when some operation is called on an image
+# that has snapshots
 class ImageHasSnapshotException(FileSystemException):
     @property
     def status_code(self):
@@ -52,7 +55,8 @@ class ImageHasSnapshotException(FileSystemException):
         return self.name + " has Snapshots"
 
 
-# this exception should be raised when some operation requires that an image not exist in the filesytem
+# this exception should be raised when some operation requires that an image
+# not exist in the filesytem
 class ImageExistsException(FileSystemException):
     @property
     def status_code(self):
@@ -111,7 +115,8 @@ class InvalidConfigArgumentException(FileSystemException):
         return "Invalid " + self.arg + " argument in config file"
 
 
-# this exception should be raised when the config file contains an invalid argument
+# this exception should be raised when the config file contains an invalid
+# argument
 class MissingConfigArgumentException(FileSystemException):
     @property
     def status_code(self):

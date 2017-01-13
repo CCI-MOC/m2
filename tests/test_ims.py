@@ -1,6 +1,8 @@
 import imp
 import unittest
+
 import os
+
 import ims.common.config as config
 
 config.load()
@@ -13,8 +15,8 @@ def find_test_modules(skip_list):
     for dirname, dirnames, filenames in os.walk(dir_name):
         for filename in filenames:
             name, ext = os.path.splitext(filename)
-            if ext == '.py' and name != '__init__' and \
-                            name != name_of_this_module \
+            if ext == '.py' and name != '__init__' \
+                    and name != name_of_this_module \
                     and name not in skip_list:
                 path = os.path.join(dirname, filename)
                 modules.append(imp.load_source(name, path))

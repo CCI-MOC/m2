@@ -14,7 +14,8 @@ class DatabaseConnection:
     # the sqlalchemy base class which the table classes will inherit
     Base = declarative_base()
 
-    # the engine and session maker are made static so that only one of them needs to be created
+    # the engine and session maker are made static so that only one of them
+    # needs to be created
     # creates the engine for the database
     # sample_bmi.db should be changed to something more realistic
     # NullPool pool class is equivalent to no connection pool

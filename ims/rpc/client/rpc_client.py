@@ -62,17 +62,18 @@ class RPCClient:
         if command in self.func_list:
             concatenated_command = command + (" ".join(args))
             if ((not self.__escape_characters_present(
-                    concatenated_command)) and self.__correct_argument_list_length(
-                command, args)):
+                    concatenated_command)) and
+                    self.__correct_argument_list_length(command, args)):
                 if self.main_obj is None:
                     output = self.__get_main_obj()
                     if output is not None:
                         return output
 
                 try:
-                    execute_command = self.main_obj.execute_command(credentials,
-                                                                    command,
-                                                                    args)
+                    execute_command = self.main_obj.execute_command(
+                        credentials,
+                        command,
+                        args)
                     return execute_command
                 except Pyro4.errors.CommunicationError as e:
                     self.main_obj = None

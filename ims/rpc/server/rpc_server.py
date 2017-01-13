@@ -43,7 +43,8 @@ def start_rpc_server():
         server = MainServer()
         server.remake_mappings()
     Pyro4.config.HOST = cfg.rpcserver_ip
-    # Starting the Pyro daemon, locating and registering object with name server.
+    # Starting the Pyro daemon, locating and registering object with name
+    # server
     daemon = Pyro4.Daemon(port=cfg.rpcserver_port)
     # find the name server
     ns = Pyro4.locateNS(host=cfg.nameserver_ip, port=cfg.nameserver_port)
@@ -51,4 +52,5 @@ def start_rpc_server():
     uri = daemon.register(MainServer)
     # register the object with a name in the name server
     ns.register(constants.RPC_SERVER_NAME, uri)
-    daemon.requestLoop()  # start the event loop of the server to wait for calls
+    # start the event loop of the server to wait for calls
+    daemon.requestLoop()
