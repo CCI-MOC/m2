@@ -271,6 +271,7 @@ def list_projects():
     \b
     WARNING = User Must be An Admin
     """
+    print("First try")
     with BMI(_username, _password, constants.BMI_ADMIN_PROJECT) as bmi:
         ret = bmi.list_projects()
         if ret[constants.STATUS_CODE_KEY] == 200:
