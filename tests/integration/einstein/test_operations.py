@@ -48,7 +48,7 @@ class TestProvision(TestCase):
         response = self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK,
                                            NIC)
         self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def tearDown(self):
         self.good_bmi.deprovision(NODE_NAME, NETWORK, NIC)
@@ -56,7 +56,7 @@ class TestProvision(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
 
 class TestDeprovision(TestCase):
@@ -72,12 +72,12 @@ class TestDeprovision(TestCase):
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
         self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def runTest(self):
         response = self.good_bmi.deprovision(NODE_NAME, NETWORK, NIC)
         self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def tearDown(self):
         self.good_bmi.remove_image(EXIST_IMG_NAME)
@@ -99,7 +99,7 @@ class TestCreateSnapshot(TestCase):
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
         self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def runTest(self):
         response = self.good_bmi.create_snapshot(NODE_NAME, NEW_SNAP_NAME)
@@ -125,7 +125,7 @@ class TestCreateSnapshot(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
 
 class TestListSnapshots(TestCase):
@@ -141,7 +141,7 @@ class TestListSnapshots(TestCase):
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
         self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
         self.good_bmi.create_snapshot(NODE_NAME, NEW_SNAP_NAME)
 
@@ -158,7 +158,7 @@ class TestListSnapshots(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
 
 @unittest.skip("Same as Remove Image")
