@@ -18,18 +18,19 @@ from ims.exception.exception import BMIException
 
 _cfg = config.get()
 
-_url = "http://{0}:{1}/".format(_cfg.bind_ip, _cfg.bind_port)
+_url = "http://{0}:{1}/".format(_cfg.rest_api.ip,
+                                _cfg.rest_api.port)
 
-if constants.HAAS_USERNAME_VARIABLE in os.environ:
-    _username = os.environ[constants.HAAS_USERNAME_VARIABLE]
+if constants.HIL_USERNAME_VARIABLE in os.environ:
+    _username = os.environ[constants.HIL_USERNAME_VARIABLE]
 else:
-    click.echo(constants.HAAS_USERNAME_VARIABLE + " Variable Not Set")
+    click.echo(constants.HIL_USERNAME_VARIABLE + " Variable Not Set")
     sys.exit(1)
 
-if constants.HAAS_PASSWORD_VARIABLE in os.environ:
-    _password = os.environ[constants.HAAS_PASSWORD_VARIABLE]
+if constants.HIL_PASSWORD_VARIABLE in os.environ:
+    _password = os.environ[constants.HIL_PASSWORD_VARIABLE]
 else:
-    click.echo(constants.HAAS_PASSWORD_VARIABLE + " Variable Not Set")
+    click.echo(constants.HIL_PASSWORD_VARIABLE + " Variable Not Set")
     sys.exit(1)
 
 
@@ -271,6 +272,7 @@ def list_projects():
     \b
     WARNING = User Must be An Admin
     """
+    print("First try")
     with BMI(_username, _password, constants.BMI_ADMIN_PROJECT) as bmi:
         ret = bmi.list_projects()
         if ret[constants.STATUS_CODE_KEY] == 200:

@@ -30,17 +30,17 @@ class RBD:
     @trace
     def __validate(self, config):
         try:
-            self.rid = config[constants.CEPH_ID_KEY]
-            self.r_conf = config[constants.CEPH_CONFIG_FILE_KEY]
-            self.pool = config[constants.CEPH_POOL_KEY]
-            self.keyring = config[constants.CEPH_KEY_RING_KEY]
+            self.rid = config.id
+            self.r_conf = config.conf_file
+            self.pool = config.pool
+            self.keyring = config.keyring
         except KeyError as e:
             raise file_system_exceptions.MissingConfigArgumentException(
                 e.args[0])
 
         if not os.path.isfile(self.r_conf):
             raise file_system_exceptions.InvalidConfigArgumentException(
-                constants.CEPH_CONFIG_FILE_KEY)
+                constants.CEPH_CONFIG_FILE_OPT)
 
     @trace
     def __init_context(self):

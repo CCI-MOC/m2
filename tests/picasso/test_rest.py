@@ -12,9 +12,9 @@ _cfg = config.get()
 
 url = "http://192.168.122.127:8000/"
 
-CORRECT_HAAS_USERNAME = "haasadmin"
-CORRECT_HAAS_PASSWORD = "admin1234"
-INCORRECT_HAAS_PASSWORD = "admin123##"
+CORRECT_HIL_USERNAME = "haasadmin"
+CORRECT_HIL_PASSWORD = "admin1234"
+INCORRECT_HIL_PASSWORD = "admin123##"
 
 NODE_NAME = "cisco-24"
 NIC = "enp130s0f0"
@@ -33,7 +33,7 @@ class TestProvision(TestCase):
     def setUp(self):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)
-        self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
+        self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
 
@@ -44,9 +44,9 @@ class TestProvision(TestCase):
                 constants.NETWORK_PARAMETER: NETWORK,
                 constants.NIC_PARAMETER: NIC}
         res = requests.put(url + "provision/", data=data,
-                           auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
+                           auth=(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD))
         self.assertEqual(res.status_code, 200)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def tearDown(self):
         self.good_bmi.deprovision(NODE_NAME, NETWORK, NIC)
@@ -54,7 +54,7 @@ class TestProvision(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
 
 class TestDeprovision(TestCase):
@@ -62,11 +62,11 @@ class TestDeprovision(TestCase):
     def setUp(self):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)
-        self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
+        self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
         self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def test_run(self):
         data = {constants.PROJECT_PARAMETER: PROJECT,
@@ -75,10 +75,10 @@ class TestDeprovision(TestCase):
                 constants.NIC_PARAMETER: NIC}
         res = requests.delete(url + "deprovision/", data=data,
                               auth=(
-                                  CORRECT_HAAS_USERNAME,
-                                  CORRECT_HAAS_PASSWORD))
+                                  CORRECT_HIL_USERNAME,
+                                  CORRECT_HIL_PASSWORD))
         self.assertEqual(res.status_code, 200)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def tearDown(self):
         self.good_bmi.remove_image(EXIST_IMG_NAME)
@@ -92,18 +92,18 @@ class TestCreateSnapshot(TestCase):
     def setUp(self):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)
-        self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
+        self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
         self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def test_run(self):
         data = {constants.PROJECT_PARAMETER: PROJECT,
                 constants.NODE_NAME_PARAMETER: NODE_NAME,
                 constants.SNAP_NAME_PARAMETER: NEW_SNAP_NAME}
         res = requests.put(url + "create_snapshot/", data=data,
-                           auth=(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
+                           auth=(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD))
         self.assertEqual(res.status_code, 200)
 
         snaps = self.db.image.fetch_snapshots_from_project(PROJECT)
@@ -126,7 +126,7 @@ class TestCreateSnapshot(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
 
 class TestListSnapshots(TestCase):
@@ -134,19 +134,19 @@ class TestListSnapshots(TestCase):
     def setUp(self):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)
-        self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
+        self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
         self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
         self.good_bmi.create_snapshot(NODE_NAME, NEW_SNAP_NAME)
 
     def test_run(self):
         data = {constants.PROJECT_PARAMETER: PROJECT}
         res = requests.post(url + "list_snapshots/", data=data,
-                            auth=(CORRECT_HAAS_USERNAME,
-                                  CORRECT_HAAS_PASSWORD))
+                            auth=(CORRECT_HIL_USERNAME,
+                                  CORRECT_HIL_PASSWORD))
         self.assertEqual(res.status_code, 200)
         js = res.json()
         self.assertEqual(res.status_code, 200)
@@ -159,7 +159,7 @@ class TestListSnapshots(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
 
 @unittest.skip('Same as Remove Image')
@@ -179,15 +179,15 @@ class TestListImages(TestCase):
     def setUp(self):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)
-        self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
+        self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
 
     def test_run(self):
         data = {constants.PROJECT_PARAMETER: PROJECT}
         res = requests.post(url + "list_images/", data=data,
-                            auth=(CORRECT_HAAS_USERNAME,
-                                  CORRECT_HAAS_PASSWORD))
+                            auth=(CORRECT_HIL_USERNAME,
+                                  CORRECT_HIL_PASSWORD))
         js = res.json()
         self.assertEqual(res.status_code, 200)
         self.assertEqual(js[0], EXIST_IMG_NAME)
@@ -204,7 +204,7 @@ class TestRemoveImage(TestCase):
     def setUp(self):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)
-        self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
+        self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
 
@@ -212,7 +212,7 @@ class TestRemoveImage(TestCase):
         data = {constants.PROJECT_PARAMETER: PROJECT,
                 constants.IMAGE_NAME_PARAMETER: EXIST_IMG_NAME}
         res = requests.delete(url + "remove_image/", data=data, auth=(
-            CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD))
+            CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD))
         self.assertEqual(res.status_code, 200)
 
     def tearDown(self):

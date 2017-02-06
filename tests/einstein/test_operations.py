@@ -8,9 +8,9 @@ from ims.einstein.operations import BMI
 
 _cfg = config.get()
 
-CORRECT_HAAS_USERNAME = "haasadmin"
-CORRECT_HAAS_PASSWORD = "admin1234"
-INCORRECT_HAAS_PASSWORD = "admin123##"
+CORRECT_HIL_USERNAME = "haasadmin"
+CORRECT_HIL_PASSWORD = "admin1234"
+INCORRECT_HIL_PASSWORD = "admin123##"
 
 NODE_NAME = "cisco-24"
 NIC = "enp130s0f0"
@@ -30,7 +30,7 @@ class TestProvision(TestCase):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)
 
-        self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
+        self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
 
@@ -38,7 +38,7 @@ class TestProvision(TestCase):
         response = self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK,
                                            NIC)
         self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def tearDown(self):
         self.good_bmi.deprovision(NODE_NAME, NETWORK, NIC)
@@ -46,7 +46,7 @@ class TestProvision(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
 
 class TestDeprovision(TestCase):
@@ -55,16 +55,16 @@ class TestDeprovision(TestCase):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)
 
-        self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
+        self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
         self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def test_run(self):
         response = self.good_bmi.deprovision(NODE_NAME, NETWORK, NIC)
         self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def tearDown(self):
         self.good_bmi.remove_image(EXIST_IMG_NAME)
@@ -79,11 +79,11 @@ class TestCreateSnapshot(TestCase):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)
 
-        self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
+        self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
         self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def test_run(self):
         response = self.good_bmi.create_snapshot(NODE_NAME, NEW_SNAP_NAME)
@@ -109,7 +109,7 @@ class TestCreateSnapshot(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
 
 class TestListSnapshots(TestCase):
@@ -118,11 +118,11 @@ class TestListSnapshots(TestCase):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)
 
-        self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
+        self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
         self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
         self.good_bmi.create_snapshot(NODE_NAME, NEW_SNAP_NAME)
 
@@ -139,7 +139,7 @@ class TestListSnapshots(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
 
 @unittest.skip("Same as Remove Image")
@@ -160,7 +160,7 @@ class TestListImages(TestCase):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)
 
-        self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
+        self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
 
@@ -182,7 +182,7 @@ class TestRemoveImage(TestCase):
     def setUp(self):
         self.db = Database()
         self.db.project.insert(PROJECT, NETWORK)
-        self.good_bmi = BMI(CORRECT_HAAS_USERNAME, CORRECT_HAAS_PASSWORD,
+        self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
 

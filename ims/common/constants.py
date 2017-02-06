@@ -8,34 +8,41 @@ CONFIG_DEFAULT_LOCATION = '/etc/bmi/bmiconfig.cfg'
 # Environment Variable Names
 CONFIG_LOCATION_ENV_VARIABLE = 'BMI_CONFIG'
 PROJECT_ENV_VARIABLE = 'PROJECT'
-HAAS_USERNAME_VARIABLE = 'HAAS_USERNAME'
-HAAS_PASSWORD_VARIABLE = 'HAAS_PASSWORD'
+HIL_USERNAME_VARIABLE = 'HIL_USERNAME'
+HIL_PASSWORD_VARIABLE = 'HIL_PASSWORD'
 
 # Config section names
-BMI_CONFIG_SECTION_NAME = 'bmi'
-DB_CONFIG_SECTION_NAME = 'db'
-FILESYSTEM_CONFIG_SECTION_NAME = 'filesystem'
-HAAS_CONFIG_SECTION_NAME = 'haas'
-CEPH_CONFIG_SECTION_NAME = 'ceph'
-ISCSI_CONFIG_SECTION_NAME = 'iscsi'
-RPC_CONFIG_SECTION_NAME = 'rpc'
-HTTP_CONFIG_SECTION_NAME = 'http'
-LOGS_CONFIG_SECTION_NAME = 'logs'
-TFTP_CONFIG_SECTION_NAME = 'tftp'
+BMI_SECTION = 'bmi'
+DB_SECTION = 'db'
+FS_SECTION = 'fs'
+NET_ISOLATOR_SECTION = 'net_isolator'
+ISCSI_SECTION = 'iscsi'
+RPC_SECTION = 'rpc'
+REST_API_SECTION = 'rest_api'
+LOGS_SECTION = 'logs'
+TFTP_SECTION = 'tftp'
+TESTS_SECTION = 'tests'
+DRIVER_SECTION = 'driver'
 
-# Non FS Keys in Config File
-HAAS_URL_KEY = 'url'
-ISCSI_PASSWORD_KEY = 'password'
-ISCSI_IP_KEY = 'ip'
+NET_ISOLATOR_DRIVER_OPT = 'net_isolator'
+ISCSI_DRIVER_OPT = 'iscsi'
+FS_DRIVER_OPT = 'fs'
+
+# Network Isolator Keys
+NET_ISOLATOR_URL_OPT = 'url'
+
+# ISCSI Keys
+ISCSI_PASSWORD_OPT = 'password'
+ISCSI_IP_OPT = 'ip'
 
 # DB
-DB_URL_KEY = 'url'
+DB_PATH_OPT = 'path'
 
 # Ceph Keys in Config File
-CEPH_ID_KEY = 'id'
-CEPH_POOL_KEY = 'pool'
-CEPH_CONFIG_FILE_KEY = 'conf_file'
-CEPH_KEY_RING_KEY = 'keyring'
+CEPH_ID_OPT = 'id'
+CEPH_POOL_OPT = 'pool'
+CEPH_CONFIG_FILE_OPT = 'conf_file'
+CEPH_KEY_RING_OPT = 'keyring'
 
 # ISCSI
 ISCSI_UPDATE_SUCCESS = 'successfully'
@@ -44,29 +51,29 @@ ISCSI_CREATE_COMMAND = 'create'
 ISCSI_DELETE_COMMAND = 'delete'
 
 # RPC
-RPC_NAME_SERVER_IP_KEY = 'name_server_ip'
-RPC_NAME_SERVER_PORT_KEY = 'name_server_port'
-RPC_RPC_SERVER_IP_KEY = 'rpc_server_ip'
-RPC_RPC_SERVER_PORT_KEY = 'rpc_server_port'
+NAME_SERVER_IP_OPT = 'name_server_ip'
+NAME_SERVER_PORT_OPT = 'name_server_port'
+RPC_SERVER_IP_OPT = 'rpc_server_ip'
+RPC_SERVER_PORT_OPT = 'rpc_server_port'
 
 RPC_SERVER_NAME = 'example.mainserver'
 
-# HTTP
-BIND_IP_KEY = 'bind_ip'
-BIND_PORT_KEY = 'bind_port'
+# REST_API
+REST_API_IP_OPT = 'ip'
+REST_API_PORT_OPT = 'port'
 
 # LOGS
-LOGS_URL_KEY = 'url'
-LOGS_DEBUG_KEY = 'debug'
-LOGS_VERBOSE_KEY = 'verbose'
+LOGS_PATH_OPT = 'path'
+LOGS_DEBUG_OPT = 'debug'
+LOGS_VERBOSE_OPT = 'verbose'
 
 # TFTP
-PXELINUX_URL_KEY = 'pxelinux_url'
-IPXE_URL_KEY = 'ipxe_url'
+PXELINUX_PATH_OPT = 'pxelinux_path'
+IPXE_PATH_OPT = 'ipxe_path'
 
 # BMI
-UID_KEY = 'uid'
-SERVICE_KEY = 'service'
+UID_OPT = 'uid'
+SERVICE_OPT = 'service'
 
 # Response Related Keys
 STATUS_CODE_KEY = 'status_code'
@@ -112,9 +119,9 @@ IET_LUN_STARTING = "Lun"
 
 DNSMASQ_LEASES_LOC = '/var/lib/misc/dnsmasq.leases'
 
-HAAS_CALL_TIMEOUT = 10
+HIL_CALL_TIMEOUT = 10
 DEFAULT_SNAPSHOT_NAME = "snapshot"
 
 BMI_ADMIN_PROJECT = "bmi_infra"
 
-HAAS_BMI_CHANNEL = "vlan/native"
+HIL_BMI_CHANNEL = "vlan/native"

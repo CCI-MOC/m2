@@ -4,7 +4,7 @@ import urlparse
 import requests
 
 import ims.common.constants as constants
-import ims.exception.haas_exceptions as haas_exceptions
+import ims.exception.hil_exceptions as hil_exceptions
 from ims.common.log import create_logger, trace, log
 
 logger = create_logger(__name__)
@@ -41,7 +41,7 @@ class HIL:
                         requests.post(self.url, data=self.request.data,
                                       auth=self.request.auth))
             except requests.RequestException:
-                raise haas_exceptions.ConnectionException()
+                raise hil_exceptions.ConnectionException()
 
         @trace
         def resp_parse(self, obj):
@@ -54,13 +54,13 @@ class HIL:
             elif obj.status_code > 200 and obj.status_code < 400:
                 return {constants.STATUS_CODE_KEY: obj.status_code}
             elif obj.status_code == 401:
-                raise haas_exceptions.AuthenticationFailedException()
+                raise hil_exceptions.AuthenticationFailedException()
             elif obj.status_code == 403:
-                raise haas_exceptions.AuthorizationFailedException()
+                raise hil_exceptions.AuthorizationFailedException()
             elif obj.status_code >= 400:
                 # For PEP8
                 error_msg = obj.json()[constants.MESSAGE_KEY]
-                raise haas_exceptions.UnknownException(obj.status_code,
+                raise hil_exceptions.UnknownException(obj.status_code,
                                                        error_msg)
 
     @log
@@ -100,11 +100,11 @@ class HIL:
     @log
     def attach_node_to_project_network(self, node, network, nic):
         api = '/node/' + node + '/nic/' + nic + '/connect_network'
-        body = {"network": network, "channel": constants.HAAS_BMI_CHANNEL}
+        body = {"network": network, "channel": constants.HIL_BMI_CHANNEL}
         return self.__call_rest_api_with_body(api=api, body=body)
 
     @log
-    def attach_node_haas_project(self, project, node):
+    def attach_node_hil_project(self, project, node):
         api = 'project/' + project + '/connect_node'
         body = {"node": node}
         return self.__call_rest_api_with_body(api=api, body=body)

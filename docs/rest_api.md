@@ -5,11 +5,11 @@ We have a basic set of API as of now. All of the services as of now are taking t
 BMI API assumes that you know the image which you are interested in. BMI has an driver which can communicate with Ceph(the file storage system that we are using for storing our images). Please make sure that you understand Ceph concepts before you play with the API. 
 
 To have a clear understanding of the API, we wish to provide the following terminology:
-* project - A project is the HaaS project that has been allocated to tenant.
-* node - A node that is allocated to project by HaaS. This node should be present in HaaS.
+* project - A project is the HIL project that has been allocated to tenant.
+* node - A node that is allocated to project by HIL. This node should be present in HIL.
 * img - The name of image which will be used for provisioning.
 * snap_name - The snapshot of the image from which you want to provision a node.
-* network - The provisioning network created in HaaS.
+* network - The provisioning network created in HIL.
 * nic - The nic which should be used to connect the node to provisioning network
 * channel - The vlan that should be used to connect the node to provisioning network
 
@@ -18,7 +18,7 @@ The convention that we are following for requests is:
 * DELETE - for resource deletion for node deletion
 * POST - for rest of operations
 
-**The username and password for HaaS needs to be passed along using HTTP Basic Auth to each possible API call.**
+**The username and password for HIL needs to be passed along using HTTP Basic Auth to each possible API call.**
 
 Each possible API call has:
 * an HTTP method and URL path
@@ -70,7 +70,7 @@ Send a PUT Request with following body to http://<BMI_SERVER>:<PORT>/provision/
  "nic" : "nic01"
 }
 ```
-**Make sure to use HTTP Basic Auth to pass HaaS Credentials**
+**Make sure to use HTTP Basic Auth to pass HIL Credentials**
 
 This should return a 200 or other errors as explained above.
 
@@ -115,7 +115,7 @@ Send a DELETE Request with following body to http://<BMI_SERVER>:<PORT>/deprovis
 }
 ```
 
-**Make sure to use HTTP Basic Auth to pass HaaS Credentials**
+**Make sure to use HTTP Basic Auth to pass HIL Credentials**
 
 This should return a 200 or other errors as explained above.
 
@@ -155,7 +155,7 @@ Send a POST Request with following body to http://BMI_SERVER:PORT/list_images/
 }
 ```
 
-**Make sure to use HTTP Basic Auth to pass HaaS Credentials**
+**Make sure to use HTTP Basic Auth to pass HIL Credentials**
 
 The list of images which are in your project - if it is successful with a status code of 200.
 
@@ -201,7 +201,7 @@ Send a PUT Request with following body to http://BMI_SERVER:PORT/create_snapshot
 }
 ```
 
-**Make sure to use HTTP Basic Auth to pass HaaS Credentials**
+**Make sure to use HTTP Basic Auth to pass HIL Credentials**
 
 This should return a 200 or other errors as explained above.
 
@@ -241,7 +241,7 @@ Send a POST Request with following body to http://BMI_SERVER:PORT/list_snapshots
 }
 ```
 
-**Make sure to use HTTP Basic Auth to pass HaaS Credentials**
+**Make sure to use HTTP Basic Auth to pass HIL Credentials**
 
 The list of snapshots for given image which is in your project - if it is successful with a status code of 200.
 
@@ -281,7 +281,7 @@ Send a DELETE Request with following body to http://BMI_SERVER:PORT/remove_image
 }
 ```
 
-**Make sure to use HTTP Basic Auth to pass HaaS Credentials**
+**Make sure to use HTTP Basic Auth to pass HIL Credentials**
 
 If the call is successful, we will get a 200 as status code and test.img should be removed.
 
