@@ -122,4 +122,3 @@ class MockISCSI(ISCSI):
         """
         self.stop_server()
         self.start_server()
-
