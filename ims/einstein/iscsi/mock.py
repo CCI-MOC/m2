@@ -24,32 +24,35 @@ class MockISCSI(ISCSI):
     def set_target_list(self, target_list):
         """
         Setter method for target list to be used by test cases.
+
         Args:
             target_list: List provided by user
         Returns:
             None, will update the list provided.
         """
-        self.target_list += target_list
+        self.target_list = target_list
 
     def set_server_status(self, status):
         """
         Setter method for iSCSI server to be used by test cases.
+
         Args:
             status: String which has to be either Running or Dead
         Returns:
             Either error state or updates the status of mock iSCSI server
         """
         # TODO: make states constants across all iSCSI implementations.
-        valid_states = ["Running", "Dead"]
+        VALID_STATES = ["Running", "Dead"]
         error = "iSCSI server in unknown state"
-        if status in valid_states:
+        if status in VALID_STATES:
             self.server_status = status
         else:
             return error
 
     def add_target(self, target_name):
         """
-        Adding a target for iSCSI server
+        Adding a target for iSCSI server.
+
         Args:
             Adds the target to existing target list
         Returns:
@@ -59,11 +62,12 @@ class MockISCSI(ISCSI):
         if target_name not in self.list_targets():
             self.target_list.append(target_name)
         else:
-            raise iscsi_exceptions.NodeAlreadyInUseException
+            raise iscsi_exceptions.NodeAlreadyInUseException()
 
     def remove_target(self, target_name):
         """
-        Removes a target from iSCSI server
+        Removes a target from iSCSI server.
+
         Args:
             Name of target that has to be removed.
         Returns:
@@ -72,11 +76,12 @@ class MockISCSI(ISCSI):
         if target_name in self.list_targets():
             self.target_list.remove(target_name)
         else:
-            raise iscsi_exceptions.NodeAlreadyUnmappedException
+            raise iscsi_exceptions.NodeAlreadyUnmappedException()
 
     def list_targets(self):
         """
         Lists all the targets in current iSCSI server.
+
         Returns:
             List of all targets.
         """
@@ -84,7 +89,8 @@ class MockISCSI(ISCSI):
 
     def start_server(self):
         """
-        Starts the iSCSI server
+        Starts the iSCSI server.
+
         Returns:
             None, if successful or an exception.
 
@@ -93,11 +99,12 @@ class MockISCSI(ISCSI):
         self.server_status = "Running"
         if self.show_status() is not "Running":
             # TODO: I think its better to have a generic StateChangeException.
-            raise iscsi_exceptions.StartFailedException
+            raise iscsi_exceptions.StopFailedException()
 
     def show_status(self):
         """
-        Shows the status of iSCSI server
+        Shows the status of iSCSI server.
+
         Returns:
             String which is either "Running" or "Dead"
         """
@@ -105,18 +112,20 @@ class MockISCSI(ISCSI):
 
     def stop_server(self):
         """
-        Stops the iSCSI server
+        Stops the iSCSI server.
+
         Returns:
             None if successful or an exception
         """
         # TODO: Same as for start function regarding strings.
         self.server_status = "Dead"
         if self.show_status() is not "Dead":
-            raise iscsi_exceptions.StopFailedException
+            raise iscsi_exceptions.StopFailedException()
 
     def restart_server(self):
         """
         Restarts the iSCSI server.
+
         Returns:
             None or exception
         """
