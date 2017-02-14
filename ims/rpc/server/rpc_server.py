@@ -39,16 +39,16 @@ class MainServer:
 @log
 def start_rpc_server():
     cfg = config.get()
-    if cfg.bmi[constants.SERVICE_KEY] == 'True':
+    if cfg.bmi.service == 'True':
         server = MainServer()
         server.remake_mappings()
-    Pyro4.config.HOST = cfg.rpc[constants.RPC_RPC_SERVER_IP_KEY]
+    Pyro4.config.HOST = cfg.rpc.rpc_server_ip
     # Starting the Pyro daemon, locating and registering object with name
     # server
-    daemon = Pyro4.Daemon(port=int(cfg.rpc[constants.RPC_RPC_SERVER_PORT_KEY]))
+    daemon = Pyro4.Daemon(port=int(cfg.rpc.rpc_server_port))
     # find the name server
-    ns = Pyro4.locateNS(host=cfg.rpc[constants.RPC_NAME_SERVER_IP_KEY],
-                        port=int(cfg.rpc[constants.RPC_NAME_SERVER_PORT_KEY]))
+    ns = Pyro4.locateNS(host=cfg.rpc.name_server_ip,
+                        port=int(cfg.rpc.name_server_port))
     # register the greeting maker as a Pyro object
     uri = daemon.register(MainServer)
     # register the object with a name in the name server

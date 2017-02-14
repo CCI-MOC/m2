@@ -21,7 +21,7 @@ class DatabaseConnection:
     # sample_bmi.db should be changed to something more realistic
     # NullPool pool class is equivalent to no connection pool
     # Should be adapted to postgres SQL
-    engine = create_engine('sqlite:///' + _cfg.db[constants.DB_PATH_KEY],
+    engine = create_engine('sqlite:///' + _cfg.db.path,
                            poolclass=SingletonThreadPool)
 
     # creates a session maker for creating sessions

@@ -32,8 +32,8 @@ class RPCClient:
     def __get_main_obj(self):
         try:
             # Locates the name server
-            ns_ip = self.cfg.rpc[constants.RPC_NAME_SERVER_IP_KEY]
-            ns_port = int(self.cfg.rpc[constants.RPC_NAME_SERVER_PORT_KEY])
+            ns_ip = self.cfg.rpc.name_server_ip
+            ns_port = int(self.cfg.rpc.name_server_port)
             self.name_server = Pyro4.locateNS(host=ns_ip,
                                               port=ns_port)
             # Looks up for the registered service in the name server

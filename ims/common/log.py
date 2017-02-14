@@ -11,9 +11,9 @@ import ims.common.constants as constants
 loggers = {}
 
 _cfg = config.get()
-_base_path = _cfg.logs[constants.LOGS_PATH_KEY]
-_debug = _cfg.logs[constants.LOGS_DEBUG_KEY] == 'True'
-_verbose = _cfg.logs[constants.LOGS_VERBOSE_KEY] == 'True'
+_base_path = _cfg.logs.path
+_debug = _cfg.logs.debug == 'True'
+_verbose = _cfg.logs.verbose == 'True'
 
 
 def log(func):

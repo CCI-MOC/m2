@@ -6,6 +6,6 @@ import ims.common.constants as constants
 
 def start_name_server():
     cfg = config.get()
-    port = int(cfg.rpc[constants.RPC_NAME_SERVER_PORT_KEY])
-    Pyro4.naming.startNSloop(host=cfg.rpc[constants.RPC_NAME_SERVER_IP_KEY],
+    port = int(cfg.rpc.name_server_port)
+    Pyro4.naming.startNSloop(host=cfg.rpc.name_server_ip,
                              port=port)

@@ -23,8 +23,8 @@ def setup_rpc():
 def start():
     setup_rpc()
     cfg = config.get()
-    app.run(host=cfg.http[constants.BIND_IP_KEY],
-            port=int(cfg.http[constants.BIND_PORT_KEY]))
+    app.run(host=cfg.rest_api.ip,
+            port=int(cfg.rest_api.port))
 
 
 @log
