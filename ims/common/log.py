@@ -6,13 +6,14 @@ import traceback
 import os
 
 import ims.common.config as config
+import ims.common.constants as constants
 
 loggers = {}
 
 _cfg = config.get()
-_base_url = _cfg.logs_url
-_debug = _cfg.logs_debug
-_verbose = _cfg.logs_verbose
+_base_path = _cfg.logs[constants.LOGS_PATH_KEY]
+_debug = _cfg.logs[constants.LOGS_DEBUG_KEY] == 'True'
+_verbose = _cfg.logs[constants.LOGS_VERBOSE_KEY] == 'True'
 
 
 def log(func):
@@ -88,12 +89,12 @@ def create_logger(name):
     else:
         logger.setLevel(logging.INFO)
 
-    if not os.path.isdir(_base_url):
-        os.makedirs(_base_url)
+    if not os.path.isdir(_base_path):
+        os.makedirs(_base_path)
 
     formatter = BMIFormatter()
     all_file_handler = logging.handlers.RotatingFileHandler(
-        _base_url + "ims.log", mode='a', maxBytes=10000000, backupCount=10)
+        _base_path + "ims.log", mode='a', maxBytes=10000000, backupCount=10)
     all_file_handler.setFormatter(formatter)
     logger.addHandler(all_file_handler)
 

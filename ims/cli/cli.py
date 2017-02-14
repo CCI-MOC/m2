@@ -18,7 +18,8 @@ from ims.exception.exception import BMIException
 
 _cfg = config.get()
 
-_url = "http://{0}:{1}/".format(_cfg.bind_ip, _cfg.bind_port)
+_url = "http://{0}:{1}/".format(_cfg.http[constants.BIND_IP_KEY],
+                                _cfg.http[constants.BIND_PORT_KEY])
 
 if constants.HAAS_USERNAME_VARIABLE in os.environ:
     _username = os.environ[constants.HAAS_USERNAME_VARIABLE]
