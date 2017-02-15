@@ -33,7 +33,7 @@ class RPCClient:
         try:
             # Locates the name server
             ns_ip = self.cfg.rpc.name_server_ip
-            ns_port = int(self.cfg.rpc.name_server_port)
+            ns_port = self.cfg.rpc.name_server_port
             self.name_server = Pyro4.locateNS(host=ns_ip,
                                               port=ns_port)
             # Looks up for the registered service in the name server

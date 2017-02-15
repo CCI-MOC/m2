@@ -12,8 +12,8 @@ loggers = {}
 
 _cfg = config.get()
 _base_path = _cfg.logs.path
-_debug = _cfg.logs.debug == 'True'
-_verbose = _cfg.logs.verbose == 'True'
+_debug = _cfg.logs.debug
+_verbose = _cfg.logs.verbose
 
 
 def log(func):

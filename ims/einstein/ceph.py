@@ -40,7 +40,7 @@ class RBD:
 
         if not os.path.isfile(self.r_conf):
             raise file_system_exceptions.InvalidConfigArgumentException(
-                constants.CEPH_CONFIG_FILE_KEY)
+                constants.CEPH_CONFIG_FILE_OPT)
 
     @trace
     def __init_context(self):

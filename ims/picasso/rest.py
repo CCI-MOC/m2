@@ -24,7 +24,7 @@ def start():
     setup_rpc()
     cfg = config.get()
     app.run(host=cfg.rest_api.ip,
-            port=int(cfg.rest_api.port))
+            port=cfg.rest_api.port)
 
 
 @log
