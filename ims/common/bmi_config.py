@@ -12,9 +12,9 @@ def parse_config(cfg):
 
     # RPC Section
     cfg.option(constants.RPC_SECTION, constants.RPC_SERVER_IP_OPT)
-    cfg.option(constants.RPC_SECTION, constants.RPC_SERVER_PORT_OPT, int)
+    cfg.option(constants.RPC_SECTION, constants.RPC_SERVER_PORT_OPT, type=int)
     cfg.option(constants.RPC_SECTION, constants.NAME_SERVER_IP_OPT)
-    cfg.option(constants.RPC_SECTION, constants.NAME_SERVER_PORT_OPT, int)
+    cfg.option(constants.RPC_SECTION, constants.NAME_SERVER_PORT_OPT, type=int)
 
     # TFTP Section
     cfg.option(constants.TFTP_SECTION, constants.PXELINUX_PATH_OPT)
@@ -22,12 +22,13 @@ def parse_config(cfg):
 
     # REST API Section
     cfg.option(constants.REST_API_SECTION, constants.REST_API_IP_OPT)
-    cfg.option(constants.REST_API_SECTION, constants.REST_API_PORT_OPT, int)
+    cfg.option(constants.REST_API_SECTION, constants.REST_API_PORT_OPT,
+               type=int)
 
     # Logs Section
     cfg.option(constants.LOGS_SECTION, constants.LOGS_PATH_OPT)
-    cfg.option(constants.LOGS_SECTION, constants.LOGS_DEBUG_OPT, bool)
-    cfg.option(constants.LOGS_SECTION, constants.LOGS_VERBOSE_OPT, bool)
+    cfg.option(constants.LOGS_SECTION, constants.LOGS_DEBUG_OPT, type=bool)
+    cfg.option(constants.LOGS_SECTION, constants.LOGS_VERBOSE_OPT, type=bool)
 
     # Driver Section
     cfg.option(constants.DRIVER_SECTION, constants.NET_ISOLATOR_DRIVER_OPT)

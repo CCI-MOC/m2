@@ -39,17 +39,17 @@ class __BMIConfig:
             raise IOError('cannot load ' + self.configfile)
         self.config = config
 
-    def option(self, section, option, option_type=str, required=True):
+    def option(self, section, option, type=str, required=True):
         try:
             value = self.config.get(section, option)
             section_obj = getattr(self, section, None)
             if section_obj is None:
                 section_obj = ConfigSection()
                 setattr(self, section, section_obj)
-            if option_type == bool:
+            if type == bool:
                 setattr(section_obj, option, value.lower() == 'true')
             else:
-                setattr(section_obj, option, option_type(value))
+                setattr(section_obj, option, type(value))
         except ConfigParser.Error:
             if required:
                 raise config_exceptions.MissingOptionInConfigException(option,
