@@ -39,7 +39,7 @@ class MainServer:
 @log
 def start_rpc_server():
     cfg = config.get()
-    if cfg.bmi.service == 'True':
+    if cfg.bmi.service:
         server = MainServer()
         server.remake_mappings()
     Pyro4.config.HOST = cfg.rpc.rpc_server_ip

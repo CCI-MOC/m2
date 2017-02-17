@@ -5,7 +5,7 @@ def parse_config(cfg):
     # Mandatory Options
     # BMI Section
     cfg.option(constants.BMI_SECTION, constants.UID_OPT)
-    cfg.option(constants.BMI_SECTION, constants.SERVICE_OPT)
+    cfg.option(constants.BMI_SECTION, constants.SERVICE_OPT, type=bool)
 
     # DB Section
     cfg.option(constants.DB_SECTION, constants.DB_PATH_OPT)
