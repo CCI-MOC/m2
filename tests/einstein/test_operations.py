@@ -3,7 +3,7 @@ import unittest
 from unittest import TestCase
 
 import ims.common.constants as constants
-import ims.einstein.ceph as ceph
+import ims.einstein.filesystem.ceph as ceph
 from ims.einstein.operations import BMI
 
 _cfg = config.get()
