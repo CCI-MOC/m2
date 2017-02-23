@@ -14,7 +14,7 @@ from ims.einstein.dnsmasq import DNSMasq
 from ims.einstein.hil import HIL
 from ims.einstein.iscsi.tgt import TGT
 from ims.exception.exception import RegistrationFailedException, \
-    FileSystemException, DBException, HaaSException, ISCSIException, \
+    FileSystemException, DBException, HILException, ISCSIException, \
     AuthorizationFailedException, DHCPException
 
 logger = create_logger(__name__)
@@ -259,7 +259,7 @@ class BMI:
             self.hil.detach_node_from_project_network(node_name, network,
                                                       nic)
             return self.__return_error(e)
-        except HaaSException as e:
+        except HILException as e:
             # Message is being handled by custom formatter
             logger.exception('')
             return self.__return_error(e)
@@ -310,7 +310,7 @@ class BMI:
             time.sleep(constants.HAAS_CALL_TIMEOUT)
             self.hil.attach_node_to_project_network(node_name, network, nic)
             return self.__return_error(e)
-        except HaaSException as e:
+        except HILException as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -342,7 +342,7 @@ class BMI:
                                     constants.DEFAULT_SNAPSHOT_NAME)
             return self.__return_success(True)
 
-        except (HaaSException, DBException, FileSystemException) as e:
+        except (HILException, DBException, FileSystemException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -356,7 +356,7 @@ class BMI:
             snapshots = self.db.image.fetch_snapshots_from_project(self.proj)
             return self.__return_success(snapshots)
 
-        except (HaaSException, DBException, FileSystemException) as e:
+        except (HILException, DBException, FileSystemException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -375,7 +375,7 @@ class BMI:
             self.fs.remove(ceph_img_name)
             self.db.image.delete_with_name_from_project(img_name, self.proj)
             return self.__return_success(True)
-        except (HaaSException, DBException, FileSystemException) as e:
+        except (HILException, DBException, FileSystemException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -387,7 +387,7 @@ class BMI:
             names = self.db.image.fetch_images_from_project(self.proj)
             return self.__return_success(names)
 
-        except (HaaSException, DBException) as e:
+        except (HILException, DBException) as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -504,7 +504,7 @@ class BMI:
         try:
             mac_addr = self.hil.get_node_mac_addr(node_name)
             return self.__return_success(self.dhcp.get_ip(mac_addr))
-        except (HaaSException, DHCPException) as e:
+        except (HILException, DHCPException) as e:
             logger.exception('')
             return self.__return_error(e)
 

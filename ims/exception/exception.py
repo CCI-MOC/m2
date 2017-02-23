@@ -18,7 +18,7 @@ class FileSystemException(BMIException):
 
 
 # The base class for all exceptions related to HaaS
-class HaaSException(BMIException):
+class HILException(BMIException):
     __metaclass__ = ABCMeta
 
 
