@@ -1,6 +1,8 @@
 import os
 import re
 
+import ims.common.constants as constants
+import ims.exception.config_exceptions as config_exceptions
 from ims.common import shell
 from ims.common.log import create_logger, log
 from ims.exception import iscsi_exceptions
@@ -11,16 +13,36 @@ from ims.interfaces.iscsi import ISCSI
 logger = create_logger(__name__)
 
 
+def get_driver_class():
+    return TGT
+
+
 class TGT(ISCSI):
     """ Class for implementing TGT """
 
     # TODO add TGT_ISCSI_CONFIG in config, update in PR related to Issue #30
     # TODO add service name in config
-    def __init__(self, fs_config_loc, fs_user, fs_pool):
+    def __init__(self, fs_config, iscsi_config):
         self.TGT_ISCSI_CONFIG = "/etc/tgt/conf.d/"
-        self.fs_config_loc = fs_config_loc
-        self.fs_user = fs_user
-        self.fs_pool = fs_pool
+        self.__validate(fs_config, iscsi_config)
+
+    def __validate(self, fs_config, iscsi_config):
+        section = None
+        try:
+            section = constants.FS_SECTION
+            self.fs_config_loc = fs_config.conf_file
+            self.fs_user = fs_config.id
+            self.fs_pool = fs_config.pool
+
+            section = constants.ISCSI_SECTION
+            self.iscsi_ip = iscsi_config.ip
+        except KeyError as e:
+            raise config_exceptions.MissingOptionInConfigException(str(e),
+                                                                   section)
+
+    @property
+    def ip(self):
+        return self.iscsi_ip
 
     @log
     def start_server(self):
