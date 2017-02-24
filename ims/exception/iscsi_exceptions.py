@@ -1,27 +1,28 @@
 from ims.exception.exception import ISCSIException
 
 
-# this exception should be raised when the target already exists
 class TargetExistsException(ISCSIException):
+    """ Should be raised when target already exists """
     @property
     def status_code(self):
         return 500
 
     def __str__(self):
-        return "Node Already in Use"
+        return "Target Already Exists"
 
 
-# this exception should be raised when the target doesnt exist
 class TargetDoesntExistException(ISCSIException):
+    """ Should be raised when target doesnt exist """
     @property
     def status_code(self):
         return 500
 
     def __str__(self):
-        return "Node Already Unmapped"
+        return "Target Doesnt Exist"
 
 
 class TargetCreationFailed(ISCSIException):
+    """ Should be raised when target creation failed """
     @property
     def status_code(self):
         return 500
@@ -34,6 +35,7 @@ class TargetCreationFailed(ISCSIException):
 
 
 class TargetDeletionFailed(ISCSIException):
+    """ Should be raised when target deletion failed """
     @property
     def status_code(self):
         return 500
@@ -46,6 +48,7 @@ class TargetDeletionFailed(ISCSIException):
 
 
 class ListTargetFailedException(ISCSIException):
+    """ Should be raised when listing targets failed """
     @property
     def status_code(self):
         return 500
@@ -58,6 +61,7 @@ class ListTargetFailedException(ISCSIException):
 
 
 class StopFailedException(ISCSIException):
+    """ Should be raised when stopping iscsi failed """
     @property
     def status_code(self):
         return 500
@@ -67,6 +71,7 @@ class StopFailedException(ISCSIException):
 
 
 class RestartFailedException(ISCSIException):
+    """ Should be raised when restarting iscsi failed """
     @property
     def status_code(self):
         return 500
@@ -76,6 +81,7 @@ class RestartFailedException(ISCSIException):
 
 
 class StartFailedException(ISCSIException):
+    """ Should be raised when starting iscsi failed """
     @property
     def status_code(self):
         return 500

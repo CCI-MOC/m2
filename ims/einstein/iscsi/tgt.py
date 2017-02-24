@@ -12,9 +12,7 @@ logger = create_logger(__name__)
 
 
 class TGT(ISCSI):
-    '''
-        Class for implementing TGT
-    '''
+    """ Class for implementing TGT """
 
     def __init__(self, fs_config_loc, fs_user, fs_pool):
         self.TGT_ISCSI_CONFIG = "/etc/tgt/conf.d/"
@@ -24,10 +22,11 @@ class TGT(ISCSI):
 
     @log
     def start_server(self):
-        '''
-        Have to parse the output and send a status code.
-        :return:
-        '''
+        """
+        Starts the tgt service
+
+        :return: None
+        """
         try:
             command = "service tgtd start"
             output = shell.call(command, sudo=True)
@@ -39,10 +38,11 @@ class TGT(ISCSI):
 
     @log
     def stop_server(self):
-        '''
-        Need to check if this
-        :return:
-        '''
+        """
+        Stops the tgtd service
+
+        :return: None
+        """
         try:
             command = "service tgtd stop"
             output = shell.call(command, sudo=True)
@@ -54,15 +54,21 @@ class TGT(ISCSI):
 
     @log
     def restart_server(self):
-        '''
-        Again have to parse the output and send the values.
-        :return:
-        '''
+        """
+        Restarts the tgtd service
+
+        :return: None
+        """
         self.stop_server()
         self.start_server()
 
     @log
     def show_status(self):
+        """
+        Returns the status of tgtd
+
+        :return: Running or Dead or Error as String
+        """
         command = "service tgtd status"
         status_string = shell.call(command, sudo=True)
         logger.debug("Output = %s", status_string)
@@ -72,9 +78,15 @@ class TGT(ISCSI):
             return 'Dead'
         # Have to check if there are any other states
         else:
-            return "Running in error state"
+            return "Error"
 
     def __generate_config_file(self, target_name):
+        """
+        Generates the config file in conf.d/
+
+        :param target_name: Target for which config file should be created
+        :return: None
+        """
         config = open(
             os.path.join(self.TGT_ISCSI_CONFIG, target_name + ".conf"), 'w')
         template_loc = os.path.abspath(
@@ -90,11 +102,12 @@ class TGT(ISCSI):
 
     @log
     def add_target(self, target_name):
-        '''
+        """
         Adds target
-        :param target_name: Name of target to be added.
-        :return:
-        '''
+
+        :param target_name: Name of target to be added
+        :return: None
+        """
         try:
             targets = self.list_targets()
             if target_name not in targets:
@@ -111,10 +124,12 @@ class TGT(ISCSI):
 
     @log
     def remove_target(self, target_name):
-        '''
-        Removes target specified. Same as comment for above function.
-        :return:
-        '''
+        """
+        Removes target specified
+
+        :param target_name: Name of target to be removed
+        :return: None
+        """
         try:
             targets = self.list_targets()
             if target_name in targets:
@@ -132,11 +147,11 @@ class TGT(ISCSI):
 
     @log
     def list_targets(self):
-        '''
-        Lists all the targets available. This queries tgt-admin and gets the
-        list of targets
-        :return:
-        '''
+        """
+        Lists all the targets available by querying tgt-admin
+
+        :return: None
+        """
         try:
             command = "tgt-admin -s"
             output = shell.call(command, sudo=True)
