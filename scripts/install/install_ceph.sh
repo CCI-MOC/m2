@@ -46,5 +46,6 @@ ceph-deploy mds create $node_name
 
 ### TEST
 
+# sudo pkill -f ceph
 # sudo losetup -d /dev/loop2 /dev/loop1 /dev/loop0
 # sudo rm /etc/ceph/ceph.conf
