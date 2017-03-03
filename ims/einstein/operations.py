@@ -39,7 +39,7 @@ class BMI:
             # Need to make this generic by passing specific config
             self.iscsi = TGT(self.cfg.fs.conf_file,
                              self.cfg.fs.id,
-                             self.cfg.iscsi.password)
+                             self.cfg.fs.pool)
         elif args.__len__() == 3:
             username, password, project = args
             self.cfg = config.get()
@@ -61,7 +61,7 @@ class BMI:
             # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
             self.iscsi = TGT(self.cfg.fs.conf_file,
                              self.cfg.fs.id,
-                             self.cfg.iscsi.password)
+                             self.cfg.fs.pool)
 
     def __enter__(self):
         return self
