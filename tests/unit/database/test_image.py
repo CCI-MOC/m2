@@ -1,39 +1,34 @@
 from unittest import TestCase
 
+from ims.common.log import trace
+from ims.database.database import Database
+
 
 class TestInsert(TestCase):
+    """ Creates a project and tests inserting images """
+
     @trace
     def setUp(self):
         self.db = Database()
         self.db.project.insert('project 1', 'network 1')
 
-    def test_run(self):
+    def runTest(self):
         self.db.image.insert('image 1', 1)
         self.db.image.insert('image 2', 1, is_public=True)
         self.db.image.insert('image 3', 1, parent_id=1)
         self.db.image.insert('image 4', 1, is_snapshot=True, parent_id=1)
 
         images = self.db.image.fetch_images_from_project('project 1')
-        yes = 'image 1' in images and 'image 2' in images
-        self.assertTrue(yes)
+        self.assertTrue('image 1' in images and 'image 2' in images)
 
         images = self.db.image.fetch_clones_from_project('project 1')
-        has_image = False
-        for image in images:
-            if 'image 3' == image[0]:
-                has_image = True
-        self.assertTrue(has_image)
+        self.assertTrue('image 3' in [img[0] for img in images])
 
         snapshots = self.db.image.fetch_snapshots_from_project('project 1')
-        has_image = False
-        for snapshot in snapshots:
-            if 'image 4' == snapshot[0]:
-                has_image = True
-        self.assertTrue(has_image)
+        self.assertTrue('image 4' in [snapshot[0] for snapshot in snapshots])
 
         images = self.db.image.fetch_names_with_public()
-        yes = 'image 2' in images
-        self.assertTrue(yes)
+        self.assertTrue('image 2' in images)
 
     def tearDown(self):
         self.db.project.delete_with_name('project 1')
@@ -41,17 +36,18 @@ class TestInsert(TestCase):
 
 
 class TestDelete(TestCase):
+    """ Inserts image and deletes it """
+
     @trace
     def setUp(self):
         self.db = Database()
         self.db.project.insert('project 1', 'network 1')
         self.db.image.insert('image 1', 1)
 
-    def test_run(self):
+    def runTest(self):
         self.db.image.delete_with_name_from_project('image 1', 'project 1')
         images = self.db.image.fetch_images_from_project('project 1')
-        yes = 'image 1' in images
-        self.assertFalse(yes)
+        self.assertFalse('image 1' in images)
 
     def tearDown(self):
         self.db.project.delete_with_name('project 1')
@@ -59,6 +55,8 @@ class TestDelete(TestCase):
 
 
 class TestFetch(TestCase):
+    """ Inserts several images and tests all fetch calls """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -68,28 +66,18 @@ class TestFetch(TestCase):
         self.db.image.insert('image 3', 1, parent_id=1)
         self.db.image.insert('image 4', 1, is_snapshot=True, parent_id=1)
 
-    def test_run(self):
+    def runTest(self):
         images = self.db.image.fetch_images_from_project('project 1')
-        yes = 'image 1' in images and 'image 2' in images
-        self.assertTrue(yes)
+        self.assertTrue('image 1' in images and 'image 2' in images)
 
         images = self.db.image.fetch_clones_from_project('project 1')
-        has_image = False
-        for image in images:
-            if 'image 3' == image[0]:
-                has_image = True
-        self.assertTrue(has_image)
+        self.assertTrue('image 3' in [img[0] for img in images])
 
         snapshots = self.db.image.fetch_snapshots_from_project('project 1')
-        has_image = False
-        for snapshot in snapshots:
-            if 'image 4' == snapshot[0]:
-                has_image = True
-        self.assertTrue(has_image)
+        self.assertTrue('image 4' in [snapshot[0] for snapshot in snapshots])
 
         images = self.db.image.fetch_names_with_public()
-        yes = 'image 2' in images
-        self.assertTrue(yes)
+        self.assertTrue('image 2' in images)
 
         name = self.db.image.fetch_name_with_id(1)
         self.assertEqual(name, 'image 1')
@@ -109,6 +97,8 @@ class TestFetch(TestCase):
 
 
 class TestCopy(TestCase):
+    """ Inserts images and tries copying them """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -117,32 +107,22 @@ class TestCopy(TestCase):
         self.db.image.insert('image 1', 1)
         self.db.image.insert('image 2', 1, is_snapshot=True, parent_id=1)
 
-    def test_run(self):
+    def runTest(self):
         self.db.image.copy_image('project 1', 'image 1', 2, None)
         self.db.image.copy_image('project 1', 'image 2', 2, 'image 3')
         self.db.image.copy_image('project 1', 'image 2', 1, 'image 3')
 
         images = self.db.image.fetch_images_from_project('project 2')
-        yes = 'image 1' in images
-        self.assertTrue(yes)
+        self.assertTrue('image 1' in images)
 
-        snapshots = self.db.image.fetch_snapshots_from_project('project 2')
+        snaps = self.db.image.fetch_snapshots_from_project('project 2')
         images = self.db.image.fetch_images_from_project('project 2')
 
-        yes = 'image 3' in images
-        has_image = False
-        for snapshot in snapshots:
-            if 'image 3' == snapshot[0]:
-                has_image = True
-        yes = yes and not has_image
-        self.assertTrue(yes)
+        self.assertTrue('image 3' in images and
+                        not ('image 3' in [s[0] for s in snaps]))
 
-        snapshots = self.db.image.fetch_snapshots_from_project('project 1')
-        has_image = False
-        for snapshot in snapshots:
-            if 'image 3' == snapshot[0]:
-                has_image = True
-        self.assertTrue(has_image)
+        snaps = self.db.image.fetch_snapshots_from_project('project 1')
+        self.assertTrue('image 3' in [s[0] for s in snaps])
 
     def tearDown(self):
         self.db.project.delete_with_name('project 1')
@@ -151,6 +131,8 @@ class TestCopy(TestCase):
 
 
 class TestMove(TestCase):
+    """ Inserts images and tries moving them """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -159,27 +141,17 @@ class TestMove(TestCase):
         self.db.image.insert('image 1', 1)
         self.db.image.insert('image 2', 1, is_snapshot=True, parent_id=1)
 
-    def test_run(self):
+    def runTest(self):
         self.db.image.move_image('project 1', 'image 1', 2, None)
         self.db.image.move_image('project 1', 'image 2', 1, 'image 3')
 
         images = self.db.image.fetch_images_from_project('project 2')
         images1 = self.db.image.fetch_images_from_project('project 1')
-        yes = 'image 1' in images and 'image 1' not in images1
-        self.assertTrue(yes)
+        self.assertTrue('image 1' in images and 'image 1' not in images1)
 
-        snapshots = self.db.image.fetch_snapshots_from_project('project 1')
-        has_image = False
-        for snapshot in snapshots:
-            if 'image 3' == snapshot[0]:
-                has_image = True
-        yes = has_image
-        has_image = False
-        for snapshot in snapshots:
-            if 'image 2' == snapshot[0]:
-                has_image = True
-        yes = yes and not has_image
-        self.assertTrue(yes)
+        snaps = self.db.image.fetch_snapshots_from_project('project 1')
+        self.assertTrue(('image 3' in [s[0] for s in snaps]) and
+                        not ('image 2' in [s[0] for s in snaps]))
 
     def tearDown(self):
         self.db.project.delete_with_name('project 1')
