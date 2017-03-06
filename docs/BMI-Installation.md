@@ -1,7 +1,7 @@
 # BMI
 
-The Bare Metal Imaging (BMI) is a core component of the Massachusetts Open Cloud and a image management system(ims) that  
-* provisions numerous nodes as quickly as possible while preserving support for multitenancy using Hardware as a Service (HaaS) and  
+The Bare Metal Imaging (BMI) is a core component of the Massachusetts Open Cloud and a image management system(IMS) that  
+* provisions numerous nodes as quickly as possible while preserving support for multitenancy using Hardware as a Service (HIL) and  
 * introduces the image management techniques that are supported by virtual machines, with little to no impact on application performance.  
 
 ***
@@ -22,8 +22,31 @@ to setup a ceph client on a VM
 
 #### iSCSI Server
 We recommend using the TGT iSCSI variant as its driver is more stable.   
-You can install it with the following command:  
-`$ yum install scsi-target-utils`
+You can install it with the following set of commands:  
+
+```
+git clone https://github.com/fujita/tgt.git
+cd tgt
+
+yum install -y make
+yum install -y gcc
+** delete install doc from Makefile if problem occurs in the next three steps
+make CEPH_RBD=1 clean
+make CEPH_RBD=1
+make CEPH_RBD=1 install
+
+
+cp scripts/tgtd.service /usr/lib/systemd/system/
+systemctl daemon-reload
+systemctl list-unit-files | grep -i tgt
+
+iptables -I INPUT -p tcp -m tcp --dport 3260 -j ACCEPT
+service iptables save
+
+systemctl start tgtd
+chkconfig tgtd on
+systemctl status tgtd
+```
 
 For more information visit their [website](http://stgt.sourceforge.net/) and the [Quick Start Guide](https://fedoraproject.org/wiki/Scsi-target-utils_Quickstart_Guide)
 
@@ -111,22 +134,6 @@ That's it. Installation is done!
 ***
 ## Running
 
-### Creating Tunnel (Only for internal purposes)
-
-Since HIL is typically bound to localhost interface, we need to create a ssh reverse tunnel from BMI VM (Some port) to HIL's 127.0.0.1:80.
-
-The following command needs to be executed on HIL.
-
-```
-$ ssh -fNR <port on BMI VM>:127.0.0.1:80 <username>@<bmi vm ip> 
-```
-The general default port we use is 6500.  
-For PRB we made 2 tunnels
-
-* HIL's 127.0.0.1:80 -> moc02's 6500
-* moc02's 6500 -> BMI VM's 6500
-
-For Northeastern and Engage1 just the regular tunnel.
 
 ### Configuration
 
@@ -179,8 +186,8 @@ keyring = /etc/ceph/bmi.key
 **Hil Section**
 * url is the HTTP endpoint for HIL
 ```
-# This section is for haas related config
-[haas]
+# This section is for hil related config
+[hil]
 url = http://localhost:3241/
 ```  
 
