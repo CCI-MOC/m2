@@ -161,34 +161,31 @@ url = /home/user/bmi.db
 ```  
 
 **filesystem section**  
-Tells which Filesystem to load (Will be removed)
-* ceph should be set to True since we don't support any other Filesystem.
-```
-# This section is to denote which filesystem is being used
-[filesystem]
-ceph = True
-```  
+Tells which Filesystem to load (right now, we only support ceph)
 
-**Ceph Section**
 * id is the ceph id which has access to the pool
 * pool is the ceph pool to use for storing images
 * conf_file is the path to the Ceph conf file
 * keyring is the path to the keyring file
 ```
-# This section is for ceph config
-[ceph]
+# This section is filesystem related config
+[fs]
 id = bmi
 pool = bmi
 conf_file = /etc/ceph/ceph.conf
 keyring = /etc/ceph/bmi.key
-```  
+```
 
-**Hil Section**
-* url is the HTTP endpoint for HIL
+**Driver section**
+* net_isolator is the name of the network isolator to load
+* iscsi is the iscsi driver to load
+* fs is the filesystem to use
 ```
 # This section is for hil related config
-[hil]
-url = http://localhost:3241/
+[driver]
+fs = ims.einstein.fs.ceph.driver
+net_isolator = not used
+iscsi = ims.einstein.tgt.driver
 ```  
 
 **iscsi section**
@@ -197,8 +194,8 @@ url = http://localhost:3241/
 ```
 # This section is for iscsi related config
 [iscsi]
-ip = <ip of iscsi server>
-password = <sudo password for iscsi_update script>
+ip = 127.0.0.1
+password = password
 ```  
 
 **rpc section**
@@ -214,30 +211,30 @@ rpc_server_port = 10001
 ```  
 
 **tftp section**
-* pxelinux_url is the path to the pxelinux.cfg folder
-* ipxe_url is the path to the location where ipxe files should be created (root of tftpboot folder)
+* pxelinux_path is the path to the pxelinux.cfg folder
+* ipxe_path is the path to the location where ipxe files should be created (root of tftpboot folder)
 ```
 # this section is for specifying tftp settings
 [tftp]
-pxelinux_url = /var/lib/tftpboot/pxelinux.cfg
-ipxe_url = /var/lib/tftpboot/
+pxelinux_path = /var/lib/tftpboot/pxelinux.cfg
+ipxe_path = /var/lib/tftpboot/
 ```  
 **http section**
 * bind_ip and port is the ip and port picasso should bind to
 ```
 # this section is for http config
-[http]
+[rest_api]
 bind_ip = 127.0.0.1
 bind_port = 8000
 ```  
 **logs section**
-* url is the folder where logs should be generated
+* path is the folder where logs should be generated
 * debug enables debug logs
 * verbose prints logs to screen
 ```
 # this section is for logs
 [logs]
-url = /home/bmi/logs/
+path = /home/bmi/logs/
 debug = False
 verbose = False
 ```
