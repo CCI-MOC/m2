@@ -1,6 +1,5 @@
 BMI test cases
-For now, we have BMI rest API
-Commands:
+For now, we have BMI rest APIs:
 <table>
   <tr>
     <th>Option</th>
