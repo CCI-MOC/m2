@@ -48,7 +48,6 @@ bmi iscsi rm [OPTIONS] PROJECT IMG
 8. ls
 bmi ls [OPTIONS] PROJECT
 
-
 9. mv
 bmi mv [OPTIONS] SRC_PROJECT IMG1 DEST_PROJECT IMG2
 
