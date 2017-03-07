@@ -1,5 +1,8 @@
 from unittest import TestCase
 
+from ims.common import config
+config.load()
+
 from ims.common.log import trace
 from ims.database.database import Database
 

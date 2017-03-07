@@ -7,6 +7,9 @@ from unittest import TestCase
 import requests
 
 import ims.common.config as config
+
+config.load()
+
 import ims.common.constants as constants
 import ims.einstein.ceph as ceph
 from ims.common.log import trace
@@ -37,6 +40,7 @@ class TestProvision(TestCase):
     """
     Tests Rest Provision call by importing an image and calling provision
     """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -69,6 +73,7 @@ class TestDeprovision(TestCase):
     """
     Tests Rest Deprovision call by doing previous steps and calling deprovision
     """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -102,6 +107,7 @@ class TestCreateSnapshot(TestCase):
     """
     Calls provision like TestProvision then creates a snapshot using rest call
     """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -147,6 +153,7 @@ class TestListSnapshots(TestCase):
     """
     Does the same steps as previous test and calls list snapshots rest call
     """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -184,6 +191,7 @@ class TestRemoveSnapshot(TestCase):
     """
     This is because snapshot is also an image in out terms currently
     """
+
     def setUp(self):
         pass
 
@@ -198,6 +206,7 @@ class TestListImages(TestCase):
     """
     Imports an import image and calls the list images rest call
     """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -226,6 +235,7 @@ class TestRemoveImage(TestCase):
     """
     Imports an Image and calls the remove image rest call
     """
+
     @trace
     def setUp(self):
         self.db = Database()

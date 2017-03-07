@@ -5,6 +5,8 @@ import unittest
 from unittest import TestCase
 
 import ims.common.config as config
+config.load()
+
 import ims.common.constants as constants
 import ims.einstein.ceph as ceph
 from ims.common.log import trace
