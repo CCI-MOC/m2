@@ -24,7 +24,7 @@ def load(force=False):
                 constants.CONFIG_LOCATION_ENV_VARIABLE]
         except KeyError:
             path = constants.CONFIG_DEFAULT_LOCATION
-        __config = __BMIConfig(path)
+        __config = BMIConfig(path)
         __config.load_config()
         parse_config(__config)
 
@@ -39,10 +39,10 @@ def get():
     return __config
 
 
-class __BMIConfig:
+class BMIConfig:
     def __init__(self, filename):
         self.configfile = filename
-        self.config = None
+        self.config = ConfigParser.SafeConfigParser()
 
     def load_config(self):
         """
@@ -50,10 +50,8 @@ class __BMIConfig:
 
         :return: None
         """
-        config = ConfigParser.SafeConfigParser()
-        if not config.read(self.configfile):
+        if not self.config.read(self.configfile):
             raise IOError('cannot load ' + self.configfile)
-        self.config = config
 
     def option(self, section, option, type=str, required=True):
         """
@@ -73,7 +71,7 @@ class __BMIConfig:
             if section_obj is None:
                 section_obj = ConfigSection()
                 setattr(self, section, section_obj)
-            if type == bool:
+            if type is bool:
                 v = value.lower()
                 if v in ['true', 'false']:
                     setattr(section_obj, option, v == 'true')
