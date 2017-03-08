@@ -3,7 +3,7 @@
 <table>
   <tbody>
     <tr>
-      <th>API</th>
+      <th>Ceph API</th>
       <th align="center">Arguments</th>
       <th align="right">Comments</th>
     </tr>
@@ -102,6 +102,16 @@
       </td>
       <td align=""></td>
       <td align=""></td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <tbody>
+    <tr>
+      <th>Ceph API</th>
+      <th align="center">Arguments</th>
+      <th align="right">Comments</th>
     </tr>
   </tbody>
 </table>
