@@ -2,8 +2,10 @@ import unittest
 
 import os
 
-import ims.common.config as config
-import ims.exception.config_exceptions as config_exceptions
+from ims.common import config
+
+config.load()
+from ims.exception import config_exceptions
 from ims.common.log import trace
 
 
@@ -30,7 +32,7 @@ class TestCorrectPath(unittest.TestCase):
     @trace
     def setUp(self):
         self.old_path = os.getenv('BMI_CONFIG')
-        os.environ['BMI_CONFIG'] = "tests/unit/common/config1.cfg"
+        os.environ['BMI_CONFIG'] = "tests/unit/common/sample.cfg"
 
     def runTest(self):
         config.load(force=True)
@@ -47,98 +49,78 @@ class TestMissingOption(unittest.TestCase):
 
     @trace
     def setUp(self):
-        self.old_path = os.getenv('BMI_CONFIG')
-        os.environ['BMI_CONFIG'] = "tests/unit/common/config2.cfg"
+        self.cfg = config.BMIConfig("")
+        self.cfg.config.add_section("test")
 
     def runTest(self):
         with self.assertRaises(
                 config_exceptions.MissingOptionInConfigException):
-            config.load(force=True)
-
-    def tearDown(self):
-        os.environ['BMI_CONFIG'] = self.old_path
-        config.load(force=True)
+            self.cfg.option("test", "var1")
 
 
 class TestMissingSection(unittest.TestCase):
     """ Tests if raising exception when section is missing """
+
     @trace
     def setUp(self):
-        self.old_path = os.getenv('BMI_CONFIG')
-        os.environ['BMI_CONFIG'] = "tests/unit/common/config3.cfg"
+        self.cfg = config.BMIConfig("")
 
     def runTest(self):
         with self.assertRaises(
                 config_exceptions.MissingSectionInConfigException):
-            config.load(force=True)
-
-    def tearDown(self):
-        os.environ['BMI_CONFIG'] = self.old_path
-        config.load(force=True)
+            self.cfg.section('test')
 
 
 class TestInvalidValue(unittest.TestCase):
     """ Tests if raising exception when invalid value is given """
+
     @trace
     def setUp(self):
-        self.old_path = os.getenv('BMI_CONFIG')
-        os.environ['BMI_CONFIG'] = "tests/unit/common/config4.cfg"
+        self.cfg = config.BMIConfig("")
+        self.cfg.config.add_section('test')
+        self.cfg.config.set('test', 'var1', 'hello')
 
     def runTest(self):
         with self.assertRaises(config_exceptions.InvalidValueConfigException):
-            config.load(force=True)
-
-    def tearDown(self):
-        os.environ['BMI_CONFIG'] = self.old_path
-        config.load(force=True)
+            self.cfg.option('test', 'var1', type=int)
 
 
 class TestInvalidBool(unittest.TestCase):
     """ Tests If raising exception when invalid bool is given """
+
     @trace
     def setUp(self):
-        self.old_path = os.getenv('BMI_CONFIG')
-        os.environ['BMI_CONFIG'] = "tests/unit/common/config5.cfg"
+        self.cfg = config.BMIConfig("")
+        self.cfg.config.add_section('test')
+        self.cfg.config.set('test', 'var1', 'hello')
 
     def runTest(self):
         with self.assertRaises(config_exceptions.InvalidValueConfigException):
-            config.load(force=True)
-
-    def tearDown(self):
-        os.environ['BMI_CONFIG'] = self.old_path
-        config.load(force=True)
+            self.cfg.option('test', 'var1', type=bool)
 
 
 class TestMissingOptionalSection(unittest.TestCase):
     """ Tests if loading when optional section is missing """
+
     @trace
     def setUp(self):
-        self.old_path = os.getenv('BMI_CONFIG')
-        os.environ['BMI_CONFIG'] = "tests/unit/common/config6.cfg"
+        self.cfg = config.BMIConfig("")
 
     def runTest(self):
-        config.load(force=True)
-        cfg = config.get()
-        self.assertIsNone(getattr(cfg, 'tests', None))
-
-    def tearDown(self):
-        os.environ['BMI_CONFIG'] = self.old_path
-        config.load(force=True)
+        self.cfg.section('test', required=False)
+        self.assertIsNone(getattr(self.cfg, 'test', None))
 
 
 class TestMissingOptionalOption(unittest.TestCase):
     """ Tests if loading when optional option is missing """
+
     @trace
     def setUp(self):
-        self.old_path = os.getenv('BMI_CONFIG')
-        os.environ['BMI_CONFIG'] = "tests/unit/common/config1.cfg"
+        self.cfg = config.BMIConfig("")
+        self.cfg.config.add_section('test')
+        self.cfg.config.set('test', 'var1', 'hello')
 
     def runTest(self):
-        config.load(force=True)
-        cfg = config.get()
-        cfg.option('bmi', 'sample', required=False)
-        self.assertIsNone(getattr(cfg.bmi, 'sample', None))
-
-    def tearDown(self):
-        os.environ['BMI_CONFIG'] = self.old_path
-        config.load(force=True)
+        self.cfg.option('test', 'var1')
+        self.cfg.option('test', 'var2', required=False)
+        self.assertIsNone(getattr(self.cfg.test, 'var2', None))
