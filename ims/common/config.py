@@ -41,7 +41,7 @@ def get():
 
 class BMIConfig:
     """ Contains the config of bmi as attributes """
-    
+
     def __init__(self, filename):
         self.configfile = filename
         self.config = ConfigParser.SafeConfigParser()
