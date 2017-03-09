@@ -8,8 +8,13 @@
       <th align="right">Comments</th>
     </tr>
     <tr>
-      <td>open_images</td>
-      <td align="">img_id, img_size</td>
+    <td>open_images</td>
+      <td align="">
+        <ul>
+          <li>img_id</li>
+          <li>img_size</li>
+        </ul>
+      </td>
       <td align=""></td>
     </tr>
     <tr>
@@ -19,12 +24,23 @@
     </tr>
     <tr>
       <td>create_image</td>
-      <td align="">img_id, img_size</td>
+      <td align="">
+        <ul>
+          <li>img_id</li>
+          <li>img_size</li>
+        </ul>
+      </td>
       <td align=""></td>
     </tr>
     <tr>
       <td>clone</td>
-      <td align="">parent_img_name, parent_snap_name, clone_img_name</td>
+      <td align="">
+        <ul>
+          <li>parent_img_name</li>
+          <li>parent_snap_name</li>
+          <li>clone_img_name</li>
+        </ul>
+      </td>
       <td align=""></td>
     </tr>
     <tr>
@@ -34,22 +50,43 @@
     </tr>
     <tr>
       <td>write</td>
-      <td align="">img_id, data, offset</td>
+        <td align="">
+          <ul>
+            <li>img_id</li>
+            <li>data</li>
+            <li>offset</li>
+          </ul>
+        </td>
+        <td align=""></td>
+      </tr>
+    <tr>
+      <td>snap_image</td>  
+        <td align="">
+          <ul>
+            <li>img_id</li>
+            <li>name</li>
+          </ul>
+        </td>
       <td align=""></td>
     </tr>
     <tr>
-      <td>snap_image</td>
-      <td align="">img_id, name</td>
-      <td align=""></td>
-    </tr>
-    <tr>
-      <td>snap_protect</td>
-      <td align="">img_id, snap_name</td>
+      <td>snap_protect</td>     
+      <td align="">
+        <ul>
+          <li>img_id</li>
+          <li>snap_name</li>
+        </ul>
+      </td>
       <td align=""></td>
     </tr>
     <tr>
       <td>snap_unprotect</td>
-      <td align="">img_id, snap_name</td>
+      <td align="">
+        <ul>
+          <li>img_id</li>
+          <li>snap_name</li>
+        </ul>
+      </td>
       <td align=""></td>
     </tr>
     <tr>
@@ -64,7 +101,12 @@
     </tr>
     <tr>
       <td>remove_snapshot</td>
-      <td align="">img_id, name</td>
+      <td align="">
+        <ul>
+          <li>img_id</li>
+          <li>name</li>
+        </ul>
+      </td>
       <td align=""></td>
     </tr>
     <tr>
@@ -103,5 +145,95 @@
       <td align=""></td>
       <td align=""></td>
     </tr>-->
+  </tbody>
+</table>
+
+<table>
+  <tbody>
+    <tr>
+      <th>IET API</th>
+      <th align="center">Arguments</th>
+      <th align="right">Comments</th>
+    </tr>
+    <tr>
+      <td>add_target</td>
+      <td align="">ceph_img_name</td>
+      <td align=""></td>
+    </tr>
+    <tr>
+      <td>remove_target</td>
+      <td align="">ceph_img_name</td>
+      <td align=""></td>
+    </tr>
+    <tr>
+      <td>list_targets</td>
+      <td align=""></td>
+      <td align=""></td>
+    </tr>
+    <tr>
+      <td>__add_mapping</td>
+      <td align="">
+        <ul>
+          <li>ceph_img_name</li>
+          <li>rbd_name</li>
+        </ul>
+      </td>
+      <td align=""></td>
+    </tr>
+    <tr>
+      <td>__remove_mapping</td>
+      <td align="">
+        <ul>
+          <li>ceph_img_name</li>
+          <li>rbd_name</li>
+        </ul>
+      </td>
+      <td align=""></td>
+    </tr>
+    <tr>
+      <td>__check_status</td>
+      <td align=""></td>
+      <td align=""></td>
+    </tr>
+    <tr>
+      <td>persist_targets</td>
+      <td align=""></td>
+      <td align=""></td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <tbody>
+    <tr>
+      <th>TGT API</th>
+      <th align="center">Arguments</th>
+      <th align="right">Comments</th>
+    </tr>
+    <tr>
+      <td>show_status</td>
+      <td align=""></td>
+      <td align=""></td>
+    </tr>
+    <tr>
+      <td>__generate_config_file</td>
+      <td align="">target_name</td>
+      <td align=""></td>
+    </tr>
+    <tr>
+      <td>add_target</td>
+      <td align="">target_name</td>
+      <td align=""></td>
+    </tr>
+    <tr>
+      <td>remove_target</td>
+      <td align="">target_name</td>
+      <td align=""></td>
+    </tr>
+    <tr>
+      <td>list_targets</td>
+      <td align=""></td>
+      <td align=""></td>
+    </tr>
   </tbody>
 </table>
