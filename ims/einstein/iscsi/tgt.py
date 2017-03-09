@@ -1,11 +1,11 @@
-import subprocess
-
 import os
 import re
 
-import ims.common.shell as shell
-import ims.exception.iscsi_exceptions as iscsi_exceptions
+from ims.common import shell
 from ims.common.log import create_logger, log
+from ims.exception import iscsi_exceptions
+from ims.exception import shell_exceptions
+from ims.exception.exception import ShellException
 from ims.interfaces.iscsi import ISCSI
 
 logger = create_logger(__name__)
@@ -14,6 +14,8 @@ logger = create_logger(__name__)
 class TGT(ISCSI):
     """ Class for implementing TGT """
 
+    # TODO add TGT_ISCSI_CONFIG in config, update in PR related to Issue #30
+    # TODO add service name in config
     def __init__(self, fs_config_loc, fs_user, fs_pool):
         self.TGT_ISCSI_CONFIG = "/etc/tgt/conf.d/"
         self.fs_config_loc = fs_config_loc
@@ -28,12 +30,8 @@ class TGT(ISCSI):
         :return: None
         """
         try:
-            command = "service tgtd start"
-            output = shell.call(command, sudo=True)
-            logger.debug("Output = %s", output)
-            if self.show_status() is not 'Running':
-                raise iscsi_exceptions.StartFailedException()
-        except subprocess.CalledProcessError:
+            shell.call_service_command('start', 'tgtd', 'Running')
+        except ShellException:
             raise iscsi_exceptions.StartFailedException()
 
     @log
@@ -44,12 +42,8 @@ class TGT(ISCSI):
         :return: None
         """
         try:
-            command = "service tgtd stop"
-            output = shell.call(command, sudo=True)
-            logger.debug("Output = %s", output)
-            if self.show_status() is not 'Dead':
-                raise iscsi_exceptions.StopFailedException()
-        except subprocess.CalledProcessError as e:
+            shell.call_service_command('stop', 'tgtd', 'Dead')
+        except ShellException:
             raise iscsi_exceptions.StopFailedException()
 
     @log
@@ -59,8 +53,10 @@ class TGT(ISCSI):
 
         :return: None
         """
-        self.stop_server()
-        self.start_server()
+        try:
+            shell.call_service_command('restart', 'tgtd', 'Running')
+        except ShellException:
+            raise iscsi_exceptions.RestartFailedException()
 
     @log
     def show_status(self):
@@ -69,16 +65,12 @@ class TGT(ISCSI):
 
         :return: Running or Dead or Error as String
         """
-        command = "service tgtd status"
-        status_string = shell.call(command, sudo=True)
-        logger.debug("Output = %s", status_string)
-        if 'active (running)' in status_string:
-            return 'Running'
-        elif 'inactive (dead)' in status_string:
-            return 'Dead'
-        # Have to check if there are any other states
-        else:
-            return "Error"
+        try:
+            status = shell.get_service_status('tgtd')
+            if status not in ['Running', 'Dead']:
+                return "Error"
+        except shell_exceptions.CommandFailedException:
+            raise iscsi_exceptions.CheckStatusFailed()
 
     def __generate_config_file(self, target_name):
         """
@@ -100,6 +92,7 @@ class TGT(ISCSI):
             config.write(line)
         config.close()
 
+    # TODO Add tgt-admin to config
     @log
     def add_target(self, target_name):
         """
@@ -113,13 +106,12 @@ class TGT(ISCSI):
             if target_name not in targets:
                 self.__generate_config_file(target_name)
                 command = "tgt-admin --execute"
-                output = shell.call(command, sudo=True)
-                logger.debug("Output = %s", output)
+                shell.call(command, sudo=True)
             else:
                 raise iscsi_exceptions.TargetExistsException()
         except (IOError, OSError) as e:
             raise iscsi_exceptions.TargetCreationFailed(str(e))
-        except subprocess.CalledProcessError as e:
+        except shell_exceptions.CommandFailedException as e:
             raise iscsi_exceptions.TargetCreationFailed(str(e))
 
     @log
@@ -142,7 +134,7 @@ class TGT(ISCSI):
                 raise iscsi_exceptions.TargetDoesntExistException()
         except (IOError, OSError) as e:
             raise iscsi_exceptions.TargetDeletionFailed(str(e))
-        except subprocess.CalledProcessError as e:
+        except shell_exceptions.CommandFailedException as e:
             raise iscsi_exceptions.TargetDeletionFailed(str(e))
 
     @log
@@ -161,5 +153,5 @@ class TGT(ISCSI):
                            formatted_output if
                            re.match("^Target [0-9]+:", target)]
             return target_list
-        except subprocess.CalledProcessError as e:
+        except shell_exceptions.CommandFailedException as e:
             raise iscsi_exceptions.ListTargetFailedException(str(e))

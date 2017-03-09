@@ -3,6 +3,7 @@ from ims.exception.exception import ISCSIException
 
 class TargetExistsException(ISCSIException):
     """ Should be raised when target already exists """
+
     @property
     def status_code(self):
         return 500
@@ -13,6 +14,7 @@ class TargetExistsException(ISCSIException):
 
 class TargetDoesntExistException(ISCSIException):
     """ Should be raised when target doesnt exist """
+
     @property
     def status_code(self):
         return 500
@@ -23,6 +25,7 @@ class TargetDoesntExistException(ISCSIException):
 
 class TargetCreationFailed(ISCSIException):
     """ Should be raised when target creation failed """
+
     @property
     def status_code(self):
         return 500
@@ -36,6 +39,7 @@ class TargetCreationFailed(ISCSIException):
 
 class TargetDeletionFailed(ISCSIException):
     """ Should be raised when target deletion failed """
+
     @property
     def status_code(self):
         return 500
@@ -49,6 +53,7 @@ class TargetDeletionFailed(ISCSIException):
 
 class ListTargetFailedException(ISCSIException):
     """ Should be raised when listing targets failed """
+
     @property
     def status_code(self):
         return 500
@@ -62,6 +67,7 @@ class ListTargetFailedException(ISCSIException):
 
 class StopFailedException(ISCSIException):
     """ Should be raised when stopping iscsi failed """
+
     @property
     def status_code(self):
         return 500
@@ -72,6 +78,7 @@ class StopFailedException(ISCSIException):
 
 class RestartFailedException(ISCSIException):
     """ Should be raised when restarting iscsi failed """
+
     @property
     def status_code(self):
         return 500
@@ -82,9 +89,21 @@ class RestartFailedException(ISCSIException):
 
 class StartFailedException(ISCSIException):
     """ Should be raised when starting iscsi failed """
+
     @property
     def status_code(self):
         return 500
 
     def __str__(self):
         return "ISCSI Failed to Start"
+
+
+class CheckStatusFailed(ISCSIException):
+    """ Should be raised when checking of iscsi server fails"""
+
+    @property
+    def status_code(self):
+        return 500
+
+    def __str__(self):
+        return "ISCSI status check failed"

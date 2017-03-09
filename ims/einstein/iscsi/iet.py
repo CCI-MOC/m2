@@ -13,7 +13,7 @@ from ims.interfaces.iscsi import ISCSI
 logger = create_logger(__name__)
 
 
-# Dont Use IET until fixed in future PR
+# TODO Should Fix IET Driver (Issue #31)
 class IET(ISCSI):
     @log
     def __init__(self, fs, password):
