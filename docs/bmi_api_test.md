@@ -1,5 +1,6 @@
 <h2>BMI API test</h2>
 
+<h3>Ceph API Test</h3>
 <table>
   <tbody>
     <tr>
@@ -148,6 +149,7 @@
   </tbody>
 </table>
 
+<h3>IET API Test</h3>
 <table>
   <tbody>
     <tr>
@@ -203,6 +205,7 @@
   </tbody>
 </table>
 
+<h3>TGT API Test</h3>
 <table>
   <tbody>
     <tr>
