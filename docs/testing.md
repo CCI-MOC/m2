@@ -12,15 +12,16 @@ did not break anything. So the test cases are situated in
 This folder follows the directory structure of the project with additional
 folders like for example operation.py's test cases are situated in
 ```
-/tests/einstein/operations/unit/...
-/tests/einstein/operations/integration/...
+/tests/unit/einstein/...
+/tests/integration/einstein/...
+/tests/stress/einstein/...
 ```
 
-Every file must have a folder for itself which has additional folders called
-'unit' and 'integration'
+All the unit tests should be in unit folder, all integration tests should
+be in integration folder and all stress tests should be in stress folder.
 
-All the unit tests should be in unit folder and all integration tests should
-be in integration folder for that file
+Each folder should have a folder structure similar to ims and all tests should
+go accordingly
 
 All of these folders are python packages so they should have a \_\_init\_\_.py
 
@@ -39,6 +40,8 @@ Each test case is represented by a class and should extend unittest.TestCase
 This is the typical structure of a test case
 
 ```
+from ims.common import config
+config.load()
 from ims.common.log import trace
 
 class TestSample(unittest.TestCase):
@@ -71,7 +74,7 @@ It is fine if a failed test case causes subsequent tests to fail.
 Each test can use the test variables in the config file
  
 ```
-import ims.common.config as config
+from ims.common import config
  
 cfg = config.get()
  
@@ -101,38 +104,38 @@ Let us know if your test cases need additional variables
 
 ## Running Tests
 
-We made a testing framework that collects and runs tests. So follow these steps
+We have decided to use pytest as out test runner. So follow these steps
 
+* Install pytest if its not installed
 * Write a proper bmiconfig.cfg
 * Set the variable BMI_CONFIG
 ```
 export BMI_CONFIG=<path>
 ```
+* Export the variable PYTHONPATH to the root of the ims project similar to above.
 * Some tests may require Picasso and Einstein to be running so do that if
 required before proceeding.
-* Run the test_ims.py file as
-```
-python test_ims.py run <patterns>
-```
-The script takes any number of regex expressions and collects test cases whose
-fully qualified name matches atleast one of these regexes
+* Run pytest with the options
+* Wait for them to run and see the results.
 
-For example there is a test case with fully qualified name as
-database.project.unit.test_project.TestDelete
+pytest can take the paths of test files as arguments, this can allow the dev to run 
+specific test cases.
 
-Here
-* To run this Test Case just test_project.TestDelete can be given as regex
-* To run all Test Cases in test_project module then test_project.\* can be
-given as regex
-* To run all Test Cases in database package then database.\* can be given as
-regex
-* To run all Unit Test Cases in database package then database.\*.unit.\* can
-be given as regex
-* To run all Test Cases from database and einstein pacakge then database.\* and
- einstein.\* can be given as regex
-* To run all Test Cases .\* can be given as regex
+To run specific test case in a file the arguments along with -k option can be used that 
+takes a python expression and runs test cases that match it.
 
-There is an -i option that shows you all the test cases that matched the regex
-before running them.
+## Debugging Tips
+Debugging strategies vary from developer to developer, we put together some tips that
+might be useful.
 
-do python test_ims.py --help for details.
+* If a test fails, then it is better to refer bmi logs. They will be located in the folder
+specified in config.
+* Delete the old log before running the test again as it may reduce confusion. (You can back 
+it up if you need it).
+* It might be difficult to tell where a particular test started in the logs, just search for
+the tests class name (like TestProvision) in the logs. The first line it hits is the start of
+the test case, then the next hit is the second execution of the same test.
+* --pdb option can be used along with pytest to invoke pdb when error is hit.
+* If getting config errors, double check BMI_CONFIG env variable and the config file.
+
+
