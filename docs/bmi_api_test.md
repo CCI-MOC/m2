@@ -19,7 +19,7 @@
     </tr>
     <tr>
       <td>create_image</td>
-      <td align=""></td>
+      <td align="">img_id, img_size</td>
       <td align=""></td>
     </tr>
     <tr>
