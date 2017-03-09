@@ -9,7 +9,7 @@
     </tr>
     <tr>
       <td>open_images</td>
-      <td align=""></td>
+      <td align="">img_id, img_size</td>
       <td align=""></td>
     </tr>
     <tr>
@@ -24,67 +24,67 @@
     </tr>
     <tr>
       <td>clone</td>
-      <td align=""></td>
+      <td align="">parent_img_name, parent_snap_name, clone_img_name</td>
       <td align=""></td>
     </tr>
     <tr>
       <td>remove</td>
-      <td align=""></td>
+      <td align="">img_id</td>
       <td align=""></td>
     </tr>
     <tr>
       <td>write</td>
-      <td align=""></td>
+      <td align="">img_id, data, offset</td>
       <td align=""></td>
     </tr>
     <tr>
       <td>snap_image</td>
-      <td align=""></td>
+      <td align="">img_id, name</td>
       <td align=""></td>
     </tr>
     <tr>
       <td>snap_protect</td>
-      <td align=""></td>
+      <td align="">img_id, snap_name</td>
       <td align=""></td>
     </tr>
     <tr>
       <td>snap_unprotect</td>
-      <td align=""></td>
+      <td align="">img_id, snap_name</td>
       <td align=""></td>
     </tr>
     <tr>
       <td>flatten</td>
-      <td align=""></td>
+      <td align="">img_id</td>
       <td align=""></td>
     </tr>
     <tr>
       <td>list_snapshots</td>
-      <td align=""></td>
+      <td align="">img_id</td>
       <td align=""></td>
     </tr>
     <tr>
       <td>remove_snapshot</td>
-      <td align=""></td>
+      <td align="">img_id, name</td>
       <td align=""></td>
     </tr>
     <tr>
       <td>get_image</td>
-      <td align=""></td>
+      <td align="">img_id</td>
       <td align=""></td>
     </tr>
     <tr>
       <td>get_parent_info</td>
-      <td align=""></td>
+      <td align="">img_id</td>
       <td align=""></td>
     </tr>
     <tr>
       <td>map</td>
-      <td align=""></td>
+      <td align="">ceph_img_name</td>
       <td align=""></td>
     </tr>
     <tr>
       <td>unmap</td>
-      <td align=""></td>
+      <td align="">rbd_name</td>
       <td align=""></td>
     </tr>
     <tr>
@@ -93,7 +93,7 @@
       <td align=""></td>
     </tr>
     
-    <tr>
+    <!--<tr>
       <td>
         <ul>
           <li>item1</li>
@@ -102,6 +102,6 @@
       </td>
       <td align=""></td>
       <td align=""></td>
-    </tr>
+    </tr>-->
   </tbody>
 </table>
