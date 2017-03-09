@@ -105,13 +105,3 @@
     </tr>
   </tbody>
 </table>
-
-<table>
-  <tbody>
-    <tr>
-      <th>Ceph API</th>
-      <th align="center">Arguments</th>
-      <th align="right">Comments</th>
-    </tr>
-  </tbody>
-</table>
