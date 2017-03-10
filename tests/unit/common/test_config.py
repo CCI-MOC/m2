@@ -44,6 +44,25 @@ class TestCorrectPath(unittest.TestCase):
         config.load(force=True)
 
 
+class TestForceFalse(unittest.TestCase):
+    """ Tests if load with force false is working"""
+
+    @trace
+    def setUp(self):
+        self.old_path = os.getenv('BMI_CONFIG')
+        os.environ['BMI_CONFIG'] = "tests/unit/common/sample.cfg"
+        config.load(force=True)
+
+    def runTest(self):
+        os.environ['BMI_CONFIG'] = self.old_path
+        config.load()
+        cfg = config.get()
+        self.assertEqual(cfg.tests.var1, '0')
+
+    def tearDown(self):
+        config.load(force=True)
+
+
 class TestMissingOption(unittest.TestCase):
     """ Tests If raising exception when option is missing """
 
@@ -100,7 +119,7 @@ class TestInvalidBool(unittest.TestCase):
 
 
 class TestMissingOptionalSection(unittest.TestCase):
-    """ Tests if loading when optional section is missing """
+    """ Tests loading a config which has a missing optional section """
 
     @trace
     def setUp(self):
@@ -112,7 +131,7 @@ class TestMissingOptionalSection(unittest.TestCase):
 
 
 class TestMissingOptionalOption(unittest.TestCase):
-    """ Tests if loading when optional option is missing """
+    """ Tests loading a config which has a missing optional option """
 
     @trace
     def setUp(self):
