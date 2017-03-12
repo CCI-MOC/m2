@@ -70,7 +70,7 @@ class TGT(ISCSI):
             if status not in ['Running', 'Dead']:
                 return "Error"
         except shell_exceptions.CommandFailedException:
-            raise iscsi_exceptions.CheckStatusFailed()
+            raise iscsi_exceptions.ShowStatusFailed()
 
     def __generate_config_file(self, target_name):
         """

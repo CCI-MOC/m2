@@ -98,7 +98,7 @@ class StartFailedException(ISCSIException):
         return "ISCSI Failed to Start"
 
 
-class CheckStatusFailed(ISCSIException):
+class ShowStatusFailed(ISCSIException):
     """ Should be raised when checking of iscsi server fails"""
 
     @property
