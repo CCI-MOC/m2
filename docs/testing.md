@@ -104,7 +104,7 @@ Let us know if your test cases need additional variables
 
 ## Running Tests
 
-We have decided to use pytest as out test runner. So follow these steps
+We have decided to use [pytest](http://docs.pytest.org/en/latest/) as out test runner. So follow these steps
 
 * Install pytest if its not installed
 * Write a proper bmiconfig.cfg
@@ -116,13 +116,30 @@ export BMI_CONFIG=<path>
 * Some tests may require Picasso and Einstein to be running so do that if
 required before proceeding.
 * Run pytest with the options
+```
+pytest tests/unit/* (Will run all unit tests)
+pytest tests/integration/* (will run all integration tests)
+pytest tests/stress/* (Will run all stress tests)
+```
 * Wait for them to run and see the results.
 
 pytest can take the paths of test files as arguments, this can allow the dev to run 
 specific test cases.
+```
+pytest tests/unit/database/* tests/unit/einstein/* (Will run all unit tests for db and einstein)
+```
 
 To run specific test case in a file the arguments along with -k option can be used that 
 takes a python expression and runs test cases that match it.
+```
+pytest -k 'TestInsert' tests/unit/database/test_project.py (Run InsertTest from test_project) 
+```
+
+The tests can also be run using unittest by using the command
+```
+python -m unittest discover
+```
+Refer the python [docs](https://docs.python.org/2/library/unittest.html#test-discovery) for more options.
 
 ## Debugging Tips
 Debugging strategies vary from developer to developer, we put together some tips that
