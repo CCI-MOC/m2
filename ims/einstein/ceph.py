@@ -48,7 +48,7 @@ class RBD:
 
     @trace
     def __init_cluster(self):
-        cluster = rados.Rados(rados_id=self.rid, conffile=self.r_conf)
+        cluster = rados.Rados(conffile=self.r_conf)
         cluster.connect()
         return cluster
 

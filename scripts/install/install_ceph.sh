@@ -7,15 +7,16 @@ set -ex
 node_name=`cat /etc/hostname`
 
 # You may have to change this to suit your environment.
-ip_addr=`ifconfig | grep 192 | awk '{ print $2}' | awk -F: '{ print $2 }'`
+if [[ -f /etc/redhat-release ]]; then
+    ip_addr=`sudo ifconfig | grep 192 | awk '{ print $2}'`
+    sudo yum -y remove librados2 librbd1
+else
+    ip_addr=`sudo ifconfig | grep 192 | grep -v 122 | awk '{ print $2}' | awk -F: '{ print $2 }'`
+fi
 sudo sh -c "echo '$ip_addr localhost $node_name' >> /etc/hosts"
 
-sudo apt-get update
-sudo apt-get upgrade -y
-sudo apt-get install -y ceph-deploy
-
 ceph-deploy new $node_name
-echo -e "osd pool default size = 2\nosd crush chooseleaf type = 0" >> ceph.conf
+echo -e "public_network = 192.168.1.0/24\nosd pool default size = 2\nosd crush chooseleaf type = 0" >> ceph.conf
 ceph-deploy install $node_name
 ceph-deploy --overwrite-conf mon create-initial
 

@@ -1,32 +1,46 @@
+set -x
+
 ### START BMI setup
-git clone -b dev http://github.com/cci-moc/ims
-pushd ims
+
+TOP_DIR=$(cd $(dirname "$0") && pwd)
+
+# Move to main ims directory for install from script location
+pushd $TOP_DIR/../../
 
 ### Install BMI
 
+user=`whoami`
 sudo mkdir -p /var/log/bmi/logs /etc/bmi /opt/bmi
-sudo chown -R ubuntu:ubuntu /etc/bmi /var/log/bmi /opt/bmi
+sudo chown -R $user:$user /etc/bmi /var/log/bmi /opt/bmi
+sudo chmod 775 /etc/bmi /var/log/bmi /opt/bmi
 
-wget https://gist.githubusercontent.com/sirushtim/6c28b7168f9121284364e46476af0c73/raw/a9f47dbf35a891689bfc9fe34f5fdf89f6207550/bmi_config.cfg.test
+### Copy config/template files
 cp bmi_config.cfg.test /etc/bmi/bmiconfig.cfg
 cp ims/ipxe.temp /etc/bmi/ipxe.config
 cp ims/mac.temp /etc/bmi/pxelinux.cfg
 
-sudo python setup.py develop
+virtualenv .bmi_venv
+source .bmi_venv/bin/activate
+pip install python-cephlibs
+python setup.py develop
+
 touch /opt/bmi/bmi.db
+
+export HAAS_USERNAME=haas
+export HAAS_PASSWORD=secret
+
 bmi db ls
 sqlite3 /opt/bmi/bmi.db "insert into project values (0, 'bmi_infra', 'bmi_network')"
 
 # Temporary changes to get stable CI. Need to do pull request to get this fixed.
-sed -i s/"app.run(host=cfg.bind_ip, port=cfg.bind_port)"/"app.run(host=cfg.bind_ip, port=int(cfg.bind_port))"/ ims/picasso/rest.py
 sed -i s/"HAAS_BMI_CHANNEL = \"vlan\/native\""/"HAAS_BMI_CHANNEL = \"null\""/ ims/common/constants.py
-sed -i s/"cluster = rados.Rados(rados_id=self.rid, conffile=self.r_conf)"/"cluster = rados.Rados(conffile=self.r_conf)"/ ims/einstein/ceph.py
 
-sudo python scripts/einstein_server &
-sudo python scripts/picasso_server &
+python scripts/einstein_server &
+python scripts/picasso_server &
 
 sleep 5
 
+# This is weird
 sudo chmod 777 /etc/tgt/conf.d/
 
 popd
@@ -39,5 +53,10 @@ rbd import cirros-0.3.0-x86_64-disk.img --dest-pool rbd
 
 ### Interface image to BMI
 bmi import bmi_infra cirros-0.3.0-x86_64-disk.img
+
+cat >bmi_userrc.sh <<EOL
+export HAAS_USERNAME=haas
+export HAAS_PASSWORD=secret
+EOL
 
 ### Fin BMI setup

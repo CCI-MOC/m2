@@ -1,4 +1,4 @@
-The install scripts are to be executed in the following order:
+The install scripts are to be executed inside the install directory.
 
-./install_ceph.sh
-./install_bmi.sh
+cd scripts/install/
+./install.sh
