@@ -4,24 +4,22 @@ import os
 
 import ims.common.constants as constants
 import ims.exception.config_exceptions as config_exceptions
-from ims.exception.exception import ConfigException
+from ims.common.bmi_config import parse_config
 
 __config = None
 
 
 def load():
-    try:
-        global __config
-        if __config is None:
-            try:
-                path = os.environ[
-                    constants.CONFIG_LOCATION_ENV_VARIABLE]
-            except KeyError:
-                path = constants.CONFIG_DEFAULT_LOCATION
-            __config = __BMIConfig(path)
-            __config.parse_config()
-    except ConfigException as ex:
-        raise
+    global __config
+    if __config is None:
+        try:
+            path = os.environ[
+                constants.CONFIG_LOCATION_ENV_VARIABLE]
+        except KeyError:
+            path = constants.CONFIG_DEFAULT_LOCATION
+        __config = __BMIConfig(path)
+        __config.load_config()
+        parse_config(__config)
 
 
 def get():
@@ -33,83 +31,47 @@ class __BMIConfig:
     # other instance variables are initialized as to not get AttributeErrors
     def __init__(self, filename):
         self.configfile = filename
-        self.fs = {}
-        self.uid = None
-        self.db_url = None
-        self.iscsi_update_password = None
-        self.iscsi_ip = None
-        self.haas_url = None
-        self.nameserver_ip = None
-        self.nameserver_port = None
-        self.rpcserver_ip = None
-        self.rpcserver_port = None
-        self.bind_ip = None
-        self.bind_port = None
-        self.logs_url = None
-        self.logs_debug = None
-        self.logs_verbose = None
-        self.pxelinux_loc = None
-        self.ipxe_loc = None
+        self.config = None
 
-    def parse_config(self):
+    def load_config(self):
         config = ConfigParser.SafeConfigParser()
+        if not config.read(self.configfile):
+            raise IOError('cannot load ' + self.configfile)
+        self.config = config
+
+    def option(self, section, option, type=str, required=True):
         try:
-            if not config.read(self.configfile):
-                raise IOError('cannot load ' + self.configfile)
+            value = self.config.get(section, option)
+            section_obj = getattr(self, section, None)
+            if section_obj is None:
+                section_obj = ConfigSection()
+                setattr(self, section, section_obj)
+            if type == bool:
+                setattr(section_obj, option, value.lower() == 'true')
+            else:
+                setattr(section_obj, option, type(value))
+        except ConfigParser.Error:
+            if required:
+                raise config_exceptions.MissingOptionInConfigException(option,
+                                                                       section)
 
-            self.uid = config.get(constants.BMI_CONFIG_SECTION_NAME,
-                                  constants.UID_KEY)
+    def section(self, section_name, required=True):
+        try:
+            section = self.config.items(section_name)
+            section_obj = getattr(self, section_name, None)
+            if section_obj is None:
+                section_obj = ConfigSection()
+                setattr(self, section_name, section_obj)
 
-            self.is_service = config.get(constants.BMI_CONFIG_SECTION_NAME,
-                                         constants.SERVICE_KEY) == 'True'
+            for name, value in section:
+                setattr(section_obj, name, value)
 
-            self.db_url = config.get(constants.DB_CONFIG_SECTION_NAME,
-                                     constants.DB_URL_KEY)
+        except ConfigParser.Error:
+            if required:
+                raise config_exceptions.MissingSectionInConfigException(
+                    section_name)
 
-            self.iscsi_update_password = config.get(
-                constants.ISCSI_CONFIG_SECTION_NAME,
-                constants.ISCSI_PASSWORD_KEY)
 
-            self.iscsi_ip = config.get(constants.ISCSI_CONFIG_SECTION_NAME,
-                                       constants.ISCSI_IP_KEY)
-
-            self.haas_url = config.get(constants.HAAS_CONFIG_SECTION_NAME,
-                                       constants.HAAS_URL_KEY)
-
-            self.nameserver_ip = config.get(constants.RPC_CONFIG_SECTION_NAME,
-                                            constants.RPC_NAME_SERVER_IP_KEY)
-            self.nameserver_port = int(
-                config.get(constants.RPC_CONFIG_SECTION_NAME,
-                           constants.RPC_NAME_SERVER_PORT_KEY))
-            self.rpcserver_ip = config.get(constants.RPC_CONFIG_SECTION_NAME,
-                                           constants.RPC_RPC_SERVER_IP_KEY)
-            self.rpcserver_port = int(
-                config.get(constants.RPC_CONFIG_SECTION_NAME,
-                           constants.RPC_RPC_SERVER_PORT_KEY))
-
-            self.bind_ip = config.get(constants.HTTP_CONFIG_SECTION_NAME,
-                                      constants.BIND_IP_KEY)
-            self.bind_port = config.get(constants.HTTP_CONFIG_SECTION_NAME,
-                                        constants.BIND_PORT_KEY)
-
-            self.logs_url = config.get(constants.LOGS_CONFIG_SECTION_NAME,
-                                       constants.LOGS_URL_KEY)
-            self.logs_debug = config.get(constants.LOGS_CONFIG_SECTION_NAME,
-                                         constants.LOGS_DEBUG_KEY) == 'True'
-            self.logs_verbose = config.get(constants.LOGS_CONFIG_SECTION_NAME,
-                                           constants.LOGS_VERBOSE_KEY)
-            self.logs_verbose = self.logs_verbose == 'True'
-            self.pxelinux_loc = config.get(constants.TFTP_CONFIG_SECTION_NAME,
-                                           constants.PXELINUX_URL_KEY)
-            self.ipxe_loc = config.get(constants.TFTP_CONFIG_SECTION_NAME,
-                                       constants.IPXE_URL_KEY)
-
-            for k, v in config.items(constants.FILESYSTEM_CONFIG_SECTION_NAME):
-                if v == 'True':
-                    self.fs[k] = {}
-
-                    for key, value in config.items(k):
-                        self.fs[k][key] = value
-        # Didn't Test
-        except ConfigParser.NoOptionError as e:
-            raise config_exceptions.MissingOptionInConfigException(e.args[0])
+class ConfigSection:
+    def __init__(self):
+        pass

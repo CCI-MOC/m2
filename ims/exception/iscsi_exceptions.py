@@ -1,62 +1,31 @@
 from ims.exception.exception import ISCSIException
 
 
-# this exception should be raised when the shell script is called on a node
-# that is already in use
-class NodeAlreadyInUseException(ISCSIException):
+class TargetExistsException(ISCSIException):
+    """ Should be raised when target already exists """
+
     @property
     def status_code(self):
         return 500
 
     def __str__(self):
-        return "Node Already in Use"
+        return "Target Already Exists"
 
 
-# this exception should be raised when the shell script is called on a node
-# that is already unmapped
-class NodeAlreadyUnmappedException(ISCSIException):
+class TargetDoesntExistException(ISCSIException):
+    """ Should be raised when target doesnt exist """
+
     @property
     def status_code(self):
         return 500
 
     def __str__(self):
-        return "Node Already Unmapped"
+        return "Target Doesnt Exist"
 
 
-class InvalidConfigException(ISCSIException):
-    @property
-    def status_code(self):
-        return 500
+class TargetCreationFailed(ISCSIException):
+    """ Should be raised when target creation failed """
 
-    def __str__(self):
-        return "Invalid ietd.conf"
-
-
-class DuplicatesException(ISCSIException):
-    @property
-    def status_code(self):
-        return 500
-
-    def __init__(self, names):
-        self.names = names
-
-    def __str__(self):
-        return "Found Duplicates for " + ",".join(self.names)
-
-
-class MountException(ISCSIException):
-    @property
-    def status_code(self):
-        return 500
-
-    def __init__(self, names):
-        self.names = names
-
-    def __str__(self):
-        return "Failed to mount " + ",".join(self.names)
-
-
-class UpdateConfigFailedException(ISCSIException):
     @property
     def status_code(self):
         return 500
@@ -65,10 +34,12 @@ class UpdateConfigFailedException(ISCSIException):
         self.error = error
 
     def __str__(self):
-        return "Failed to update config with error " + self.error
+        return "Target Creation Failed with error {0}".format(self.error)
 
 
-class ReadConfigFailedException(ISCSIException):
+class TargetDeletionFailed(ISCSIException):
+    """ Should be raised when target deletion failed """
+
     @property
     def status_code(self):
         return 500
@@ -77,10 +48,26 @@ class ReadConfigFailedException(ISCSIException):
         self.error = error
 
     def __str__(self):
-        return "Failed to update config with error " + self.error
+        return "Target Deletion Failed with error {0}".format(self.error)
+
+
+class ListTargetFailedException(ISCSIException):
+    """ Should be raised when listing targets failed """
+
+    @property
+    def status_code(self):
+        return 500
+
+    def __init__(self, error):
+        self.error = error
+
+    def __str__(self):
+        return "List Target Failed with error {0}".format(self.error)
 
 
 class StopFailedException(ISCSIException):
+    """ Should be raised when stopping iscsi failed """
+
     @property
     def status_code(self):
         return 500
@@ -90,6 +77,8 @@ class StopFailedException(ISCSIException):
 
 
 class RestartFailedException(ISCSIException):
+    """ Should be raised when restarting iscsi failed """
+
     @property
     def status_code(self):
         return 500
@@ -99,9 +88,22 @@ class RestartFailedException(ISCSIException):
 
 
 class StartFailedException(ISCSIException):
+    """ Should be raised when starting iscsi failed """
+
     @property
     def status_code(self):
         return 500
 
     def __str__(self):
         return "ISCSI Failed to Start"
+
+
+class ShowStatusFailed(ISCSIException):
+    """ Should be raised when checking of iscsi server fails"""
+
+    @property
+    def status_code(self):
+        return 500
+
+    def __str__(self):
+        return "ISCSI status check failed"

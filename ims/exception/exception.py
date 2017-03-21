@@ -42,6 +42,11 @@ class DHCPException(BMIException):
     __metaclass__ = ABCMeta
 
 
+class ShellException(BMIException):
+    """ The Base Class for all exceptions related to Shell """
+    __metaclass__ = ABCMeta
+
+
 # this exception should be raised when a user who is not a bmi admin tries
 # admin level functions
 class AuthorizationFailedException(BMIException):
