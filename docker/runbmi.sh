@@ -1,0 +1,2 @@
+sudo tgtd &
+sleep infinity
