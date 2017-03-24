@@ -134,18 +134,7 @@
       <td>showmapped</td>
       <td align=""></td>
       <td align=""></td>
-    </tr>
-    
-    <!--<tr>
-      <td>
-        <ul>
-          <li>item1</li>
-          <li>item2</li>
-        </ul>
-      </td>
-      <td align=""></td>
-      <td align=""></td>
-    </tr>-->
+      </tr>
   </tbody>
 </table>
 
