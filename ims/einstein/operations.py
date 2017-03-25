@@ -237,7 +237,7 @@ class BMI:
             # Message is being handled by custom formatter
             logger.exception('')
             clone_ceph_name = self.__get_ceph_image_name(node_name)
-            self.fs.remove(clone_ceph_name)
+            self.fs.remove_image(clone_ceph_name)
             self.db.image.delete_with_name_from_project(node_name, self.proj)
             time.sleep(constants.HAAS_CALL_TIMEOUT)
             self.hil.detach_node_from_project_network(node_name, network,
@@ -278,7 +278,7 @@ class BMI:
             logger.debug("Contents of ceph+config = %s", str(ceph_config))
             self.iscsi.remove_target(ceph_img_name)
             logger.info("The delete command was executed successfully")
-            ret = self.fs.remove(str(ceph_img_name).encode("utf-8"))
+            ret = self.fs.remove_image(str(ceph_img_name).encode("utf-8"))
             return self.__return_success(ret)
 
         except FileSystemException as e:
@@ -372,7 +372,7 @@ class BMI:
                                    constants.DEFAULT_SNAPSHOT_NAME)
             self.fs.remove_snapshot(ceph_img_name,
                                     constants.DEFAULT_SNAPSHOT_NAME)
-            self.fs.remove(ceph_img_name)
+            self.fs.remove_image(ceph_img_name)
             self.db.image.delete_with_name_from_project(img_name, self.proj)
             return self.__return_success(True)
         except (HaaSException, DBException, FileSystemException) as e:
