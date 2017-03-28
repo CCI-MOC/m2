@@ -19,7 +19,7 @@ COPY scripts/ /home/bmi/scripts/
 COPY setup.py /home/bmi/setup.py
 
 WORKDIR /home/bmi
-RUN python setup.py install
+RUN python setup.py develop
 
 RUN mkdir /etc/bmi/
 RUN mkdir /var/log/bmi/
@@ -29,6 +29,7 @@ RUN mkdir /var/lib/bmi/
 
 COPY docker/bmi_config.cfg /etc/bmi/bmiconfig.cfg
 
+RUN chown bmi:bmi /etc/tgt/conf.d/
 RUN chown bmi:bmi /var/log/bmi/
 RUN chown bmi:bmi /var/lib/tftpboot/
 RUN chown bmi:bmi /var/lib/tftpboot/pxelinux.cfg/
