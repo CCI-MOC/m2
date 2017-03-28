@@ -1,10 +1,6 @@
 # BMI
 
-The Bare Metal Imaging (BMI) is a core component of the Massachusetts Open Cloud and a image management system(IMS) that  
-* provisions numerous nodes as quickly as possible while preserving support for multitenancy using Hardware as a Service (HIL) and  
-* introduces the image management techniques that are supported by virtual machines, with little to no impact on application performance.  
 
-***
 ## Installation
 
 This document describes how to setup BMI
@@ -51,7 +47,7 @@ systemctl status tgtd
 For more information visit their [website](http://stgt.sourceforge.net/) and the [Quick Start Guide](https://fedoraproject.org/wiki/Scsi-target-utils_Quickstart_Guide)
 
 #### DHCP server
-You can setup `dnsmasq` for this. 
+We support `dnsmasq` for this. 
 
 * On ubuntu:
 `$ sudo apt-get install dnsmasq`
@@ -61,7 +57,11 @@ You can setup `dnsmasq` for this.
 
 For more information about dnsmasq, you can look at the [wiki](https://wiki.debian.org/HowTo/dnsmasq)
 
-#### TFTP Server
+#### TFTP Server (Optional)
+
+dnsmasq has a tftp server bundled which you can enable through it's config file.
+But if you are using some other DHCP service, or want to explicitly install TFTP you can do the following:
+
 ##### On ubuntu:
 * Install these packages:  `$ sudo apt-get install xinetd tftpd tftp`
 
@@ -132,10 +132,8 @@ $ pip install python-cephlibs
 
 That's it. Installation is done!
 ***
-## Running
 
-
-### Configuration
+## Configuration
 
 The template for the config is [here](https://github.com/CCI-MOC/ims/blob/dev/bmi_config.cfg)
 
@@ -177,7 +175,9 @@ keyring = /etc/ceph/bmi.key
 ```
 
 **Driver section**
-* net_isolator is the name of the network isolator to load
+* net_isolator is the name of the network isolator to load. it conects the
+* node to a network on which BMI can provision. We use HIL for network
+* isolation. [Link to HIL](http://hil.readthedocs.io/en/latest/)
 * iscsi is the iscsi driver to load
 * fs is the filesystem to use
 ```
@@ -190,7 +190,7 @@ iscsi = ims.einstein.tgt.driver
 
 **iscsi section**
 * ip is the ip of iscsi server on the provisioning network
-* password is the sudo password for the VM (Will be removed)
+* password is the sudo password for the VM (Will be removed
 ```
 # This section is for iscsi related config
 [iscsi]
@@ -238,10 +238,13 @@ path = /home/bmi/logs/
 debug = False
 verbose = False
 ```
+## Running BMI
 
 ### Einstein  
 
-First export the variable BMI_CONFIG
+Einstein is the backend that does the operations. 
+
+First export the path of BMI config file to environment variable (BMI_CONFIG)
 
 ```
 $ export BMI_CONFIG=/home/bmi/bmiconfig.cfg
@@ -255,9 +258,11 @@ $ einstein_server (In screen)
 
 Should see some lines stating einstein is running then hit Ctrl+A+D.  
 
-Einstein is running!!
+Einstein is running!
 
 ### Picasso
+
+Picasso is the frontend that handles the API calls. 
 
 Should export like einstein. Then open screen (Open a fresh screen always) and start picasso
 ```

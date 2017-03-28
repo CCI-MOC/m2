@@ -48,13 +48,9 @@ This summarizes what should be done prior to a pull request:
 - [ ] If functionality could have architectural implications or controversial, have a discussion with the team. Ideally, prior to coding to save effort.
 - [ ] Ensure any user, deployer or developer documentation is updated.
 - [ ] If a change affects an external API, be sure to update docs/rest\_api.md.
-- [ ] Testing:
-  - [ ] Ensure tests pass (coming soon!) after making your changes by running `py.test tests/unit ` from the top-level ims directory. Parallel testing can be used on multi-core systems by running `py.test tests/unit -n auto`
-  - [ ] Add unit tests in the corresponding file and create one if none are present.
-  - [ ] If practical, bug fixes should have an reproducing test to ensure that the bug does not come back.
-  - [ ] Run deployment tests if needed
+- [ ] Ensure tests pass (coming soon!) after making your changes.
 
-#### Get agreement
+#### Get agreement from the BMI team
 
 The BMI project appreciates all ideas and submissions. In the past, we've
 discussed several alternatives to how things currently work (which we're trying
@@ -77,8 +73,6 @@ should be added that provide adequate coverage.
 If fixing a bug, a regression test should accompany the bug fix to ensure that
 the bug does not return.
 
-### Pull Requests
-
 Once the checklist above has been met, open a Pull Request from your
 personal fork to the main BMI repo.
 
@@ -95,9 +89,9 @@ complex code, that is probably where you want to spend a lot of your review
 time. Remember the 80/20 rule (80% of the bugs come from 20% of the code).
 
 
-### Approval criteria
+### Approval criteria on github
 
-Pull Requests require at least 2 successful reviews, also known as "+1"'s, in
+Pull Requests require at least 2 approvals, also known as "+1"'s, in
 order to be merged, with at least 2 core developers being involved in some way:
 either as a submitter or a reviewer.
 
