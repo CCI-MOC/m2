@@ -64,7 +64,7 @@ Even though bmi is technically ready to run you will probably need to do some mo
 * Create new image using ``` rbd create --image-format 2 --size 10 bmi_test ```, this will create a 10 MB blank image called bmi_test in
 ceph.
 * import the created image using ``` bmi import bmi_infra bmi_test ```
-* Change HIL_DEFAULT_CHANNEL to null in ims/common/constants.py (Temporary)
+* Change HIL_BMI_CHANNEL to null in ims/common/constants.py (Temporary)
 
 This should allow you to run test cases.
 
