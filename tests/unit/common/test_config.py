@@ -1,6 +1,5 @@
-import unittest
-
 import os
+import unittest
 
 from ims.common import config
 
@@ -63,83 +62,44 @@ class TestForceFalse(unittest.TestCase):
         config.load(force=True)
 
 
-class TestMissingOption(unittest.TestCase):
-    """ Tests If raising exception when option is missing """
+class TestBadConfigs(unittest.TestCase):
+    """ Contains Tests for testing various invalid configs """
 
     @trace
     def setUp(self):
         self.cfg = config.BMIConfig("")
         self.cfg.config.add_section("test")
+        self.cfg.config.set("test", "var1", "hello")
 
-    def runTest(self):
+    def test_missing_option(self):
+        """ Tests If raising exception when option is missing """
         with self.assertRaises(
                 config_exceptions.MissingOptionInConfigException):
-            self.cfg.option("test", "var1")
+            self.cfg.option("test", "missing")
 
-
-class TestMissingSection(unittest.TestCase):
-    """ Tests if raising exception when section is missing """
-
-    @trace
-    def setUp(self):
-        self.cfg = config.BMIConfig("")
-
-    def runTest(self):
+    def test_missing_section(self):
+        """ Tests if raising exception when section is missing """
         with self.assertRaises(
                 config_exceptions.MissingSectionInConfigException):
-            self.cfg.section('test')
+            self.cfg.section('test1')
 
-
-class TestInvalidValue(unittest.TestCase):
-    """ Tests if raising exception when invalid value is given """
-
-    @trace
-    def setUp(self):
-        self.cfg = config.BMIConfig("")
-        self.cfg.config.add_section('test')
-        self.cfg.config.set('test', 'var1', 'hello')
-
-    def runTest(self):
+    def test_invalid_value(self):
+        """ Tests if raising exception when invalid value is given """
         with self.assertRaises(config_exceptions.InvalidValueConfigException):
             self.cfg.option('test', 'var1', type=int)
 
-
-class TestInvalidBool(unittest.TestCase):
-    """ Tests If raising exception when invalid bool is given """
-
-    @trace
-    def setUp(self):
-        self.cfg = config.BMIConfig("")
-        self.cfg.config.add_section('test')
-        self.cfg.config.set('test', 'var1', 'hello')
-
-    def runTest(self):
+    def test_invalid_bool(self):
+        """ Tests If raising exception when invalid bool is given """
         with self.assertRaises(config_exceptions.InvalidValueConfigException):
             self.cfg.option('test', 'var1', type=bool)
 
-
-class TestMissingOptionalSection(unittest.TestCase):
-    """ Tests loading a config which has a missing optional section """
-
-    @trace
-    def setUp(self):
-        self.cfg = config.BMIConfig("")
-
-    def runTest(self):
-        self.cfg.section('test', required=False)
+    def test_missing_optional_section(self):
+        """ Tests loading a config which has a missing optional section """
+        self.cfg.section('missing', required=False)
         self.assertIsNone(getattr(self.cfg, 'test', None))
 
-
-class TestMissingOptionalOption(unittest.TestCase):
-    """ Tests loading a config which has a missing optional option """
-
-    @trace
-    def setUp(self):
-        self.cfg = config.BMIConfig("")
-        self.cfg.config.add_section('test')
-        self.cfg.config.set('test', 'var1', 'hello')
-
-    def runTest(self):
+    def test_missing_optional_option(self):
+        """ Tests loading a config which has a missing optional option """
         self.cfg.option('test', 'var1')
         self.cfg.option('test', 'var2', required=False)
         self.assertIsNone(getattr(self.cfg.test, 'var2', None))
