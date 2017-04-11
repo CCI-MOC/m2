@@ -84,9 +84,21 @@ class RBD:
         return self.rbd.list(self.context)
 
     @log
-    def create_image(self, img_id, img_size):
+    def create_image(self, img_id, img_size, old_format=False, features=1):
+        """
+        Create a rbd image
+
+        :param img_id: what the image is called
+        :param img_size: how big the image is in bytes
+        :param old_format: whether to create an old-style image that is
+                           accessible by old clients, but cannot use more
+                           advanced features like layering
+        :param features: bitmask of features to enable
+        :return: bool - if image is created without error.
+        """
         try:
-            self.rbd.create(self.context, img_id, img_size)
+            self.rbd.create(self.context, img_id, img_size,
+                            old_format=old_format, features=features)
             return True
         except rbd.ImageExists:
             raise file_system_exceptions.ImageExistsException(img_id)
@@ -117,6 +129,22 @@ class RBD:
             raise file_system_exceptions.ArgumentsOutOfRangeException()
 
     @log
+    def list_children(self, img_id, parent_snap):
+        """
+        The snapshot of image whose children will be returned
+
+        :param img_id: what the image is called
+        :param parent_snap: the snapshot to read from
+        :return: a list of (pool name, image name) tuples
+        """
+        try:
+            with self.__open_image(img_id) as img:
+                img.set_snap(parent_snap)
+                return img.list_children()
+        except rbd.ImageNotFound:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
+
+    @log
     def remove(self, img_id):
         try:
             self.rbd.remove(self.context, img_id)
@@ -132,11 +160,39 @@ class RBD:
 
     @log
     def write(self, img_id, data, offset):
+        """
+        Write data to the image
+
+        :param img_id: what the image is called
+        :param data: the data to be written
+        :param offset: where to start writing data
+        :return: int - the number of bytes written
+        """
         try:
             with self.__open_image(img_id) as img:
-                img.write(data, offset)
+                return img.write(data, offset)
         except rbd.ImageNotFound:
             raise file_system_exceptions.ImageNotFoundException(img_id)
+        except rbd.InvalidArgument:
+            raise file_system_exceptions.ArgumentsOutOfRangeException()
+
+    @log
+    def read(self, img_id, offset, length):
+        """
+        Read data from the image
+
+        :param img_id: what the image is called
+        :param offset: the offset to start reading at
+        :param length: how many bytes to read
+        :return: str - a string of the data read
+        """
+        try:
+            with self.__open_image(img_id) as img:
+                return img.read(offset, length)
+        except rbd.ImageNotFound:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
+        except rbd.InvalidArgument:
+            raise file_system_exceptions.ArgumentsOutOfRangeException()
 
     @log
     def snap_image(self, img_id, name):
@@ -186,6 +242,21 @@ class RBD:
             raise file_system_exceptions.ImageBusyException(img_id)
 
     @log
+    def is_snap_protected(self, img_id, snap_name):
+        """
+        Find out whether a snapshot is protected from deletion
+
+        :param img_id: what the image is called
+        :param snap_name: the snapshot to check
+        :return: bool- whether the snapshot is protected
+        """
+        try:
+            with self.__open_image(img_id) as img:
+                return img.is_protected_snap(snap_name)
+        except:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
+
+    @log
     def flatten(self, img_id):
         try:
 
@@ -211,9 +282,8 @@ class RBD:
                 return True
         except rbd.ImageNotFound:
             raise file_system_exceptions.ImageNotFoundException(img_id)
-        # Don't know how to raise this
         except rbd.ImageBusy:
-            raise file_system_exceptions.ImageBusyException(img_id)
+            raise file_system_exceptions.SnapshotBusyException(name)
 
     @log
     def get_image(self, img_id):
