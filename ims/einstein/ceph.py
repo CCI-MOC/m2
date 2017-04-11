@@ -84,9 +84,10 @@ class RBD:
         return self.rbd.list(self.context)
 
     @log
-    def create_image(self, img_id, img_size):
+    def create_image(self, img_id, img_size, old_format=True, features=0):
         try:
-            self.rbd.create(self.context, img_id, img_size)
+            self.rbd.create(self.context, img_id, img_size,
+                            old_format=old_format, features=features)
             return True
         except rbd.ImageExists:
             raise file_system_exceptions.ImageExistsException(img_id)
@@ -117,6 +118,17 @@ class RBD:
             raise file_system_exceptions.ArgumentsOutOfRangeException()
 
     @log
+    def list_children(self, img_id, parent_snap_name):
+        try:
+            with self.__open_image(img_id) as img:
+                img.set_snap(parent_snap_name)
+                clone_imgs = img.list_children()
+                img.set_snap(None)
+                return clone_imgs
+        except rbd.ImageNotFound:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
+
+    @log
     def remove(self, img_id):
         try:
             self.rbd.remove(self.context, img_id)
@@ -134,7 +146,17 @@ class RBD:
     def write(self, img_id, data, offset):
         try:
             with self.__open_image(img_id) as img:
-                img.write(data, offset)
+                bytes_written = img.write(data, offset)
+                return bytes_written
+        except rbd.ImageNotFound:
+            raise file_system_exceptions.ImageNotFoundException(img_id)
+
+    @log
+    def read(self, img_id, offset, length):
+        try:
+            with self.__open_image(img_id) as img:
+                data_read = img.read(offset, length)
+                return data_read
         except rbd.ImageNotFound:
             raise file_system_exceptions.ImageNotFoundException(img_id)
 

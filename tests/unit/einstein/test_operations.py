@@ -2,8 +2,12 @@ import time
 import unittest
 from unittest import TestCase
 
+import ims.common.config as config
+config.load()
+
 import ims.common.constants as constants
 import ims.einstein.ceph as ceph
+from ims.common.log import trace
 from ims.einstein.operations import BMI
 
 _cfg = config.get()
