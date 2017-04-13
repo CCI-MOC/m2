@@ -58,11 +58,15 @@ class TestSample(unittest.TestCase):
  ```
  
 * Each class's name should start with Test
+* Add a doc string for the class describing about the test.
 * Each setUp method should use the trace decorator
 * setUp method is supposed to do stuff which is required before the actual test
 is run like adding db entries, etc.
 * runTest should do the actual test and assertions to make sure everything went
  well.
+* A test case class can have multiple test functions if setUp and tearDown match
+for all of them (runTest shouldnt be present in this case). Also in this case
+add a doc string for every test function along with the class.
 * tearDown is supposed to do cleanup most commonly undo what was done in setUp
 like delete db entries, etc.
  
@@ -104,7 +108,7 @@ Let us know if your test cases need additional variables
 
 ## Running Tests
 
-We have decided to use [pytest](http://docs.pytest.org/en/latest/) as out test runner. So follow these steps
+We have decided to use [pytest](http://docs.pytest.org/en/latest/) as our test runner. So follow these steps
 
 * Install pytest if its not installed
 * Write a proper bmiconfig.cfg
@@ -150,7 +154,7 @@ specified in config.
 * Delete the old log before running the test again as it may reduce confusion. (You can back 
 it up if you need it).
 * It might be difficult to tell where a particular test started in the logs, just search for
-the tests class name (like TestProvision) in the logs. The first line it hits is the start of
+the test's class name (like TestProvision) in the logs. The first line it hits is the start of
 the test case, then the next hit is the second execution of the same test.
 * --pdb option can be used along with pytest to invoke pdb when error is hit.
 * If getting config errors, double check BMI_CONFIG env variable and the config file.
