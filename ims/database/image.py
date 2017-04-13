@@ -141,8 +141,11 @@ class ImageRepository:
             image = self.connection.session.query(Image). \
                 filter(Image.project.has(name=project_name)).filter_by(
                 name=name).one_or_none()
-            if image is not None:
-                return image.id
+
+            if image is None:
+                raise db_exceptions.ImageNotFoundException(name)
+
+            return image.id
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
 
