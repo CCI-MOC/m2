@@ -3,7 +3,8 @@
 
 ## Installation
 
-This document describes how to setup BMI
+This document describes how to setup BMI. We officially support RHEL and it's
+variants, but it may also work on ubuntu (Debian) like OSes. 
 
 ### Prerequisite Softwares
 
@@ -13,12 +14,14 @@ BMI requires the following non python dependencies.
 Ceph is a distributed object store and file system designed for performance and scalibility. 
 For more information, visit the [official website](http://docs.ceph.com/docs/master/start/)
 
-You can follow [this guide](http://palmerville.github.io/2016/04/30/single-node-ceph-install.html) 
-to setup a ceph client on a VM
+To install ceph client:
+```
+yum install ceph-common
+```
 
 #### iSCSI Server
-We recommend using the TGT iSCSI variant as its driver is more stable.   
-You can install it with the following set of commands:  
+We recommend using the TGT iSCSI variant as its BMI driver is more stable.   
+You can install it on RHEL family with the following set of commands:  
 
 ```
 git clone https://github.com/fujita/tgt.git
@@ -36,6 +39,7 @@ cp scripts/tgtd.service /usr/lib/systemd/system/
 systemctl daemon-reload
 systemctl list-unit-files | grep -i tgt
 
+# TGT uses port 3260 by defualt, so make sure you open it. 
 iptables -I INPUT -p tcp -m tcp --dport 3260 -j ACCEPT
 service iptables save
 
@@ -49,70 +53,9 @@ For more information visit their [website](http://stgt.sourceforge.net/) and the
 #### DHCP server
 We support `dnsmasq` for this. 
 
-* On ubuntu:
-`$ sudo apt-get install dnsmasq`
-
-* On CentOS:
 `$ yum install dnsmasq`
 
 For more information about dnsmasq, you can look at the [wiki](https://wiki.debian.org/HowTo/dnsmasq)
-
-#### TFTP Server (Optional)
-
-dnsmasq has a tftp server bundled which you can enable through it's config file.
-But if you are using some other DHCP service, or want to explicitly install TFTP you can do the following:
-
-##### On ubuntu:
-* Install these packages:  `$ sudo apt-get install xinetd tftpd tftp`
-
-* Create `/etc/xinetd.d/tftp` and put this entry  
-  
-```
-service tftp
-{
-protocol        = udp
-port            = 69
-socket_type     = dgram
-wait            = yes
-user            = nobody
-server          = /usr/sbin/in.tftpd
-server_args     = /tftpboot
-disable         = no
-}
-```
-##### On CentOS:
-* Install these packages:  `$ sudo yum install tftp tftp-server xinetd`
-* Modify `/etc/xinetd/tftp` as shown below  
-
-```
-service tftp
-{
-        socket_type             = dgram
-        protocol                = udp
-        wait                    = yes
-        user                    = root
-        server                  = /usr/sbin/in.tftpd
-        server_args             = /tftpboot
-        disable                 = no
-        per_source              = 11
-        cps                     = 100 2
-        flags                   = IPv4
-}
-```
-
-* Create a folder `/tftpboot` this should match whatever you gave in `server_args.` mostly it will be `tftpboot`:
-  
-```
-$ sudo mkdir /tftpboot
-$ sudo chmod -R 777 /tftpboot
-$ sudo chown -R nobody /tftpboot
-```
-  
-* Restart the `xinetd` service:  `$ sudo service xinetd restart`
-
-
-
-The TFTP server should be up and running. For more information click [here](http://askubuntu.com/questions/201505/how-do-i-install-and-run-a-tftp-server)
 
 #### Hardware Isolation Layer (HIL)
 
@@ -159,7 +102,7 @@ url = /home/user/bmi.db
 ```  
 
 **filesystem section**  
-Tells which Filesystem to load (right now, we only support ceph)
+Tells which Filesystem to use (right now, we only support ceph)
 
 * id is the ceph id which has access to the pool
 * pool is the ceph pool to use for storing images
@@ -175,7 +118,7 @@ keyring = /etc/ceph/bmi.key
 ```
 
 **Driver section**
-* net_isolator is the name of the network isolator to load. it conects the
+* net_isolator is the name of the network isolator to use. it connects the
 * node to a network on which BMI can provision. We use HIL for network
 * isolation. [Link to HIL](http://hil.readthedocs.io/en/latest/)
 * iscsi is the iscsi driver to load
@@ -190,7 +133,7 @@ iscsi = ims.einstein.tgt.driver
 
 **iscsi section**
 * ip is the ip of iscsi server on the provisioning network
-* password is the sudo password for the VM (Will be removed
+* password is the sudo password for the VM (Will be removed)
 ```
 # This section is for iscsi related config
 [iscsi]
@@ -199,8 +142,8 @@ password = password
 ```  
 
 **rpc section**
-* name_server ip and port is the RPC NameServer's IP and Port
-* rpc_server ip and port is the RPC Server's IP and Port (The end which calls einstein)
+* name_server is the ip and port Name Server binds to
+* rpc_server is the ip and port RPC Server binds to (The end which calls einstein)
 ```
 # this section is for rpc server config
 [rpc]

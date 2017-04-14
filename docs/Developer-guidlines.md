@@ -43,12 +43,14 @@ to their personal fork and then create a Pull Request to merge it
 into the master branch of the BMI repository.
 
 ### Prior to the pull request
+
 This summarizes what should be done prior to a pull request:
 
 - [ ] If functionality could have architectural implications or controversial, have a discussion with the team. Ideally, prior to coding to save effort.
 - [ ] Ensure any user, deployer or developer documentation is updated.
 - [ ] If a change affects an external API, be sure to update docs/rest\_api.md.
 - [ ] Ensure tests pass (coming soon!) after making your changes.
+- [ ] Ensure that your code is pep8 compliant. 
 
 #### Get agreement from the BMI team
 
@@ -62,7 +64,6 @@ issue](https://github.com/CCI-MOC/ims/issues) on github, or speak with one of th
 
 #### Testing
 
-* [Testing document](testing.html)
 
 Testing helps to ensure the quality of the code base. Every pull request
 submitted should first be tested to ensure that all existing tests pass.
@@ -75,6 +76,8 @@ the bug does not return.
 
 Once the checklist above has been met, open a Pull Request from your
 personal fork to the main BMI repo.
+
+Checkout the [testing document](testing.md) for more details.
 
 
 ### Code review
