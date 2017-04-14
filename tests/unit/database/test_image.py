@@ -93,7 +93,7 @@ class TestFetch(TestCase):
 
         with pytest.raises(db_exceptions.ImageNotFoundException):
             img_id = self.db.image.fetch_id_with_name_from_project(
-                        'some_', 'project 1')
+                'some_', 'project 1')
 
         images = self.db.image.fetch_all_images()
         self.assertEqual(images.__len__(), 4)

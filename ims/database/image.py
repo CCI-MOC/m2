@@ -137,14 +137,14 @@ class ImageRepository:
     # returns a array of image ids of the images which have the given name
     @log
     def fetch_id_with_name_from_project(self, name, project_name):
+        """searches for image by name and returns image id"""
+
         try:
             image = self.connection.session.query(Image). \
                 filter(Image.project.has(name=project_name)).filter_by(
                 name=name).one_or_none()
-
             if image is None:
                 raise db_exceptions.ImageNotFoundException(name)
-
             return image.id
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
