@@ -138,11 +138,11 @@ class ImageRepository:
     @log
     def fetch_id_with_name_from_project(self, name, project_name):
         """
-        searches for image by name and returns image id
+        Searches for image by name and returns image id
 
-        :param  name: name of the image
-        :poaram project_name: name of the project
-        :return: image.id: the image id of the image
+        :param name: name of the image
+        :param project_name: name of the project
+        :return: the id of the image.
         """
 
         try:

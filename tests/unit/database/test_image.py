@@ -96,8 +96,10 @@ class TestFetch(TestCase):
                          ['image 1', 'image 2', 'image 3', 'image 4'])
 
     def test_nonexistent_image_fetch(self):
-        """tries to retrieve the image id of an image that doesn't
-        exist in the db. should raise an error"""
+        """
+        Tries to retrieve the image id of an image that doesn't
+        exist in the db. Should raise an error
+        """
 
         with self.assertRaises(db_exceptions.ImageNotFoundException):
             img_id = self.db.image.fetch_id_with_name_from_project(
