@@ -5,6 +5,8 @@ config.load()
 
 from ims.common.log import trace
 from ims.database.database import Database
+from ims.exception import db_exceptions
+import pytest
 
 
 class TestInsert(TestCase):
@@ -88,6 +90,10 @@ class TestFetch(TestCase):
         img_id = self.db.image.fetch_id_with_name_from_project('image 2',
                                                                'project 1')
         self.assertEqual(img_id, 2)
+
+        with pytest.raises(db_exceptions.ImageNotFoundException):
+            img_id = self.db.image.fetch_id_with_name_from_project(
+                        'some_', 'project 1')
 
         images = self.db.image.fetch_all_images()
         self.assertEqual(images.__len__(), 4)
