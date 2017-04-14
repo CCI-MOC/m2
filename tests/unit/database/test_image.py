@@ -6,7 +6,6 @@ config.load()
 from ims.common.log import trace
 from ims.database.database import Database
 from ims.exception import db_exceptions
-import pytest
 
 
 class TestInsert(TestCase):
@@ -71,7 +70,7 @@ class TestFetch(TestCase):
         self.db.image.insert('image 3', 1, parent_id=1)
         self.db.image.insert('image 4', 1, is_snapshot=True, parent_id=1)
 
-    def runTest(self):
+    def test_image_fetch(self):
         images = self.db.image.fetch_images_from_project('project 1')
         self.assertTrue('image 1' in images and 'image 2' in images)
 
@@ -91,14 +90,18 @@ class TestFetch(TestCase):
                                                                'project 1')
         self.assertEqual(img_id, 2)
 
-        with pytest.raises(db_exceptions.ImageNotFoundException):
-            img_id = self.db.image.fetch_id_with_name_from_project(
-                'some_', 'project 1')
-
         images = self.db.image.fetch_all_images()
         self.assertEqual(images.__len__(), 4)
         self.assertEqual([image[1] for image in images],
                          ['image 1', 'image 2', 'image 3', 'image 4'])
+
+    def test_nonexistent_image_fetch(self):
+        """tries to retrieve the image id of an image that doesn't
+        exist in the db. should raise an error"""
+
+        with self.assertRaises(db_exceptions.ImageNotFoundException):
+            img_id = self.db.image.fetch_id_with_name_from_project(
+                'nonexistent_image', 'project 1')
 
     def tearDown(self):
         self.db.project.delete_with_name('project 1')
