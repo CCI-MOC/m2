@@ -157,6 +157,8 @@ it up if you need it).
 the test's class name (like TestProvision) in the logs. The first line it hits is the start of
 the test case, then the next hit is the second execution of the same test.
 * --pdb option can be used along with pytest to invoke pdb when error is hit.
+* When using pdb run rpc_server and name_server separately instead of using einstein_server 
+command.
 * If getting config errors, double check BMI_CONFIG env variable and the config file.
 
 
