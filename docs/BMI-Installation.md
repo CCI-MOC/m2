@@ -37,6 +37,7 @@ make CEPH_RBD=1 install
 
 cp scripts/tgtd.service /usr/lib/systemd/system/
 systemctl daemon-reload
+# this is to check if tgtd has been made as a daemon
 systemctl list-unit-files | grep -i tgt
 
 # TGT uses port 3260 by defualt, so make sure you open it. 
@@ -88,7 +89,6 @@ This section describes each config section along with sample
 ```
 # this section is for basic bmi settings
 [bmi]
-# uid is given so that images dont clash in ceph pool
 uid = 5
 service = False
 ```  
@@ -118,18 +118,28 @@ keyring = /etc/ceph/bmi.key
 ```
 
 **Driver section**
-* net_isolator is the name of the network isolator to use. it connects the
-* node to a network on which BMI can provision. We use HIL for network
-* isolation. [Link to HIL](http://hil.readthedocs.io/en/latest/)
+
 * iscsi is the iscsi driver to load
 * fs is the filesystem to use
+* net_isolator is the name of the network isolator to use.
+It connects the node to a network on which BMI can provision. We require this to have
+multi-tenancy while provisioning (securely). We use HIL for network
+isolation. [Link to HIL](http://hil.readthedocs.io/en/latest/)
 ```
-# This section is for hil related config
+
 [driver]
 fs = ims.einstein.fs.ceph.driver
-net_isolator = not used
+net_isolator = <default>
 iscsi = ims.einstein.tgt.driver
-```  
+```
+**Network Isolator section**
+
+* This section is for network isolated related configuration
+
+```
+[net_isolator]
+url = <base url for network isolator>
+```
 
 **iscsi section**
 * ip is the ip of iscsi server on the provisioning network
@@ -151,6 +161,8 @@ name_server_ip = 127.0.0.1
 name_server_port = 10000
 rpc_server_ip = 127.0.0.1
 rpc_server_port = 10001
+
+checkout [pyro](https://pypi.python.org/pypi/Pyro4) to know more about it.
 ```  
 
 **tftp section**
@@ -162,10 +174,9 @@ rpc_server_port = 10001
 pxelinux_path = /var/lib/tftpboot/pxelinux.cfg
 ipxe_path = /var/lib/tftpboot/
 ```  
-**http section**
+**API server section**
 * bind_ip and port is the ip and port picasso should bind to
 ```
-# this section is for http config
 [rest_api]
 bind_ip = 127.0.0.1
 bind_port = 8000
@@ -217,7 +228,7 @@ Should see one line stating that Picasso is running
 
 Picasso is running!!
 
-### Initing DB
+### Bootstrapping the Database
 
 Since we dont have installation script or command that will create the admin user, it must be done manually.
 
