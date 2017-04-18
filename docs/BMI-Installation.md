@@ -80,118 +80,8 @@ That's it. Installation is done!
 ## Configuration
 
 The template for the config is [here](https://github.com/CCI-MOC/ims/blob/dev/bmi_config.cfg)
+It describes the purpose and how to fill each section in it. 
 
-This section describes each config section along with sample  
-
-**bmi section**  
-* uid is used to prevent clashing of BMIs that use the same Ceph Pool. It is the responsibility of the admin to ensure that uid is unique.
-* service should be set to True if BMI is deployed as a service. Set it to False for now as there are some glitches.
-```
-# this section is for basic bmi settings
-[bmi]
-uid = 5
-service = False
-```  
-
-**db section**  
-* url is the path of the sqlite db
-```
-# this section is for db settings
-[db]
-url = /home/user/bmi.db
-```  
-
-**filesystem section**  
-Tells which Filesystem to use (right now, we only support ceph)
-
-* id is the ceph id which has access to the pool
-* pool is the ceph pool to use for storing images
-* conf_file is the path to the Ceph conf file
-* keyring is the path to the keyring file
-```
-# This section is filesystem related config
-[fs]
-id = bmi
-pool = bmi
-conf_file = /etc/ceph/ceph.conf
-keyring = /etc/ceph/bmi.key
-```
-
-**Driver section**
-
-* iscsi is the iscsi driver to load
-* fs is the filesystem to use
-* net_isolator is the name of the network isolator to use.
-It connects the node to a network on which BMI can provision. We require this to have
-multi-tenancy while provisioning (securely). We use HIL for network
-isolation. [Link to HIL](http://hil.readthedocs.io/en/latest/)
-```
-
-[driver]
-fs = ims.einstein.fs.ceph.driver
-net_isolator = <default>
-iscsi = ims.einstein.tgt.driver
-```
-**Network Isolator section**
-
-* This section is for network isolated related configuration
-
-```
-[net_isolator]
-url = <base url for network isolator>
-```
-
-**iscsi section**
-* ip is the ip of iscsi server on the provisioning network
-* password is the sudo password for the VM (Will be removed)
-```
-# This section is for iscsi related config
-[iscsi]
-ip = 127.0.0.1
-password = password
-```  
-
-**rpc section**
-* name_server is the ip and port Name Server binds to
-* rpc_server is the ip and port RPC Server binds to (The end which calls einstein)
-```
-# this section is for rpc server config
-[rpc]
-name_server_ip = 127.0.0.1
-name_server_port = 10000
-rpc_server_ip = 127.0.0.1
-rpc_server_port = 10001
-
-checkout [pyro](https://pypi.python.org/pypi/Pyro4) to know more about it.
-```  
-
-**tftp section**
-* pxelinux_path is the path to the pxelinux.cfg folder
-* ipxe_path is the path to the location where ipxe files should be created (root of tftpboot folder)
-```
-# this section is for specifying tftp settings
-[tftp]
-pxelinux_path = /var/lib/tftpboot/pxelinux.cfg
-ipxe_path = /var/lib/tftpboot/
-```  
-**API server section**
-* bind_ip and port is the ip and port picasso should bind to
-```
-[rest_api]
-bind_ip = 127.0.0.1
-bind_port = 8000
-```  
-**logs section**
-* path is the folder where logs should be generated
-* debug enables debug logs
-* verbose prints logs to screen
-```
-# this section is for logs
-[logs]
-path = /home/bmi/logs/
-debug = False
-verbose = False
-```
 ## Running BMI
 
 ### Einstein  
@@ -201,7 +91,7 @@ Einstein is the backend that does the operations.
 First export the path of BMI config file to environment variable (BMI_CONFIG)
 
 ```
-$ export BMI_CONFIG=/home/bmi/bmiconfig.cfg
+$ export BMI_CONFIG=/home/bmi/bmi_config.cfg
 ```
 
 Then open a screen (Open a fresh screen always) and start einstein
