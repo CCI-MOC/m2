@@ -26,7 +26,7 @@ class TestBadPath(unittest.TestCase):
 
 
 class TestCorrectPath(unittest.TestCase):
-    """ Tests if able to load from correct path """
+    """ Tests whether config from correct path is being loaded properly """
 
     @trace
     def setUp(self):
