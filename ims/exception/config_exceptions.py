@@ -2,6 +2,7 @@ from ims.exception.exception import ConfigException
 
 
 class MissingOptionInConfigException(ConfigException):
+    """ Should be raised when an option is missing in config """
     @property
     def status_code(self):
         return 500
@@ -16,6 +17,7 @@ class MissingOptionInConfigException(ConfigException):
 
 
 class MissingSectionInConfigException(ConfigException):
+    """ Should be raised when a section is missing in config """
     @property
     def status_code(self):
         return 500
@@ -28,6 +30,7 @@ class MissingSectionInConfigException(ConfigException):
 
 
 class InvalidValueConfigException(ConfigException):
+    """ Should be raised when an invalid value is assigned to an option """
     @property
     def status_code(self):
         return 500
