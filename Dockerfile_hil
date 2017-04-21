@@ -12,7 +12,6 @@ WORKDIR /root/hil
 RUN python setup.py install
 COPY docker/haas.cfg /etc/haas.cfg
 COPY docker/haas.cfg ./haas.cfg
-# RUN cp examples/haas.cfg.dev-no-hardware ./haas.cfg
 RUN haas-admin db create
 COPY docker/setupdb.sh ./setupdb.sh
 RUN chmod a+x setupdb.sh

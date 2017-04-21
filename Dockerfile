@@ -12,12 +12,15 @@ RUN pip install dumb-init
 
 RUN useradd -ms /bin/bash bmi
 RUN passwd -d bmi
+RUN passwd -d root
 RUN usermod -aG sudo bmi
+USER bmi
 COPY ims/ /home/bmi/ims/
 COPY tests/ /home/bmi/tests/
 COPY scripts/ /home/bmi/scripts/
 COPY setup.py /home/bmi/setup.py
 
+USER root
 WORKDIR /home/bmi
 RUN python setup.py develop
 
@@ -43,9 +46,15 @@ ENV HAAS_PASSWORD=admin
 
 VOLUME /etc/ceph
 
+
 USER bmi
 RUN bmi db ls
 RUN sqlite3 /var/lib/bmi/bmi.db "insert into project values(1,'bmi_infra','bmi_provision')"
 
+# Dev Stuff
+RUN sudo apt-get install -y openssh-server vim git
+RUN sudo pip install pytest
+RUN mkdir /home/bmi/.ssh
+COPY docker/pubkey /home/bmi/.ssh/authorized_keys
 
 CMD dumb-init /home/bmi/runbmi.sh
