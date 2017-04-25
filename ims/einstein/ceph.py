@@ -1,10 +1,10 @@
 #! /bin/python
+import os
+import rbd
 import subprocess
 from contextlib import contextmanager
 
-import os
 import rados
-import rbd
 import sh
 
 import ims.common.constants as constants
@@ -111,7 +111,8 @@ class RBD:
             logger.info("Clone with name %s exists" % clone_img_name)
             actual_parent = self.get_parent_info(clone_img_name)[1]
             if actual_parent != parent_img_name:
-                raise file_system_exceptions.ImageExistsException(clone_img_name)
+                clone = clone_img_name  # PEP8 fix
+                raise file_system_exceptions.ImageExistsException(clone)
         # No Clue when will this be raised so not testing
         except rbd.FunctionNotSupported:
             raise file_system_exceptions.FunctionNotSupportedException()
