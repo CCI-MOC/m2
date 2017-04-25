@@ -57,7 +57,11 @@ class HIL:
                 raise haas_exceptions.AuthenticationFailedException()
             elif obj.status_code == 403:
                 raise haas_exceptions.AuthorizationFailedException()
-            elif obj.status_code >= 400:
+            elif obj.status_code == 400:
+                raise haas_exceptions.NotAttachedException()
+            elif obj.status_code == 409:
+                raise haas_exceptions.AttachedException()
+            elif obj.status_code > 400:
                 # For PEP8
                 error_msg = obj.json()[constants.MESSAGE_KEY]
                 raise haas_exceptions.UnknownException(obj.status_code,
@@ -99,9 +103,14 @@ class HIL:
 
     @log
     def attach_node_to_project_network(self, node, network, nic):
-        api = '/node/' + node + '/nic/' + nic + '/connect_network'
-        body = {"network": network, "channel": constants.HAAS_BMI_CHANNEL}
-        return self.__call_rest_api_with_body(api=api, body=body)
+        try:
+            api = '/node/' + node + '/nic/' + nic + '/connect_network'
+            body = {"network": network, "channel": constants.HAAS_BMI_CHANNEL}
+            return self.__call_rest_api_with_body(api=api, body=body)
+        except haas_exceptions.AttachedException:
+            logger.info("%s is already attached to %s at %s" % (node,
+                                                                network,
+                                                                nic))
 
     @log
     def attach_node_haas_project(self, project, node):
@@ -110,11 +119,15 @@ class HIL:
         return self.__call_rest_api_with_body(api=api, body=body)
 
     @log
-    def detach_node_from_project_network(self, node,
-                                         network, nic):
-        api = '/node/' + node + '/nic/' + nic + '/detach_network'
-        body = {"network": network}
-        return self.__call_rest_api_with_body(api=api, body=body)
+    def detach_node_from_project_network(self, node, network, nic):
+        try:
+            api = '/node/' + node + '/nic/' + nic + '/detach_network'
+            body = {"network": network}
+            return self.__call_rest_api_with_body(api=api, body=body)
+        except haas_exceptions.NotAttachedException:
+            logger.info("%s is already detached to %s at %s" % (node,
+                                                                network,
+                                                                nic))
 
     @log
     def get_node_mac_addr(self, node):

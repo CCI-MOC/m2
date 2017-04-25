@@ -108,7 +108,10 @@ class RBD:
                 img_name = parent_snap_name
             raise file_system_exceptions.ImageNotFoundException(img_name)
         except rbd.ImageExists:
-            raise file_system_exceptions.ImageExistsException(clone_img_name)
+            logger.info("Clone with name %s exists" % clone_img_name)
+            actual_parent = self.get_parent_info(clone_img_name)[1]
+            if actual_parent != parent_img_name:
+                raise file_system_exceptions.ImageExistsException(clone_img_name)
         # No Clue when will this be raised so not testing
         except rbd.FunctionNotSupported:
             raise file_system_exceptions.FunctionNotSupportedException()
@@ -122,7 +125,8 @@ class RBD:
             self.rbd.remove(self.context, img_id)
             return True
         except rbd.ImageNotFound:
-            raise file_system_exceptions.ImageNotFoundException(img_id)
+            logger.exception('')
+            # raise file_system_exceptions.ImageNotFoundException(img_id)
         # Don't know how to raise this
         except rbd.ImageBusy:
             raise file_system_exceptions.ImageBusyException(img_id)

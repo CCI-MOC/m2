@@ -5,6 +5,7 @@ import unittest
 from unittest import TestCase
 
 import ims.common.config as config
+
 config.load()
 
 import ims.common.constants as constants
@@ -32,9 +33,8 @@ NOT_EXIST_SNAP_NAME = _cfg.tests.not_exist_snap_name
 
 
 class TestProvision(TestCase):
-    """
-    Imports an image and calls provision
-    """
+    """ Imports an image and calls provision """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -63,6 +63,7 @@ class TestDeprovision(TestCase):
     """
     Same as above, but calls deprovision in the test (Test is same as previous)
     """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -90,6 +91,7 @@ class TestCreateSnapshot(TestCase):
     """
     Provisions an imported image and creates snapshot
     """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -132,6 +134,7 @@ class TestListSnapshots(TestCase):
     """
     Creates snapshot like previous and calls list snapshots
     """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -166,6 +169,7 @@ class TestRemoveSnapshot(TestCase):
     """
     Snapshot is also an image in bmi, so no need to test for now
     """
+
     def setUp(self):
         pass
 
@@ -180,6 +184,7 @@ class TestListImages(TestCase):
     """
     Imports an image and calls list image
     """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -206,6 +211,7 @@ class TestRemoveImage(TestCase):
     """
     Imports an image and calls remove image
     """
+
     @trace
     def setUp(self):
         self.db = Database()

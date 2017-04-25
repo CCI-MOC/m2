@@ -32,6 +32,24 @@ class ConnectionException(HaaSException):
         return "Couldnt connect to HaaS"
 
 
+class NotAttachedException(HaaSException):
+    @property
+    def status_code(self):
+        return 400
+
+    def __str__(self):
+        return "Node Not Attached to Nic"
+
+
+class AttachedException(HaaSException):
+    @property
+    def status_code(self):
+        return 409
+
+    def __str__(self):
+        return "Node Already Attached to Nic"
+
+
 # this exception is a wrapper for any other haas exception that may pop up
 class UnknownException(HaaSException):
     @property

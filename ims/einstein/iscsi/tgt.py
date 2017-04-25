@@ -103,12 +103,11 @@ class TGT(ISCSI):
         """
         try:
             targets = self.list_targets()
-            if target_name not in targets:
-                self.__generate_config_file(target_name)
-                command = "tgt-admin --execute"
-                shell.call(command, sudo=True)
-            else:
-                raise iscsi_exceptions.TargetExistsException()
+            if target_name in targets:
+                logger.info("%s target already exists" % target_name)
+            self.__generate_config_file(target_name)
+            command = "tgt-admin --execute"
+            shell.call(command, sudo=True)
         except (IOError, OSError) as e:
             raise iscsi_exceptions.TargetCreationFailed(str(e))
         except shell_exceptions.CommandFailedException as e:
@@ -132,8 +131,15 @@ class TGT(ISCSI):
                 logger.debug("Output = %s", output)
             else:
                 raise iscsi_exceptions.TargetDoesntExistException()
-        except (IOError, OSError) as e:
+        except OSError as e:
+            if "[Errno 2] No such file or directory" in str(e):
+                logger.exception('')
+            else:
+                raise iscsi_exceptions.TargetDeletionFailed(str(e))
+        except IOError as e:
             raise iscsi_exceptions.TargetDeletionFailed(str(e))
+        except iscsi_exceptions.TargetDoesntExistException:
+            logger.exception('')
         except shell_exceptions.CommandFailedException as e:
             raise iscsi_exceptions.TargetDeletionFailed(str(e))
 
