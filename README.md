@@ -33,29 +33,6 @@ BMIS Architecture
 
 We use Ceph as a storage back-end to save OS images. For every application we support, we have a “golden image,” which acts as a source of truth. When a user logs-in and requests a big data environment, we clone from this golden image and provision nodes using the cloned image and a PXE bootloader. Hardware as a Service (HaaS) serves as a network isolation tool through which we achieve multitenancy. HaaS provides a service for node allocation and deallocation. For more details about HaaS, please visit https://github.com/CCI-MOC/haas.
 
-Project Team
-
-Core Project Team
-
-    Professor Gene Cooperman, Northeastern University 
-    Apoorve Mohan, Northeastern University
-    Pranay Surana, Northeastern University 
-    Ravi Santosh Gudimetla, Northeastern University
-    Sourabh Bollapragada, Northeastern University
-
-Contributors
-
-    Dr. Ata Turk, Boston University 
-    Dr. Jason Hennesey, Boston University 
-    Ugur Kaynar, Boston University 
-    Sahil Tikale, Boston University 
-
-Timeline
-
-    January – April 2016: Expose an Application Programming Interface (API) for the core functionality of a bare metal imaging system, including snapshotting, cloning, etc. Performance evaluation using ceph on headnode by enabling caching and having a multi-tenant iscsi service
-    April – June 2016: Develop a scheduler that could be used in conjunction with bare metal imaging for dynamic node allocation and deallocation.
-    April – June 2016: Develop scripts for turn-key solutions for HPC, BigData and Openstack clusters.
-
 Planning and Getting Involved
 
-To get involved in this project, please send email to (MOC team-list) and/or join the #moc irc channel on freenode.
+To get involved in this project, please send email to (MOC team-list) and/or join the #moc irc channel on freenode. For more information visit [our website.](https://info.massopencloud.org/blog/bare-metal-imaging/)
