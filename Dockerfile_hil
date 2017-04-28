@@ -23,10 +23,7 @@ RUN chown haas:haas /home/haas/haas.db
 COPY docker/runhil.sh ./runhil.sh
 RUN chmod a+x runhil.sh
 
-COPY docker/wsgi.conf /etc/httpd/conf.d/wsgi.conf
-RUN mkdir /var/www/haas/
-RUN cp ./haas.wsgi /var/www/haas/
+RUN cp ./haas.wsgi ./wsgi.py
 
-
-EXPOSE 80
+EXPOSE 5000
 CMD dumb-init /root/hil/runhil.sh
