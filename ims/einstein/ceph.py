@@ -126,8 +126,7 @@ class RBD:
             self.rbd.remove(self.context, img_id)
             return True
         except rbd.ImageNotFound:
-            logger.exception('')
-            # raise file_system_exceptions.ImageNotFoundException(img_id)
+            logger.info("%s image is not found" % img_id)
         # Don't know how to raise this
         except rbd.ImageBusy:
             raise file_system_exceptions.ImageBusyException(img_id)

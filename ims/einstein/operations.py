@@ -242,12 +242,12 @@ class BMI:
             self.hil.detach_node_from_project_network(node_name,
                                                       network, nic)
             ceph_img_name = self.__get_ceph_image_name(node_name)
-            self.db.image.delete_with_name_from_project(node_name, self.proj)
             ceph_config = self.cfg.fs
             logger.debug("Contents of ceph+config = %s", str(ceph_config))
             self.iscsi.remove_target(ceph_img_name)
             logger.info("The delete command was executed successfully")
             ret = self.fs.remove(str(ceph_img_name).encode("utf-8"))
+            self.db.image.delete_with_name_from_project(node_name, self.proj)
             return self.__return_success(ret)
         except BMIException as e:
             return self.__return_error(e)
