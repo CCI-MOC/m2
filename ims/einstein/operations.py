@@ -122,9 +122,7 @@ class BMI:
         self.is_admin = self.__check_admin()
 
     @log
-    def __register(self, node_name, img_name, target_name):
-        mac_addr = "01-" + self.hil.get_node_mac_addr(node_name).replace(":",
-                                                                         "-")
+    def __register(self, node_name, img_name, target_name, mac_addr):
         logger.debug("The Mac Addr File name is %s", mac_addr)
         self.__generate_ipxe_file(node_name, target_name)
         self.__generate_mac_addr_file(img_name, node_name, mac_addr)
@@ -216,6 +214,8 @@ class BMI:
     @log
     def provision(self, node_name, img_name, network, nic):
         try:
+            mac_addr = ("01-" + self.hil.get_node_mac_addr(node_name).
+                        replace(":", "-"))
             self.hil.attach_node_to_project_network(node_name, network, nic)
 
             parent_id = self.db.image.fetch_id_with_name_from_project(img_name,
@@ -230,7 +230,7 @@ class BMI:
             logger.debug("Contents of ceph_config = %s", str(ceph_config))
             self.iscsi.add_target(clone_ceph_name)
             logger.info("The create command was executed successfully")
-            self.__register(node_name, img_name, clone_ceph_name)
+            self.__register(node_name, img_name, clone_ceph_name, mac_addr)
             return self.__return_success(True)
 
         except RegistrationFailedException as e:
