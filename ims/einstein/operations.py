@@ -233,6 +233,18 @@ class BMI:
             self.__register(node_name, img_name, clone_ceph_name)
             return self.__return_success(True)
 
+        except RegistrationFailedException as e:
+            # Message is being handled by custom formatter
+            logger.exception('')
+            clone_ceph_name = self.__get_ceph_image_name(node_name)
+            self.iscsi.remove_target(clone_ceph_name)
+            self.fs.remove(clone_ceph_name)
+            self.db.image.delete_with_name_from_project(node_name, self.proj)
+            time.sleep(constants.HAAS_CALL_TIMEOUT)
+            self.hil.detach_node_from_project_network(node_name, network,
+                                                      nic)
+            return self.__return_error(e)
+
         except ISCSIException as e:
             # Message is being handled by custom formatter
             logger.exception('')
