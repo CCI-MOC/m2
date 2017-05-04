@@ -124,7 +124,6 @@ class RBD:
     def remove(self, img_id):
         try:
             self.rbd.remove(self.context, img_id)
-            return True
         except rbd.ImageNotFound:
             logger.info("%s image is not found" % img_id)
         # Don't know how to raise this
@@ -133,6 +132,7 @@ class RBD:
         # Forgot to test this
         except rbd.ImageHasSnapshots:
             raise file_system_exceptions.ImageHasSnapshotException(img_id)
+        return True
 
     @log
     def write(self, img_id, data, offset):

@@ -1,4 +1,5 @@
 import json
+import time
 import urlparse
 
 import requests
@@ -6,6 +7,7 @@ import requests
 import ims.common.constants as constants
 import ims.exception.haas_exceptions as haas_exceptions
 from ims.common.log import create_logger, trace, log
+from ims.exception.exception import HaaSException
 
 logger = create_logger(__name__)
 
@@ -60,7 +62,11 @@ class HIL:
             elif obj.status_code == 400:
                 raise haas_exceptions.NotAttachedException()
             elif obj.status_code == 409:
-                raise haas_exceptions.AttachedException()
+                error_msg = obj.json()[constants.MESSAGE_KEY]
+                if "already attached" in error_msg:
+                    raise haas_exceptions.AttachedException()
+                raise haas_exceptions.UnknownException(obj.status_code,
+                                                       error_msg)
             elif obj.status_code > 400:
                 # For PEP8
                 error_msg = obj.json()[constants.MESSAGE_KEY]
@@ -140,3 +146,15 @@ class HIL:
     def validate_project(self, project):
         api = '/project/' + project + '/nodes'
         return self.__call_rest_api(api=api)
+
+    @log
+    def wait(self, node, network, nic, attaching=True):
+        while True:
+            try:
+                if attaching:
+                    self.attach_node_to_project_network(node, network, nic)
+                else:
+                    self.detach_node_from_project_network(node, network, nic)
+                break
+            except HaaSException:
+                time.sleep(0)
