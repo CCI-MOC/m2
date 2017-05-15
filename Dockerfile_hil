@@ -25,5 +25,7 @@ RUN chmod a+x runhil.sh
 
 RUN cp ./haas.wsgi ./wsgi.py
 
-EXPOSE 5000
+RUN pip install gunicorn
+
+EXPOSE 7000
 CMD dumb-init /root/hil/runhil.sh

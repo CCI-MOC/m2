@@ -1,6 +1,7 @@
-haas serve 5000 &
+haas serve 7000 &
 sleep 1
 haas serve_networks &
+sleep 1
 haas project_create bmi_infra
 haas node_register bmi_node mock mock-host mock-user mock-pass
 haas node_register_nic bmi_node bmi_nic aa:bb:cc:dd:ee:ff
