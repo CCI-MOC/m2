@@ -2,10 +2,42 @@ language: python
 python:
   - "2.7"
 
+sudo: required
+
 install:
   - pip install pep8
 
-script:
+services:
+  - docker
+
+before_script:
   # Run pep8 on all .py files in all subfolders
   # ignore E402: module level import not at top of file
   - find . -name \*.py -exec pep8 --ignore=E402 {} +
+
+  # Run Ceph Container and Wait for some time so that ceph runs
+  - sudo docker run -d -v ceph:/etc/ceph -e MON_IP=172.17.0.2 -e CEPH_PUBLIC_NETWORK=172.17.0.0/24 --name ceph ceph/demo:tag-build-master-hammer-centos-7
+  - sleep 30
+
+  # Run HIL Container
+  - sudo docker run -d --name hil bmis/hil
+
+  # Build BMI Container From Environment Image
+  - sudo docker pull bmis/bmi-ci
+  - sudo docker build -t bmi-test -f Dockerfile_ci .
+  - sudo docker run -d -v ceph:/etc/ceph --name bmi bmi-test
+
+  # Just for debugging purposes to check if all containers run
+  - sudo docker ps
+
+  # Insert Image into Ceph using ceph client in BMI Container
+  - sudo docker exec bmi rbd create --image-format 2 --size 10 bmi_test
+
+script:
+  # Run Tests in BMI container
+  - sudo docker exec bmi pytest -v --random-order-bucket=global --ignore tests/unit/picasso tests/
+
+after_script:
+ # Extract and Upload logs for debugging incase of failure
+  - sudo docker cp bmi:/var/log/bmi/ims.log ./ims.log
+  - curl -sT ./ims.log chunk.io

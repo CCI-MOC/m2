@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/CCI-MOC/ims.svg?branch=dev)](https://travis-ci.org/CCI-MOC/ims)
 # BMI
 
 The Bare Metal Imaging (BMI) is a core component of the Massachusetts Open Cloud and an Image Management System(IMS) that
