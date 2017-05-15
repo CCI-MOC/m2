@@ -250,6 +250,7 @@ class BMI:
             self.db.image.delete_with_name_from_project(node_name, self.proj)
             return self.__return_success(ret)
         except BMIException as e:
+            logger.exception('')
             return self.__return_error(e)
 
     # Creates snapshot for the given image with snap_name as given name

@@ -156,5 +156,5 @@ class HIL:
                 else:
                     self.detach_node_from_project_network(node, network, nic)
                 break
-            except HaaSException:
+            except haas_exceptions.UnknownException:
                 time.sleep(0)
