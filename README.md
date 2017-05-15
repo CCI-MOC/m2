@@ -1,8 +1,9 @@
 # BMI
 
-The Bare Metal Imaging (BMI) is a core component of the Massachusetts Open Cloud and a image management system(ims) that 
-(i)provisions numerous nodes as quickly as possible while preserving support for multitenancy using Hardware as a Service (HaaS) and 
-(ii)introduces the image management techniques that are supported by virtual machines, with little to no impact on application performance.
+The Bare Metal Imaging (BMI) is a core component of the Massachusetts Open Cloud and an Image Management System(IMS) that
+(i)provisions numerous nodes as quickly as possible while preserving support
+for multitenancy using the Hardware Isolation Layer (HIL) and  (ii)introduces the
+image management techniques that are supported by virtual machines, with little to no impact on application performance.
 
 Motivation
 
@@ -21,13 +22,6 @@ Current BMI (IMS) Architecture
 
 ![](https://github.com/CCI-MOC/ims/blob/dev/Selection_003.png)
 
-The current design consists of a pluggable architecture that exposes an API for such features as:
-
-    map – Maps a physical node to an image
-    register –Registers a node with BMI
-    rm – Removes the image from library
-    list – Lists the images available
-    upload – Uploads the image to library
 
 BMIS Architecture
 
@@ -37,3 +31,4 @@ Planning and Getting Involved
 
 To get involved in this project, please send email to (MOC team-list) and/or join the #moc irc channel on freenode.
 For more information please visit our [website](https://info.massopencloud.org/blog/bare-metal-imaging/)
+You can find us on [slack](https://team-bmis.slack.com/)
