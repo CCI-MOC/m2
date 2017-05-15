@@ -1,4 +1,5 @@
 import json
+import time
 import urlparse
 
 import requests
@@ -6,6 +7,7 @@ import requests
 import ims.common.constants as constants
 import ims.exception.haas_exceptions as haas_exceptions
 from ims.common.log import create_logger, trace, log
+from ims.exception.exception import HaaSException
 
 logger = create_logger(__name__)
 
@@ -57,7 +59,15 @@ class HIL:
                 raise haas_exceptions.AuthenticationFailedException()
             elif obj.status_code == 403:
                 raise haas_exceptions.AuthorizationFailedException()
-            elif obj.status_code >= 400:
+            elif obj.status_code == 400:
+                raise haas_exceptions.NotAttachedException()
+            elif obj.status_code == 409:
+                error_msg = obj.json()[constants.MESSAGE_KEY]
+                if "already attached" in error_msg:
+                    raise haas_exceptions.AttachedException()
+                raise haas_exceptions.UnknownException(obj.status_code,
+                                                       error_msg)
+            elif obj.status_code > 400:
                 # For PEP8
                 error_msg = obj.json()[constants.MESSAGE_KEY]
                 raise haas_exceptions.UnknownException(obj.status_code,
@@ -99,9 +109,14 @@ class HIL:
 
     @log
     def attach_node_to_project_network(self, node, network, nic):
-        api = '/node/' + node + '/nic/' + nic + '/connect_network'
-        body = {"network": network, "channel": constants.HAAS_BMI_CHANNEL}
-        return self.__call_rest_api_with_body(api=api, body=body)
+        try:
+            api = '/node/' + node + '/nic/' + nic + '/connect_network'
+            body = {"network": network, "channel": constants.HAAS_BMI_CHANNEL}
+            return self.__call_rest_api_with_body(api=api, body=body)
+        except haas_exceptions.AttachedException:
+            logger.info("%s is already attached to %s at %s" % (node,
+                                                                network,
+                                                                nic))
 
     @log
     def attach_node_haas_project(self, project, node):
@@ -110,11 +125,15 @@ class HIL:
         return self.__call_rest_api_with_body(api=api, body=body)
 
     @log
-    def detach_node_from_project_network(self, node,
-                                         network, nic):
-        api = '/node/' + node + '/nic/' + nic + '/detach_network'
-        body = {"network": network}
-        return self.__call_rest_api_with_body(api=api, body=body)
+    def detach_node_from_project_network(self, node, network, nic):
+        try:
+            api = '/node/' + node + '/nic/' + nic + '/detach_network'
+            body = {"network": network}
+            return self.__call_rest_api_with_body(api=api, body=body)
+        except haas_exceptions.NotAttachedException:
+            logger.info("%s is already detached to %s at %s" % (node,
+                                                                network,
+                                                                nic))
 
     @log
     def get_node_mac_addr(self, node):
@@ -127,3 +146,15 @@ class HIL:
     def validate_project(self, project):
         api = '/project/' + project + '/nodes'
         return self.__call_rest_api(api=api)
+
+    @log
+    def wait(self, node, network, nic, attaching=True):
+        while True:
+            try:
+                if attaching:
+                    self.attach_node_to_project_network(node, network, nic)
+                else:
+                    self.detach_node_from_project_network(node, network, nic)
+                break
+            except haas_exceptions.UnknownException:
+                time.sleep(0)

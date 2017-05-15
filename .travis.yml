@@ -2,10 +2,17 @@ language: python
 python:
   - "2.7"
 
+sudo: required
+
 install:
   - pip install pep8
+
+services:
+  - docker
 
 script:
   # Run pep8 on all .py files in all subfolders
   # ignore E402: module level import not at top of file
   - find . -name \*.py -exec pep8 --ignore=E402 {} +
+  - sudo echo 'DOCKER_OPTS="--insecure-registry myregistrydomain.com:5000"' >> /etc/default/docker
+  - sudo docker run -d -v ceph:/etc/ceph -e MON_IP=172.17.0.2 -e CEPH_PUBLIC_NETWORK=172.17.0.0/24 --name ceph ceph/demo
