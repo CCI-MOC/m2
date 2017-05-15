@@ -1,8 +1,7 @@
 #!/usr/bin/python
 import base64
-import time
-
 import os
+import sys
 
 import ims.common.config as config
 import ims.common.constants as constants
@@ -15,7 +14,7 @@ from ims.einstein.hil import HIL
 from ims.einstein.iscsi.tgt import TGT
 from ims.exception.exception import RegistrationFailedException, \
     FileSystemException, DBException, HaaSException, ISCSIException, \
-    AuthorizationFailedException, DHCPException
+    AuthorizationFailedException, DHCPException, BMIException
 
 logger = create_logger(__name__)
 
@@ -37,9 +36,7 @@ class BMI:
             self.dhcp = DNSMasq()
             # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
             # Need to make this generic by passing specific config
-            self.iscsi = TGT(self.cfg.fs.conf_file,
-                             self.cfg.fs.id,
-                             self.cfg.fs.pool)
+
         elif args.__len__() == 3:
             username, password, project = args
             self.cfg = config.get()
@@ -233,34 +230,7 @@ class BMI:
             self.__register(node_name, img_name, clone_ceph_name)
             return self.__return_success(True)
 
-        except ISCSIException as e:
-            # Message is being handled by custom formatter
-            logger.exception('')
-            clone_ceph_name = self.__get_ceph_image_name(node_name)
-            self.fs.remove(clone_ceph_name)
-            self.db.image.delete_with_name_from_project(node_name, self.proj)
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.hil.detach_node_from_project_network(node_name, network,
-                                                      nic)
-            return self.__return_error(e)
-
-        except FileSystemException as e:
-            # Message is being handled by custom formatter
-            logger.exception('')
-            self.db.image.delete_with_name_from_project(node_name, self.proj)
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.hil.detach_node_from_project_network(node_name, network,
-                                                      nic)
-            return self.__return_error(e)
-        except DBException as e:
-            # Message is being handled by custom formatter
-            logger.exception('')
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.hil.detach_node_from_project_network(node_name, network,
-                                                      nic)
-            return self.__return_error(e)
-        except HaaSException as e:
-            # Message is being handled by custom formatter
+        except BMIException as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -268,49 +238,18 @@ class BMI:
     # and destroying its image
     @log
     def deprovision(self, node_name, network, nic):
-        ceph_img_name = None
         try:
             self.hil.detach_node_from_project_network(node_name,
                                                       network, nic)
             ceph_img_name = self.__get_ceph_image_name(node_name)
-            self.db.image.delete_with_name_from_project(node_name, self.proj)
             ceph_config = self.cfg.fs
             logger.debug("Contents of ceph+config = %s", str(ceph_config))
             self.iscsi.remove_target(ceph_img_name)
             logger.info("The delete command was executed successfully")
             ret = self.fs.remove(str(ceph_img_name).encode("utf-8"))
+            self.db.image.delete_with_name_from_project(node_name, self.proj)
             return self.__return_success(ret)
-
-        except FileSystemException as e:
-            logger.exception('')
-            self.iscsi.add_target(ceph_img_name)
-            parent_name = self.fs.get_parent_info(ceph_img_name)[1]
-
-            parent_id = self.db.image.fetch_id_with_name_from_project(
-                parent_name,
-                self.proj)
-            self.db.image.insert(node_name, self.pid, parent_id,
-                                 id=self.__extract_id(ceph_img_name))
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.hil.attach_node_to_project_network(node_name, network, nic)
-            return self.__return_error(e)
-        except ISCSIException as e:
-            logger.exception('')
-            parent_name = self.fs.get_parent_info(ceph_img_name)[1]
-            parent_id = self.db.image.fetch_id_with_name_from_project(
-                parent_name,
-                self.proj)
-            self.db.image.insert(node_name, self.pid, parent_id,
-                                 id=self.__extract_id(ceph_img_name))
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.hil.attach_node_to_project_network(node_name, network, nic)
-            return self.__return_error(e)
-        except DBException as e:
-            logger.exception('')
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
-            self.hil.attach_node_to_project_network(node_name, network, nic)
-            return self.__return_error(e)
-        except HaaSException as e:
+        except BMIException as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -516,11 +455,12 @@ class BMI:
             dest_pid = self.__does_project_exist(dest_project)
             self.db.image.copy_image(self.proj, img1, dest_pid, img2)
             if img2 is not None:
-                ceph_name = self.__get_ceph_image_name(img2, dest_project)
+                ceph_name = self.__get_ceph_image_name(img2)
             else:
-                ceph_name = self.__get_ceph_image_name(img1, dest_project)
-            self.fs.clone(self.__get_ceph_image_name(img1, self.proj),
+                ceph_name = self.__get_ceph_image_name(img1)
+            self.fs.clone(self.__get_ceph_image_name(img1),
                           constants.DEFAULT_SNAPSHOT_NAME, ceph_name)
+            self.fs.flatten(ceph_name)
             self.fs.snap_image(ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
             self.fs.snap_protect(ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
             return self.__return_success(True)

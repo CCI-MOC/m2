@@ -1,0 +1,31 @@
+FROM centos
+RUN yum install -y epel-release 
+RUN yum -y update && yum install -y bridge-utils  gcc  httpd  ipmitool libvirt libxml2-devel  libxslt-devel  mod_wsgi net-tools python-pip python-psycopg2 python-virtinst qemu-kvm telnet vconfig virt-install
+RUN yum install -y git
+RUN yum install -y python-devel
+RUN pip install dumb-init
+
+RUN useradd -ms /bin/bash haas
+WORKDIR /root
+RUN git clone https://github.com/CCI-MOC/hil.git
+WORKDIR /root/hil
+RUN python setup.py install
+COPY docker/haas.cfg /etc/haas.cfg
+COPY docker/haas.cfg ./haas.cfg
+RUN haas-admin db create
+COPY docker/setupdb.sh ./setupdb.sh
+RUN chmod a+x setupdb.sh
+RUN ./setupdb.sh
+
+RUN chmod 666 /home/haas/haas.db
+RUN chown haas:haas /home/haas/haas.db
+
+COPY docker/runhil.sh ./runhil.sh
+RUN chmod a+x runhil.sh
+
+RUN cp ./haas.wsgi ./wsgi.py
+
+RUN pip install gunicorn
+
+EXPOSE 7000
+CMD dumb-init /root/hil/runhil.sh

@@ -1,0 +1,16 @@
+FROM bmi-ci
+
+USER bmi
+COPY ims/ /home/bmi/ims/
+COPY tests/ /home/bmi/tests/
+COPY scripts/ /home/bmi/scripts/
+COPY setup.py /home/bmi/setup.py
+
+USER root
+WORKDIR /home/bmi
+RUN python setup.py develop
+
+USER bmi
+RUN bmi db ls
+
+CMD dumb-init /home/bmi/runbmi.sh
