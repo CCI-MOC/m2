@@ -235,6 +235,7 @@ class BMI:
 
         except RegistrationFailedException as e:
             # Message is being handled by custom formatter
+            # TODO: add a deployment and a unit test for this case.
             logger.exception('')
             clone_ceph_name = self.__get_ceph_image_name(node_name)
             self.iscsi.remove_target(clone_ceph_name)
