@@ -24,7 +24,7 @@ Current BMI (IMS) Architecture
 The current design consists of a pluggable architecture that exposes an API for such features as:
 
     map – Maps a physical node to an image
-    register –Registers a node with BMI
+    register – Registers a node with BMI
     rm – Removes the image from library
     list – Lists the images available
     upload – Uploads the image to library
