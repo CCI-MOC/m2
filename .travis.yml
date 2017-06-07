@@ -25,7 +25,7 @@ before_script:
   # Build BMI Container From Environment Image
   - sudo docker pull bmis/bmi-ci
   - sudo docker build -t bmi-test -f Dockerfile_ci .
-  - sudo docker run -d -v ceph:/etc/ceph --name bmi bmi-test
+  - sudo docker run -d -e TRAVIS=$TRAVIS -e TRAVIS_JOB_ID=$TRAVIS_JOB_ID -e TRAVIS_BRANCH=$TRAVIS_BRANCH -v ceph:/etc/ceph --name bmi bmi-test
 
   # Just for debugging purposes to check if all containers run
   - sudo docker ps
@@ -35,8 +35,11 @@ before_script:
 
 script:
   # Run Tests in BMI container
-  - sudo docker exec bmi pytest -v --random-order-bucket=global --ignore tests/unit/picasso tests/
+  - sudo docker exec bmi pytest -v --random-order-bucket=global --cov=ims --ignore tests/unit/picasso tests/
 
+after_success:
+  # Submit Coverage to Coveralls
+  - sudo docker exec bmi coveralls
 after_script:
  # Extract and Upload logs for debugging incase of failure
   - sudo docker cp bmi:/var/log/bmi/ims.log ./ims.log

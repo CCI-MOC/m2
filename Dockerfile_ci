@@ -5,6 +5,7 @@ FROM bmis/bmi-ci
 
 # Copy source code
 USER bmi
+COPY .git/ /home/bmi/.git
 COPY ims/ /home/bmi/ims/
 COPY tests/ /home/bmi/tests/
 COPY scripts/ /home/bmi/scripts/

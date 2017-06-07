@@ -9,7 +9,7 @@ FROM ubuntu
 RUN apt-get -y update && apt-get install -y tgt-rbd ceph-common python python-dev python-setuptools build-essential python-pip sudo sqlite3 git
 
 # Install test stuff
-RUN pip install dumb-init pytest pytest-random-order
+RUN pip install dumb-init pytest pytest-random-order coverage==4.3 pytest-cov coveralls
 
 # Create user and remove password for root
 RUN useradd -ms /bin/bash bmi
