@@ -12,10 +12,10 @@ if [[ $OS =~ "Ubuntu" ]]; then
     sudo apt-get update
 
     # Package for script
-    sudo apt-get install git
+    sudo apt-get -y install git python-pip
 
     # Package for Ceph
-    sudo apt-get install -y ceph-deploy
+    sudo pip install -U ceph-deploy # apt-get installs an older version
 
     ### Packages for HIL
     sudo apt-get install -y libvirt-bin bridge-utils \
