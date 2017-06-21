@@ -454,7 +454,7 @@ class BMI:
 
             # get a name for our copy of the golden image. For instance an
             # image in ceph called centos6.7, after cloning, will be a given
-            # a name like 4img1 based on the UUID
+            # a name like 4img1 based on the UID in config and image id in db
             snap_ceph_name = self.__get_ceph_image_name(ceph_img_name)
 
             # clone the snapshot of the golden image and then flatten it
