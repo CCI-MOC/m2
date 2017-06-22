@@ -5,20 +5,33 @@ RUN yum install -y git
 RUN yum install -y python-devel
 RUN pip install dumb-init
 
-RUN useradd -ms /bin/bash haas
-WORKDIR /root
+RUN useradd -ms /bin/bash hil
+RUN passwd -d hil
+RUN passwd -d root
+RUN usermod -aG wheel hil
+
+WORKDIR /home/hil
 RUN git clone https://github.com/CCI-MOC/hil.git
-WORKDIR /root/hil
+WORKDIR /home/hil/hil
+RUN git reset --hard 477e12097ce7f379056184d43d8f72dfcbe30b5f
 RUN python setup.py install
 COPY docker/haas.cfg /etc/haas.cfg
 COPY docker/haas.cfg ./haas.cfg
+
+USER hil
 RUN haas-admin db create
+
+USER root
 COPY docker/setupdb.sh ./setupdb.sh
 RUN chmod a+x setupdb.sh
+
+USER hil
+ENV HAAS_ENDPOINT=http://127.0.0.1:7000
 RUN ./setupdb.sh
 
-RUN chmod 666 /home/haas/haas.db
-RUN chown haas:haas /home/haas/haas.db
+USER root
+RUN chmod 666 /home/hil/haas.db
+RUN chown hil:hil /home/hil/haas.db
 
 COPY docker/runhil.sh ./runhil.sh
 RUN chmod a+x runhil.sh
@@ -28,4 +41,5 @@ RUN cp ./haas.wsgi ./wsgi.py
 RUN pip install gunicorn
 
 EXPOSE 7000
-CMD dumb-init /root/hil/runhil.sh
+USER hil
+CMD dumb-init /home/hil/hil/runhil.sh
