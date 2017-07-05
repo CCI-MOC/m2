@@ -6,6 +6,7 @@ import os
 import rados
 import rbd
 import sh
+from ims.interfaces.filesystem import FileSystem
 
 import ims.common.constants as constants
 import ims.exception.file_system_exceptions as file_system_exceptions
@@ -16,7 +17,7 @@ logger = create_logger(__name__)
 
 # Need to think if there is a better way to reduce boilerplate exception
 # handling code in methods
-class RBD:
+class RBD(FileSystem):
     @log
     def __init__(self, config, password):
         self.__validate(config)
@@ -117,7 +118,7 @@ class RBD:
             raise file_system_exceptions.ArgumentsOutOfRangeException()
 
     @log
-    def remove(self, img_id):
+    def remove_image(self, img_id):
         try:
             self.rbd.remove(self.context, img_id)
             return True
