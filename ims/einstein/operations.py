@@ -241,7 +241,7 @@ class BMI:
             self.iscsi.remove_target(clone_ceph_name)
             self.fs.remove(clone_ceph_name)
             self.db.image.delete_with_name_from_project(node_name, self.proj)
-            time.sleep(constants.HAAS_CALL_TIMEOUT)
+            time.sleep(constants.HIL_CALL_TIMEOUT)
             self.hil.detach_node_from_project_network(node_name, network,
                                                       nic)
             return self.__return_error(e)
