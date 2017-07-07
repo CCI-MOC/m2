@@ -140,8 +140,8 @@ class TestSnapshot(unittest.TestCase):
         Test snap_protect. If a snapshot is marked as protected,
         function is_snap_protected will return True
         """
-        isProtected = self.fs.is_snap_protected(CEPH_IMG, CEPH_SNAP_IMG)
-        self.assertTrue(isProtected, "Failed to protect a snapshot!")
+        is_protected = self.fs.is_snap_protected(CEPH_IMG, CEPH_SNAP_IMG)
+        self.assertTrue(is_protected, "Failed to protect a snapshot!")
 
     def test_snap_unprotect(self):
         """
@@ -149,11 +149,11 @@ class TestSnapshot(unittest.TestCase):
         function is_snap_protected will return False
         """
         self.fs.snap_unprotect(CEPH_IMG, CEPH_SNAP_IMG)
-        isProtected = self.fs.is_snap_protected(CEPH_IMG, CEPH_SNAP_IMG)
-        self.assertFalse(isProtected, "Failed to unprotect a snapshot!")
+        is_protected = self.fs.is_snap_protected(CEPH_IMG, CEPH_SNAP_IMG)
+        self.assertFalse(is_protected, "Failed to unprotect a snapshot!")
 
     def tearDown(self):
-        if(self.fs.is_snap_protected(CEPH_IMG, CEPH_SNAP_IMG)):
+        if self.fs.is_snap_protected(CEPH_IMG, CEPH_SNAP_IMG):
             self.fs.snap_unprotect(CEPH_IMG, CEPH_SNAP_IMG)
         self.fs.remove_snapshot(CEPH_IMG, CEPH_SNAP_IMG)
         self.fs.remove(CEPH_IMG)
