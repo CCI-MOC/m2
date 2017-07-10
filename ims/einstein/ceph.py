@@ -84,21 +84,16 @@ class RBD:
         return self.rbd.list(self.context)
 
     @log
-    def create_image(self, img_id, img_size, old_format=False, features=1):
+    def create_image(self, img_id, img_size):
         """
         Create a rbd image
 
         :param img_id: what the image is called
         :param img_size: how big the image is in bytes
-        :param old_format: whether to create an old-style image that is
-                           accessible by old clients, but cannot use more
-                           advanced features like layering
-        :param features: bitmask of features to enable
         :return: bool - if image is created without error.
         """
         try:
-            self.rbd.create(self.context, img_id, img_size,
-                            old_format=old_format, features=features)
+            self.rbd.create(self.context, img_id, img_size)
             return True
         except rbd.ImageExists:
             raise file_system_exceptions.ImageExistsException(img_id)
@@ -131,7 +126,8 @@ class RBD:
     @log
     def list_children(self, img_id, parent_snap):
         """
-        The snapshot of image whose children will be returned
+        The snapshot of image whose children will be returned.
+        Used only by tests.
 
         :param img_id: what the image is called
         :param parent_snap: the snapshot to read from
