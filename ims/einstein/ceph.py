@@ -93,7 +93,8 @@ class RBD:
         :return: bool - if image is created without error.
         """
         try:
-            self.rbd.create(self.context, img_id, img_size)
+            self.rbd.create(self.context, img_id, img_size,
+                            old_format=False, features=1)
             return True
         except rbd.ImageExists:
             raise file_system_exceptions.ImageExistsException(img_id)
