@@ -28,28 +28,17 @@ OFFSET = 0
 CEPH_CHILD_IMG = "BMI_TEST_CEPH_CHILD_IMAGE"
 
 
-class TestCreateImage(unittest.TestCase):
-    """ Test create image """
+class TestCreateRemoveImage(unittest.TestCase):
+    """ Create an image and then delete it """
     @trace
     def setUp(self):
         self.fs = ceph.RBD(_cfg.fs, _cfg.iscsi.password)
 
-    def runTest(self):
+    def test_create(self):
         self.fs.create_image(CEPH_IMG, CEPH_IMG_SIZE)
         self.assertIn(CEPH_IMG, self.fs.list_images())
 
-    def tearDown(self):
-        self.fs.remove(CEPH_IMG)
-
-
-class TestRemoveImage(unittest.TestCase):
-    """ Test remove image """
-    @trace
-    def setUp(self):
-        self.fs = ceph.RBD(_cfg.fs, _cfg.iscsi.password)
-        self.fs.create_image(CEPH_IMG, CEPH_IMG_SIZE)
-
-    def runTest(self):
+    def test_remove(self):
         self.fs.remove(CEPH_IMG)
         self.assertNotIn(CEPH_IMG, self.fs.list_images())
 

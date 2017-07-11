@@ -242,6 +242,7 @@ class RBD:
     def is_snap_protected(self, img_id, snap_name):
         """
         Find out whether a snapshot is protected from deletion
+        Required only for tests
 
         :param img_id: what the image is called
         :param snap_name: the snapshot to check
@@ -250,7 +251,7 @@ class RBD:
         try:
             with self.__open_image(img_id) as img:
                 return img.is_protected_snap(snap_name)
-        except:
+        except rbd.ImageNotFound:
             raise file_system_exceptions.ImageNotFoundException(img_id)
 
     @log
