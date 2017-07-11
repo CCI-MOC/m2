@@ -20,7 +20,7 @@ class RPCClient:
                 "list_images": "0",
                 "list_snapshots": "0",
                 "remove_image": "1",
-		"run_script": "2"
+                "run_script": "2"
             }
         }
         # The script name and no. of arguments.
@@ -62,7 +62,7 @@ class RPCClient:
     # and prints the output received from the server.
     @log
     def execute_command(self, command, credentials, args):
-	if command in self.func_list:
+        if command in self.func_list:
             concatenated_command = command + (" ".join(args))
             if ((not self.__escape_characters_present(
                     concatenated_command)) and

@@ -645,23 +645,25 @@ class BMI:
         try:
             if not self.is_admin:
                 raise AuthorizationFailedException()
-	    directory = "/tmp/script/"
-	    os.makedirs(directory)
-	    script_path = directory + "/test_script.sh"
+            directory = "/tmp/script/"
+            os.makedirs(directory)
+            script_path = directory + "/test_script.sh"
             ret = self.fs.map(img)
-	    decode_script = base64.b64decode(script)
-	    with open(script_path, "w") as write_script:
-		 write_script.write(decode_script)
-	    os.chmod(script_path, S_IRWXU)
-	    p = subprocess.Popen(script_path + " " + ret, shell=True,
-                             stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-	    output, err = p.communicate()
-	    code = p.returncode
+            decode_script = base64.b64decode(script)
+            with open(script_path, "w") as write_script:
+                write_script.write(decode_script)
+            os.chmod(script_path, S_IRWXU)
+            p = subprocess.Popen(script_path + " " + ret, shell=True,
+                                 stderr=subprocess.STDOUT,
+                                 stdout=subprocess.PIPE)
+            output, err = p.communicate()
+            code = p.returncode
             encode_output = base64.b64encode(output)
-	    return self.__return_success({'stdout': encode_output,'stderr': err, 'return_code': code})
+            return self.__return_success({'stdout': encode_output,
+                                         'stderr': err, 'return_code': code})
         except (FileSystemException) as e:
             logger.exception('')
-	    return self.__return_error(e)
-	finally:
-	    self.fs.unmap(img)
-	    rmtree(directory)
+            return self.__return_error(e)
+        finally:
+            self.fs.unmap(img)
+            rmtree(directory)
