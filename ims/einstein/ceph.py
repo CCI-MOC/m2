@@ -233,12 +233,12 @@ class RBD:
 
     @log
     def map(self, ceph_img_name):
-        command = "echo {0} | sudo -S rbd --keyring {1} --id {2} map " \
+        command = "echo {0} | sudo -S rbd --keyring ~/dev/ims/scripts/install/{1} --id {2} map " \
                   "{3}/{4}".format(self.password, self.keyring, self.rid,
                                    self.pool, ceph_img_name)
         p = subprocess.Popen(command, shell=True,
                              stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-        output, err = p.communicate()
+	output, err = p.communicate()
         # output = sh.rbd.map(ceph_img_name, keyring=self.keyring, id=self.rid,
         #            pool=self.pool)
         if p.returncode == 0:
@@ -251,7 +251,7 @@ class RBD:
 
     @log
     def unmap(self, rbd_name):
-        command = "echo {0} | sudo -S rbd --keyring {1} --id {2} unmap " \
+        command = "echo {0} | sudo -S rbd --keyring /home/ubuntu/dev/ims/{1} --id {2} unmap " \
                   "{3}".format(self.password, self.keyring, self.rid, rbd_name)
         p = subprocess.Popen(command, shell=True,
                              stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
