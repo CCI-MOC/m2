@@ -6,6 +6,7 @@ import sys
 import click
 import os
 import requests
+import base64
 from prettytable import PrettyTable
 
 import ims.common.config as config
@@ -87,6 +88,7 @@ def provision(project, node, img, network, nic):
             constants.NIC_PARAMETER: nic}
     res = requests.put(_url + "provision/", data=data,
                        auth=(_username, _password))
+    click.echo(res.url)
     click.echo(res.content)
 
 
@@ -159,7 +161,7 @@ def remove_image(project, img):
 
 @cli.command(name='ls', short_help='List Images Stored')
 @click.argument(constants.PROJECT_PARAMETER)
-def list_images(project):
+def list_image(project):
     """
     Lists Images Under A Project
 
@@ -669,6 +671,47 @@ def download():
     Coming Soon
     """
     click.echo('Not Yet Implemented')
+
+
+@cli.group(short_help='Image Related Commands')
+def image():
+    """
+    Use The Subcommands under this command to manipulate Snapshots
+    """
+    pass
+
+@image.command(name='run_script', help='Run script within BMI')
+@click.argument(constants.PROJECT_PARAMETER)
+@click.argument(constants.IMAGE_NAME_PARAMETER)
+@click.argument(constants.SCRIPT_NAME_PARAMETER)
+@bmi_exception_wrapper
+def run_script(project, img, script):
+    """
+    Run a custom script on a mapped image
+
+    \b
+    Arguments:
+    PROJECT      = The Name of the project
+    IMG          = The Name of the image to run the script on
+    SCRIPT       = The script to run
+    """
+    
+    with open(script, "rb") as f:
+	bin_script = f.read()
+
+    encode_script = base64.b64encode(bin_script)
+
+    data = {constants.PROJECT_PARAMETER: project,
+		constants.IMAGE_NAME_PARAMETER: img,
+		constants.SCRIPT_NAME_PARAMETER: encode_script}
+    res = requests.post(_url + "run_script/", data=data, 
+			auth=(_username, _password))
+
+    json_res = json.loads(res.content)
+    output = base64.b64decode(json_res["stdout"])
+    json_res["stdout"] = output
+
+    click.echo(json_res)
 
 
 if __name__ == '__main__':
