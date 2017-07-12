@@ -112,7 +112,7 @@ def remove_image():
     pass
 
 
-@rest_call("/run_script/", "POST", constants.RUN_SCRIPT_COMMAND,
-           [constants.IMAGE_NAME_PARAMETER, constants.SCRIPT_NAME_PARAMETER])
+@rest_call("/script/run/", "POST", constants.RUN_SCRIPT_COMMAND,
+           [constants.IMAGE_NAME_PARAMETER, constants.SCRIPT_PATH_PARAMETER])
 def run_script():
     pass

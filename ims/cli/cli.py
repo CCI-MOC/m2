@@ -88,7 +88,6 @@ def provision(project, node, img, network, nic):
             constants.NIC_PARAMETER: nic}
     res = requests.put(_url + "provision/", data=data,
                        auth=(_username, _password))
-    click.echo(res.url)
     click.echo(res.content)
 
 
@@ -161,7 +160,7 @@ def remove_image(project, img):
 
 @cli.command(name='ls', short_help='List Images Stored')
 @click.argument(constants.PROJECT_PARAMETER)
-def list_image(project):
+def list_images(project):
     """
     Lists Images Under A Project
 
@@ -672,29 +671,34 @@ def download():
     """
     click.echo('Not Yet Implemented')
 
+# ***NOTE: This will become a separate service from BMI, it is only
+#    here for Secure Cloud purposes.***
 
-@cli.group(short_help='Image Related Commands')
-def image():
+
+@cli.group(short_help='Script Related Commands')
+def script():
     """
-    Use The Subcommands under this command to manipulate Snapshots
+    Use The Subcommands under this command to perform script actions\n
+    ***NOTE: This will become a separate service from BMI, it is only
+    here for Secure Cloud purposes.***
     """
     pass
 
 
-@image.command(name='run_script', help='Run script within BMI')
+@script.command(name='run', help='Run a script')
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
-@click.argument(constants.SCRIPT_NAME_PARAMETER)
+@click.argument(constants.SCRIPT_PATH_PARAMETER)
 @bmi_exception_wrapper
-def run_script(project, img, script):
+def run(project, img, script):
     """
-    Run a custom script on a mapped image
+    Run a custom script on a mapped image.
 
     \b
     Arguments:
-    PROJECT      = The Name of the project
-    IMG          = The Name of the image to run the script on
-    SCRIPT       = The script to run
+    PROJECT      = The name of the project
+    IMG          = The name of the image to run the script on
+    SCRIPT       = The path to the script to run
     """
 
     with open(script, "rb") as f:
@@ -704,10 +708,9 @@ def run_script(project, img, script):
 
     data = {constants.PROJECT_PARAMETER: project,
             constants.IMAGE_NAME_PARAMETER: img,
-            constants.SCRIPT_NAME_PARAMETER: encode_script}
-    res = requests.post(_url + "run_script/", data=data,
+            constants.SCRIPT_PATH_PARAMETER: encode_script}
+    res = requests.post(_url + "script/run/", data=data,
                         auth=(_username, _password))
-
     json_res = json.loads(res.content)
     output = base64.b64decode(json_res["stdout"])
     json_res["stdout"] = output
