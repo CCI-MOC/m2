@@ -101,7 +101,7 @@ IMAGE2_NAME_PARAMETER = "img2"
 NETWORK_PARAMETER = "network"
 NIC_PARAMETER = "nic"
 CHANNEL_PARAMETER = "channel"
-SCRIPT_NAME_PARAMETER = "script"
+SCRIPT_PATH_PARAMETER = "script"
 
 # Template Parameters
 IPXE_TARGET_NAME = "${target_name}"
@@ -126,4 +126,4 @@ DEFAULT_SNAPSHOT_NAME = "snapshot"
 
 BMI_ADMIN_PROJECT = "bmi_infra"
 
-HAAS_BMI_CHANNEL = "null"
+HAAS_BMI_CHANNEL = "vlan/native"
