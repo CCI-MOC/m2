@@ -125,3 +125,5 @@ DEFAULT_SNAPSHOT_NAME = "snapshot"
 BMI_ADMIN_PROJECT = "bmi_infra"
 
 HAAS_BMI_CHANNEL = "vlan/native"
+
+GET_DRIVER_METHOD = 'get_driver_class'
