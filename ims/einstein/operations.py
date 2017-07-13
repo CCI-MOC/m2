@@ -430,20 +430,47 @@ class BMI:
 
     @log
     def import_ceph_image(self, img):
+        """
+        Import an image from ceph to be used by BMI
+
+        Clone an image in ceph to be used by BMI.
+
+        :param img: Name of image in ceph
+        :return: True on successful completion
+        """
+
         try:
             ceph_img_name = str(img)
 
+            # create a snapshot of the golden image and protect it
+            # this is needed because, in ceph, you can only create clones from
+            # snapshots.
             self.fs.snap_image(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
             self.fs.snap_protect(ceph_img_name,
                                  constants.DEFAULT_SNAPSHOT_NAME)
+
+            # insert golden image name into bmi db
             self.db.image.insert(ceph_img_name, self.pid)
+
+            # get a name for our copy of the golden image. For instance an
+            # image in ceph called centos6.7, after cloning, will be a given
+            # a name like 4img1 based on the UID in config and image id in db
             snap_ceph_name = self.__get_ceph_image_name(ceph_img_name)
+
+            # clone the snapshot of the golden image and then flatten it
             self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
                           snap_ceph_name)
             self.fs.flatten(snap_ceph_name)
+
+            # create a snapshot of our newly created golden image so that when
+            # we provision, we can easily make clones from this readily
+            # available snapshot.
             self.fs.snap_image(snap_ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
             self.fs.snap_protect(snap_ceph_name,
                                  constants.DEFAULT_SNAPSHOT_NAME)
+
+            # unprotect and delete the snapshot of the original golden because
+            # we no longer need it.
             self.fs.snap_unprotect(ceph_img_name,
                                    constants.DEFAULT_SNAPSHOT_NAME)
             self.fs.remove_snapshot(ceph_img_name,
@@ -455,6 +482,16 @@ class BMI:
 
     @log
     def import_ceph_snapshot(self, img, snap_name, protect):
+        """
+        Import a snapshot from ceph to be used by BMI
+
+        Clone a snapshot in ceph to be used by BMI. Similar to
+        import_ceph_image except we can directly start the cloning process
+        because it is already a snapshot.
+
+        :param img: Name of snapshot in ceph
+        :return: True on successful completion
+        """
         try:
             ceph_img_name = str(img)
 
