@@ -103,12 +103,11 @@ class TGT(ISCSI):
         """
         try:
             targets = self.list_targets()
-            if target_name not in targets:
-                self.__generate_config_file(target_name)
-                command = "tgt-admin --execute"
-                shell.call(command, sudo=True)
-            else:
-                raise iscsi_exceptions.TargetExistsException()
+            if target_name in targets:
+                logger.info("%s target already exists" % target_name)
+            self.__generate_config_file(target_name)
+            command = "tgt-admin --execute"
+            shell.call(command, sudo=True)
         except (IOError, OSError) as e:
             raise iscsi_exceptions.TargetCreationFailed(str(e))
         except shell_exceptions.CommandFailedException as e:
@@ -125,14 +124,19 @@ class TGT(ISCSI):
         try:
             targets = self.list_targets()
             if target_name in targets:
-                os.remove(os.path.join(self.TGT_ISCSI_CONFIG,
-                                       target_name + ".conf"))
                 command = "tgt-admin -f --delete {0}".format(target_name)
                 output = shell.call(command, sudo=True)
                 logger.debug("Output = %s", output)
+                os.remove(os.path.join(self.TGT_ISCSI_CONFIG,
+                                       target_name + ".conf"))
             else:
-                raise iscsi_exceptions.TargetDoesntExistException()
-        except (IOError, OSError) as e:
+                logger.info("%s target doesnt exist" % target_name)
+        except OSError as e:
+            if "[Errno 2] No such file or directory" in str(e):
+                pass
+            else:
+                raise iscsi_exceptions.TargetDeletionFailed(str(e))
+        except IOError as e:
             raise iscsi_exceptions.TargetDeletionFailed(str(e))
         except shell_exceptions.CommandFailedException as e:
             raise iscsi_exceptions.TargetDeletionFailed(str(e))

@@ -5,6 +5,7 @@ import unittest
 from unittest import TestCase
 
 import ims.common.config as config
+
 config.load()
 
 import ims.common.constants as constants
@@ -32,9 +33,8 @@ NOT_EXIST_SNAP_NAME = _cfg.tests.not_exist_snap_name
 
 
 class TestProvision(TestCase):
-    """
-    Imports an image and calls provision
-    """
+    """ Imports an image and calls provision """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -48,7 +48,7 @@ class TestProvision(TestCase):
         response = self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK,
                                            NIC)
         self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        self.good_bmi.hil.wait(NODE_NAME, NETWORK, NIC)
 
     def tearDown(self):
         self.good_bmi.deprovision(NODE_NAME, NETWORK, NIC)
@@ -56,13 +56,14 @@ class TestProvision(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        self.good_bmi.hil.wait(NODE_NAME, NETWORK, NIC, False)
 
 
 class TestDeprovision(TestCase):
     """
     Same as above, but calls deprovision in the test (Test is same as previous)
     """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -72,24 +73,25 @@ class TestDeprovision(TestCase):
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
         self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        self.good_bmi.hil.wait(NODE_NAME, NETWORK, NIC)
 
     def runTest(self):
         response = self.good_bmi.deprovision(NODE_NAME, NETWORK, NIC)
         self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
 
     def tearDown(self):
         self.good_bmi.remove_image(EXIST_IMG_NAME)
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
+        self.good_bmi.hil.wait(NODE_NAME, NETWORK, NIC)
 
 
 class TestCreateSnapshot(TestCase):
     """
     Provisions an imported image and creates snapshot
     """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -99,7 +101,7 @@ class TestCreateSnapshot(TestCase):
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
         self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        self.good_bmi.hil.wait(NODE_NAME, NETWORK, NIC)
 
     def runTest(self):
         response = self.good_bmi.create_snapshot(NODE_NAME, NEW_SNAP_NAME)
@@ -112,11 +114,9 @@ class TestCreateSnapshot(TestCase):
                 has_image = True
         self.assertTrue(has_image)
 
-        with ceph.RBD(_cfg.fs,
-                      _cfg.iscsi.password) as fs:
-            img_id = self.good_bmi.get_ceph_image_name_from_project(
-                NEW_SNAP_NAME, PROJECT)
-            fs.get_image(img_id)
+        img_id = self.good_bmi.get_ceph_image_name_from_project(NEW_SNAP_NAME,
+                                                                PROJECT)
+        self.good_bmi.fs.get_image(img_id)
 
     def tearDown(self):
         self.good_bmi.deprovision(NODE_NAME, NETWORK, NIC)
@@ -125,13 +125,14 @@ class TestCreateSnapshot(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        self.good_bmi.hil.wait(NODE_NAME, NETWORK, NIC, False)
 
 
 class TestListSnapshots(TestCase):
     """
     Creates snapshot like previous and calls list snapshots
     """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -141,7 +142,7 @@ class TestListSnapshots(TestCase):
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
         self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        self.good_bmi.hil.wait(NODE_NAME, NETWORK, NIC)
 
         self.good_bmi.create_snapshot(NODE_NAME, NEW_SNAP_NAME)
 
@@ -158,7 +159,7 @@ class TestListSnapshots(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
-        time.sleep(constants.HAAS_CALL_TIMEOUT)
+        self.good_bmi.hil.wait(NODE_NAME, NETWORK, NIC, False)
 
 
 @unittest.skip("Same as Remove Image")
@@ -166,6 +167,7 @@ class TestRemoveSnapshot(TestCase):
     """
     Snapshot is also an image in bmi, so no need to test for now
     """
+
     def setUp(self):
         pass
 
@@ -180,6 +182,7 @@ class TestListImages(TestCase):
     """
     Imports an image and calls list image
     """
+
     @trace
     def setUp(self):
         self.db = Database()
@@ -206,6 +209,7 @@ class TestRemoveImage(TestCase):
     """
     Imports an image and calls remove image
     """
+
     @trace
     def setUp(self):
         self.db = Database()
