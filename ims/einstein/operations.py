@@ -643,18 +643,24 @@ class BMI:
     @log
     def run_script(self, img, script):
         try:
+            img_str = str(img)
             if not self.is_admin:
                 raise AuthorizationFailedException()
             directory = "/tmp/script/" + self.proj + "/" \
-                        + img + "/"
+                        + img_str + "/"
             os.makedirs(directory)
             script_path = directory + "/test_script.sh"
-            ret = self.fs.map(img)
+            img_clone = str(img_str + "_clone")
+            self.fs.snap_image(img_str, constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.snap_protect(img_str, constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.clone(img_str, constants.DEFAULT_SNAPSHOT_NAME,
+                          img_clone)
+            device = self.fs.map(img_clone)
             decode_script = base64.b64decode(script)
             with open(script_path, "wb") as write_script:
                 write_script.write(decode_script)
             os.chmod(script_path, S_IRWXU)
-            p = subprocess.Popen([script_path, ret], shell=False,
+            p = subprocess.Popen([script_path, device], shell=False,
                                  stderr=subprocess.STDOUT,
                                  stdout=subprocess.PIPE)
             output, err = p.communicate()
@@ -666,5 +672,8 @@ class BMI:
             logger.exception('')
             return self.__return_error(e)
         finally:
-            self.fs.unmap(img)
             rmtree(directory)
+            self.fs.unmap(device)
+            self.fs.remove(img_clone)
+            self.fs.snap_unprotect(img_str, constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.remove_snapshot(img_str, constants.DEFAULT_SNAPSHOT_NAME)
