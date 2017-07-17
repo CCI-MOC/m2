@@ -2,6 +2,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/CCI-MOC/ims/badge.svg?branch=dev)](https://coveralls.io/github/CCI-MOC/ims?branch=dev)
 # BMI
 
+
 The Bare Metal Imaging (BMI) is a core component of the Massachusetts Open Cloud and an Image Management System(IMS) that
 (i)provisions numerous nodes as quickly as possible while preserving support
 for multitenancy using the Hardware Isolation Layer (HIL) and  (ii)introduces the
@@ -27,7 +28,7 @@ Current BMI (IMS) Architecture
 
 BMIS Architecture
 
-We use Ceph as a storage back-end to save OS images. For every application we support, we have a “golden image,” which acts as a source of truth. When a user logs-in and requests a big data environment, we clone from this golden image and provision nodes using the cloned image and a PXE bootloader. Hardware as a Service (HaaS) serves as a network isolation tool through which we achieve multitenancy. HaaS provides a service for node allocation and deallocation. For more details about HaaS, please visit https://github.com/CCI-MOC/haas.
+We use Ceph as a storage back-end to save OS images. For every application we support, we have a “golden image,” which acts as a source of truth. When a user logs-in and requests a big data environment, we clone from this golden image and provision nodes using the cloned image and a PXE bootloader. Hardware Isolation Layer (HIL) serves as a network isolation tool through which we achieve multitenancy. HIL provides a service for node allocation and deallocation. For more details about HIL, please visit https://github.com/CCI-MOC/hil.
 
 Planning and Getting Involved
 

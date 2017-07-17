@@ -51,8 +51,8 @@ COPY docker/runbmi.sh /home/bmi/runbmi.sh
 RUN chmod a+x /home/bmi/runbmi.sh
 
 # Set Environment variables
-ENV HAAS_USERNAME=admin
-ENV HAAS_PASSWORD=admin
+ENV HIL_USERNAME=admin
+ENV HIL_PASSWORD=admin
 
 # Expose as volume to get keyring and ceph config
 VOLUME /etc/ceph

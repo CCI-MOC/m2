@@ -3,6 +3,9 @@
 # Basing on image stored in docker hub for faster build
 FROM bmis/bmi-ci
 
+ENV HIL_USERNAME=admin
+ENV HIL_PASSWORD=admin
+
 # Copy source code
 USER bmi
 COPY .git/ /home/bmi/.git
