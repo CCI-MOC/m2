@@ -41,6 +41,21 @@ class ImageBusyException(FileSystemException):
         return self.name + " is Busy (Could have Clones)"
 
 
+class SnapshotBusyException(ImageBusyException):
+    """
+    This exception will be raised if user removes a protected snapshot
+    """
+    @property
+    def status_code(self):
+        return ImageBusyException.status_code.fget(self)
+
+    def __init__(self, name):
+        ImageBusyException.__init__(self, name)
+
+    def __str__(self):
+        return "Snapshot " + self.name + " is protected from removal"
+
+
 # this exception should be raised when some operation is called on an image
 # that has snapshots
 class ImageHasSnapshotException(FileSystemException):
