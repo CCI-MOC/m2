@@ -680,17 +680,19 @@ class BMI:
     @log
     def run_script(self, img, script):
         try:
-            img_str = str(img)
             if not self.is_admin:
                 raise AuthorizationFailedException()
+            img_str = str(img)
+            ceph_img_name = self.__get_ceph_image_name(img_str)
             directory = "/tmp/script/" + self.proj + "/" \
-                        + img_str + "/"
+                        + ceph_img_name + "/"
             os.makedirs(directory)
             script_path = directory + "/test_script.sh"
-            img_clone = str(img_str + "_clone")
-            self.fs.snap_image(img_str, constants.DEFAULT_SNAPSHOT_NAME)
-            self.fs.snap_protect(img_str, constants.DEFAULT_SNAPSHOT_NAME)
-            self.fs.clone(img_str, constants.DEFAULT_SNAPSHOT_NAME,
+            img_clone = str(ceph_img_name + "_clone")
+            self.fs.snap_image(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.snap_protect(ceph_img_name,
+                                 constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
                           img_clone)
             device = self.fs.map(img_clone)
             decode_script = base64.b64decode(script)
@@ -712,5 +714,7 @@ class BMI:
             rmtree(directory)
             self.fs.unmap(device)
             self.fs.remove(img_clone)
-            self.fs.snap_unprotect(img_str, constants.DEFAULT_SNAPSHOT_NAME)
-            self.fs.remove_snapshot(img_str, constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.snap_unprotect(ceph_img_name,
+                                   constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.remove_snapshot(ceph_img_name,
+                                    constants.DEFAULT_SNAPSHOT_NAME)
