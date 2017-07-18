@@ -3,6 +3,10 @@ import base64
 import time
 
 import os
+import subprocess
+
+from shutil import rmtree
+from stat import S_IRWXU
 
 import ims.common.config as config
 import ims.common.constants as constants
@@ -635,3 +639,45 @@ class BMI:
             logger.exception('')
         except NotImplementedError:
             pass
+
+    @log
+    def run_script(self, img, script):
+        try:
+            if not self.is_admin:
+                raise AuthorizationFailedException()
+            img_str = str(img)
+            ceph_img_name = self.__get_ceph_image_name(img_str)
+            directory = "/tmp/script/" + self.proj + "/" \
+                        + ceph_img_name + "/"
+            os.makedirs(directory)
+            script_path = directory + "/test_script.sh"
+            img_clone = str(ceph_img_name + "_clone")
+            self.fs.snap_image(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.snap_protect(ceph_img_name,
+                                 constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
+                          img_clone)
+            device = self.fs.map(img_clone)
+            decode_script = base64.b64decode(script)
+            with open(script_path, "wb") as write_script:
+                write_script.write(decode_script)
+            os.chmod(script_path, S_IRWXU)
+            p = subprocess.Popen([script_path, device], shell=False,
+                                 stderr=subprocess.STDOUT,
+                                 stdout=subprocess.PIPE)
+            output, err = p.communicate()
+            code = p.returncode
+            encode_output = base64.b64encode(output)
+            return self.__return_success({'stdout': encode_output,
+                                         'return_code': code})
+        except (FileSystemException) as e:
+            logger.exception('')
+            return self.__return_error(e)
+        finally:
+            rmtree(directory)
+            self.fs.unmap(device)
+            self.fs.remove(img_clone)
+            self.fs.snap_unprotect(ceph_img_name,
+                                   constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.remove_snapshot(ceph_img_name,
+                                    constants.DEFAULT_SNAPSHOT_NAME)

@@ -19,7 +19,8 @@ class RPCClient:
                 "create_snapshot": "2",
                 "list_images": "0",
                 "list_snapshots": "0",
-                "remove_image": "1"
+                "remove_image": "1",
+                "run_script": "2"
             }
         }
         # The script name and no. of arguments.

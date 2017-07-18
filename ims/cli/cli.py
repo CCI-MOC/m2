@@ -6,6 +6,7 @@ import sys
 import click
 import os
 import requests
+import base64
 from prettytable import PrettyTable
 
 import ims.common.config as config
@@ -669,6 +670,52 @@ def download():
     Coming Soon
     """
     click.echo('Not Yet Implemented')
+
+# ***NOTE: This will become a separate service from BMI, it is only
+#    here for Secure Cloud purposes.***
+
+
+@cli.group(short_help='Script Related Commands')
+def script():
+    """
+    Use The Subcommands under this command to perform script actions\n
+    ***NOTE: This will become a separate service from BMI, it is only
+    here for Secure Cloud purposes.***
+    """
+    pass
+
+
+@script.command(name='run', help='Run a script')
+@click.argument(constants.PROJECT_PARAMETER)
+@click.argument(constants.IMAGE_NAME_PARAMETER)
+@click.argument(constants.SCRIPT_PATH_PARAMETER)
+@bmi_exception_wrapper
+def run(project, img, script):
+    """
+    Run a custom script on a mapped image.
+
+    \b
+    Arguments:
+    PROJECT      = The name of the project
+    IMG          = The name of the image to run the script on
+    SCRIPT       = The path to the script to run
+    """
+
+    with open(script, "rb") as f:
+        bin_script = f.read()
+
+    encode_script = base64.b64encode(bin_script)
+
+    data = {constants.PROJECT_PARAMETER: project,
+            constants.IMAGE_NAME_PARAMETER: img,
+            constants.SCRIPT_PATH_PARAMETER: encode_script}
+    res = requests.post(_url + "script/run/", data=data,
+                        auth=(_username, _password))
+    json_res = json.loads(res.content)
+    output = base64.b64decode(json_res["stdout"])
+    json_res["stdout"] = output
+
+    click.echo(json_res)
 
 
 if __name__ == '__main__':

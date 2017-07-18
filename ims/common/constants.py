@@ -87,6 +87,7 @@ PROVISION_COMMAND = "provision"
 DEPROVISION_COMMAND = "deprovision"
 LIST_SNAPSHOTS_COMMAND = "list_snapshots"
 REMOVE_IMAGE_COMMAND = "remove_image"
+RUN_SCRIPT_COMMAND = "run_script"
 
 # Parameters
 NODE_NAME_PARAMETER = 'node'
@@ -100,6 +101,7 @@ IMAGE2_NAME_PARAMETER = "img2"
 NETWORK_PARAMETER = "network"
 NIC_PARAMETER = "nic"
 CHANNEL_PARAMETER = "channel"
+SCRIPT_PATH_PARAMETER = "script"
 
 # Template Parameters
 IPXE_TARGET_NAME = "${target_name}"
