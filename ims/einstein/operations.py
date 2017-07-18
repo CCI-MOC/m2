@@ -678,7 +678,6 @@ class BMI:
             self.fs.snap_unprotect(img_str, constants.DEFAULT_SNAPSHOT_NAME)
             self.fs.remove_snapshot(img_str, constants.DEFAULT_SNAPSHOT_NAME)
 
-
     @log
     def get_iscsi_target(self, node):
         try:

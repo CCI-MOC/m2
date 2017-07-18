@@ -592,13 +592,14 @@ def get_iscsi_target(project, node):
     data = {constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node}
     ret = requests.get(_url + "node/iscsi/",
-                            data=data,auth=(_username,
-                                            _password))
+                       data=data, auth=(_username,
+                                        _password))
     if ret.status_code == 200:
         json_ret = json.loads(ret.content)
         click.echo(json_ret["iscsi_target"])
     else:
         click.echo("The node was not provisioned, or file not found.")
+
 
 @cli.group(help='ISCSI Related Commands')
 def iscsi():
