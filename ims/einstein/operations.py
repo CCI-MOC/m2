@@ -677,3 +677,19 @@ class BMI:
             self.fs.remove(img_clone)
             self.fs.snap_unprotect(img_str, constants.DEFAULT_SNAPSHOT_NAME)
             self.fs.remove_snapshot(img_str, constants.DEFAULT_SNAPSHOT_NAME)
+
+
+    @log
+    def get_iscsi_target(self, node):
+        try:
+            if not self.is_admin:
+                raise AuthorizationFailedException()
+            file_path = "/var/lib/tftpboot/" + node + ".ipxe"
+            with open(file_path, "r") as ipxe_file:
+                for line in ipxe_file:
+                    if "iscsi" in line:
+                        target = line.split("--keep ")[1][:-1]
+                        return self.__return_success({'iscsi_target': target})
+        except (FileSystemException) as e:
+                logger.exception('')
+                return self.__return_error(e)
