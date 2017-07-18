@@ -319,7 +319,7 @@ class BMI:
                                  id=self.__extract_id(ceph_img_name))
             time.sleep(constants.HAAS_CALL_TIMEOUT)
             if hil_flag:
-                self.hil.attach_node_to_project_network(node_name, 
+                self.hil.attach_node_to_project_network(node_name,
                                                         network, nic)
             return self.__return_error(e)
         except ISCSIException as e:
@@ -332,14 +332,14 @@ class BMI:
                                  id=self.__extract_id(ceph_img_name))
             time.sleep(constants.HAAS_CALL_TIMEOUT)
             if hil_flag:
-                self.hil.attach_node_to_project_network(node_name, 
+                self.hil.attach_node_to_project_network(node_name,
                                                         network, nic)
             return self.__return_error(e)
         except DBException as e:
             logger.exception('')
             time.sleep(constants.HAAS_CALL_TIMEOUT)
             if hil_flag:
-                self.hil.attach_node_to_project_network(node_name, 
+                self.hil.attach_node_to_project_network(node_name,
                                                         network, nic)
             return self.__return_error(e)
         except HaaSException as e:

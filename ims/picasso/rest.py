@@ -90,7 +90,7 @@ def provision():
 
 
 @rest_call("/deprovision/", "DELETE", constants.DEPROVISION_COMMAND,
-           [constants.HIL_OPTION_PARAMETER, constants.NODE_NAME_PARAMETER, 
+           [constants.HIL_OPTION_PARAMETER, constants.NODE_NAME_PARAMETER,
             constants.NETWORK_PARAMETER, constants.NIC_PARAMETER])
 def deprovision():
     pass
