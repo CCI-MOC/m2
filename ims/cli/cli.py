@@ -63,12 +63,14 @@ def cli():
 
 
 @cli.command(name='pro', short_help="Provision a Node")
+@click.option(constants.HIL_OPTION_PARAMETER, default=True,
+              help="enable/disable HIL functionality within BMI")
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NODE_NAME_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 @click.argument(constants.NETWORK_PARAMETER)
 @click.argument(constants.NIC_PARAMETER)
-def provision(project, node, img, network, nic):
+def provision(hil_flag, project, node, img, network, nic):
     """
     Provision a Node
 
@@ -81,7 +83,8 @@ def provision(project, node, img, network, nic):
     CHANNEL = The Channel to Provision On (For HIL It is 'vlan/native')
     NIC     = The NIC to use for Network Boot (For HIL IT is 'enp130s0f0')
     """
-    data = {constants.PROJECT_PARAMETER: project,
+    data = {constants.HIL_OPTION_PARAMETER: hil_flag,
+            constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
             constants.IMAGE_NAME_PARAMETER: img,
             constants.NETWORK_PARAMETER: network,
@@ -92,11 +95,13 @@ def provision(project, node, img, network, nic):
 
 
 @cli.command(name='dpro', short_help='Deprovision a node')
+@click.option(constants.HIL_OPTION_PARAMETER, default=True,
+              help="enable/disable HIL functionality within BMI")
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NODE_NAME_PARAMETER)
 @click.argument(constants.NETWORK_PARAMETER)
 @click.argument(constants.NIC_PARAMETER)
-def deprovision(project, node, network, nic):
+def deprovision(hil_flag, project, node, network, nic):
     """
     Deprovision a Node
 
@@ -107,7 +112,8 @@ def deprovision(project, node, network, nic):
     NETWORK = The Name of the Provisioning Network
     NIC     = The NIC that was used for Network Boot
     """
-    data = {constants.PROJECT_PARAMETER: project,
+    data = {constants.HIL_OPTION_PARAMETER: hil_flag,
+            constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
             constants.NETWORK_PARAMETER: network,
             constants.NIC_PARAMETER: nic}

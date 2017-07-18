@@ -82,15 +82,16 @@ def list_images():
 
 
 @rest_call("/provision/", 'PUT', constants.PROVISION_COMMAND,
-           [constants.NODE_NAME_PARAMETER, constants.IMAGE_NAME_PARAMETER,
-            constants.NETWORK_PARAMETER, constants.NIC_PARAMETER])
+           [constants.HIL_OPTION_PARAMETER, constants.NODE_NAME_PARAMETER,
+            constants.IMAGE_NAME_PARAMETER, constants.NETWORK_PARAMETER,
+            constants.NIC_PARAMETER])
 def provision():
     pass
 
 
 @rest_call("/deprovision/", "DELETE", constants.DEPROVISION_COMMAND,
-           [constants.NODE_NAME_PARAMETER, constants.NETWORK_PARAMETER,
-            constants.NIC_PARAMETER])
+           [constants.HIL_OPTION_PARAMETER, constants.NODE_NAME_PARAMETER, 
+            constants.NETWORK_PARAMETER, constants.NIC_PARAMETER])
 def deprovision():
     pass
 
