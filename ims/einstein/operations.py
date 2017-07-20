@@ -11,6 +11,7 @@ from stat import S_IRWXU
 import ims.common.config as config
 import ims.common.constants as constants
 import ims.exception.db_exceptions as db_exceptions
+import ims.exception.iscsi_exceptions as iscsi_exceptions
 from ims.common.log import create_logger, log, trace
 from ims.database.database import Database
 from ims.einstein.ceph import RBD
@@ -681,3 +682,26 @@ class BMI:
                                    constants.DEFAULT_SNAPSHOT_NAME)
             self.fs.remove_snapshot(ceph_img_name,
                                     constants.DEFAULT_SNAPSHOT_NAME)
+
+    # TODO: Write tests for this method before merging to main branch
+    @log
+    def get_iscsi_target(self, node_name):
+        try:
+            if not self.is_admin:
+                raise AuthorizationFailedException()
+            provisioned = False
+            provisioned_nodes = self.list_provisioned_nodes()['retval']
+            for node in provisioned_nodes:
+                if node_name == node[0]:
+                    provisioned = True
+            if not provisioned:
+                raise iscsi_exceptions.TargetDoesntExistException()
+            file_path = "/var/lib/tftpboot/" + node_name + ".ipxe"
+            with open(file_path, "r") as ipxe_file:
+                for line in ipxe_file:
+                    if "iscsi" in line:
+                        target = line.split("--keep ")[1][:-1]
+                        return self.__return_success({'iscsi_target': target})
+        except (FileSystemException, ISCSIException) as e:
+                logger.exception('')
+                return self.__return_error(e)
