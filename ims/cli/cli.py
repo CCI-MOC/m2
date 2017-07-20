@@ -598,7 +598,7 @@ def get_iscsi_target(project, node):
         json_ret = json.loads(ret.content)
         click.echo(json_ret["iscsi_target"])
     else:
-        click.echo("The node was not provisioned, or file not found.")
+        click.echo(ret.content)
 
 
 @cli.group(help='ISCSI Related Commands')
