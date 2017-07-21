@@ -219,10 +219,12 @@ class BMI:
     @log
     def provision(self, hil_flag, node_name, img_name, network, nic):
         try:
+            hil_bool = bool(hil_flag == "True")
+
             mac_addr = "01-" + self.hil.get_node_mac_addr(node_name). \
                 replace(":", "-")
 
-            if hil_flag:
+            if hil_bool:
                 self.hil.attach_node_to_project_network(node_name, network,
                                                         nic)
 
@@ -250,7 +252,7 @@ class BMI:
             self.fs.remove(clone_ceph_name)
             self.db.image.delete_with_name_from_project(node_name, self.proj)
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            if hil_flag:
+            if hil_bool:
                 self.hil.detach_node_from_project_network(node_name, network,
                                                           nic)
             return self.__return_error(e)
@@ -262,7 +264,7 @@ class BMI:
             self.fs.remove(clone_ceph_name)
             self.db.image.delete_with_name_from_project(node_name, self.proj)
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            if hil_flag:
+            if hil_bool:
                 self.hil.detach_node_from_project_network(node_name, network,
                                                           nic)
             return self.__return_error(e)
@@ -272,7 +274,7 @@ class BMI:
             logger.exception('')
             self.db.image.delete_with_name_from_project(node_name, self.proj)
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            if hil_flag:
+            if hil_bool:
                 self.hil.detach_node_from_project_network(node_name, network,
                                                           nic)
             return self.__return_error(e)
@@ -280,7 +282,7 @@ class BMI:
             # Message is being handled by custom formatter
             logger.exception('')
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            if hil_flag:
+            if hil_bool:
                 self.hil.detach_node_from_project_network(node_name, network,
                                                           nic)
             return self.__return_error(e)
@@ -295,7 +297,8 @@ class BMI:
     def deprovision(self, hil_flag, node_name, network, nic):
         ceph_img_name = None
         try:
-            if hil_flag:
+            hil_bool = bool(hil_flag == "True")
+            if hil_bool:
                 self.hil.detach_node_from_project_network(node_name,
                                                           network, nic)
             ceph_img_name = self.__get_ceph_image_name(node_name)
@@ -318,7 +321,7 @@ class BMI:
             self.db.image.insert(node_name, self.pid, parent_id,
                                  id=self.__extract_id(ceph_img_name))
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            if hil_flag:
+            if hil_bool:
                 self.hil.attach_node_to_project_network(node_name,
                                                         network, nic)
             return self.__return_error(e)
@@ -331,14 +334,14 @@ class BMI:
             self.db.image.insert(node_name, self.pid, parent_id,
                                  id=self.__extract_id(ceph_img_name))
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            if hil_flag:
+            if hil_bool:
                 self.hil.attach_node_to_project_network(node_name,
                                                         network, nic)
             return self.__return_error(e)
         except DBException as e:
             logger.exception('')
             time.sleep(constants.HAAS_CALL_TIMEOUT)
-            if hil_flag:
+            if hil_bool:
                 self.hil.attach_node_to_project_network(node_name,
                                                         network, nic)
             return self.__return_error(e)

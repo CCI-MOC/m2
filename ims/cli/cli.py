@@ -70,7 +70,7 @@ def cli():
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 @click.argument(constants.NETWORK_PARAMETER)
 @click.argument(constants.NIC_PARAMETER)
-def provision(hil_flag, project, node, img, network, nic):
+def provision(hil, project, node, img, network, nic):
     """
     Provision a Node
 
@@ -83,7 +83,7 @@ def provision(hil_flag, project, node, img, network, nic):
     CHANNEL = The Channel to Provision On (For HIL It is 'vlan/native')
     NIC     = The NIC to use for Network Boot (For HIL IT is 'enp130s0f0')
     """
-    data = {constants.HIL_OPTION_PARAMETER: hil_flag,
+    data = {constants.HIL_OPTION_PARAMETER: hil,
             constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
             constants.IMAGE_NAME_PARAMETER: img,
@@ -101,7 +101,7 @@ def provision(hil_flag, project, node, img, network, nic):
 @click.argument(constants.NODE_NAME_PARAMETER)
 @click.argument(constants.NETWORK_PARAMETER)
 @click.argument(constants.NIC_PARAMETER)
-def deprovision(hil_flag, project, node, network, nic):
+def deprovision(hil, project, node, network, nic):
     """
     Deprovision a Node
 
@@ -112,7 +112,7 @@ def deprovision(hil_flag, project, node, network, nic):
     NETWORK = The Name of the Provisioning Network
     NIC     = The NIC that was used for Network Boot
     """
-    data = {constants.HIL_OPTION_PARAMETER: hil_flag,
+    data = {constants.HIL_OPTION_PARAMETER: hil,
             constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
             constants.NETWORK_PARAMETER: network,
