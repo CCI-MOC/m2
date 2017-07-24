@@ -37,7 +37,7 @@ elif [[ -f /etc/redhat-release ]]; then
     sudo yum install -y git gcc wget cpan make 
 
     # Packages for Ceph
-    sudo yum install -y ceph-deploy
+    sudo pip install -U ceph-deploy # yum installs an older version
 
     # Headers for tgt source compilation
     sudo yum install -y librbd1-devel librados2-devel

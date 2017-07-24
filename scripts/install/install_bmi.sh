@@ -26,14 +26,14 @@ python setup.py develop
 
 touch /opt/bmi/bmi.db
 
-export HAAS_USERNAME=haas
-export HAAS_PASSWORD=secret
+export HIL_USERNAME=hil
+export HIL_PASSWORD=secret
 
 bmi db ls
 sqlite3 /opt/bmi/bmi.db "insert into project values (0, 'bmi_infra', 'bmi_network')"
 
 # Temporary changes to get stable CI. Need to do pull request to get this fixed.
-sed -i s/"HAAS_BMI_CHANNEL = \"vlan\/native\""/"HAAS_BMI_CHANNEL = \"null\""/ ims/common/constants.py
+sed -i s/"HIL_BMI_CHANNEL = \"vlan\/native\""/"HIL_BMI_CHANNEL = \"null\""/ ims/common/constants.py
 
 python scripts/einstein_server &
 python scripts/picasso_server &
@@ -55,8 +55,8 @@ rbd import cirros-0.3.0-x86_64-disk.img --dest-pool rbd
 bmi import bmi_infra cirros-0.3.0-x86_64-disk.img
 
 cat >bmi_userrc.sh <<EOL
-export HAAS_USERNAME=haas
-export HAAS_PASSWORD=secret
+export HIL_USERNAME=hil
+export HIL_PASSWORD=secret
 EOL
 
 ### Fin BMI setup
