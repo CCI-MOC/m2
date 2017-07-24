@@ -118,7 +118,7 @@ def run_script():
     pass
 
 
-@rest_call("/node/iscsi/", "GET", constants.GET_ISCSI_TARGET_COMMAND,
-           [constants.NODE_NAME_PARAMETER])
-def get_iscsi_target():
+@rest_call("/iscsi/iscsi_target_info/", "GET",
+           constants.GET_ISCSI_TARGET_COMMAND, [constants.NODE_NAME_PARAMETER])
+def iscsi_target_info():
     pass

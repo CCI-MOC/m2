@@ -10,3 +10,6 @@ class DNSMasq:
                 if parts[1] == mac_addr and parts[4] == '01:' + mac_addr:
                     return parts[2]
             raise dhcp_exceptions.MacAddrNotFoundException(mac_addr)
+
+    def get_ipxe_path(self, cfg, node_name):
+        return cfg.tftp.ipxe_path + node_name + ".ipxe"

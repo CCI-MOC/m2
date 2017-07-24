@@ -685,18 +685,22 @@ class BMI:
 
     # TODO: Write tests for this method before merging to main branch
     @log
-    def get_iscsi_target(self, node_name):
+    def iscsi_target_info(self, node_name):
+        """
+        Given the name of a provisioned node, returns the iSCSI
+        target information for a provisioned node
+
+        :param node_name: Name of the provisioned node
+        :return: Dictionary of iscsi ip, port number, LUN ID, and
+                 target name
+        """
         try:
             if not self.is_admin:
                 raise AuthorizationFailedException()
-            provisioned = False
             provisioned_nodes = self.list_provisioned_nodes()['retval']
-            for node in provisioned_nodes:
-                if node_name == node[0]:
-                    provisioned = True
-            if not provisioned:
+            if node_name not in [node[0] for node in provisioned_nodes]:
                 raise iscsi_exceptions.TargetDoesntExistException()
-            file_path = "/var/lib/tftpboot/" + node_name + ".ipxe"
+            file_path = self.dhcp.get_ipxe_path(self.cfg, node_name)
             with open(file_path, "r") as ipxe_file:
                 for line in ipxe_file:
                     if "iscsi" in line:
