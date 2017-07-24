@@ -576,31 +576,6 @@ def get_node_ip(project, node):
             click.echo(ret[constants.MESSAGE_KEY])
 
 
-@node.command('iscsi', help='Get iSCSI target info for a provisioned node')
-@click.argument(constants.PROJECT_PARAMETER)
-@click.argument(constants.NODE_NAME_PARAMETER)
-@bmi_exception_wrapper
-def get_iscsi_target(project, node):
-    """
-    Get the iSCSI target information for a provisioned node
-
-    \b
-    Arguments:
-    PROJECT  = The HIL Project attached to your credentials
-    NODE     = The node whose iSCSI target info is required
-    """
-    data = {constants.PROJECT_PARAMETER: project,
-            constants.NODE_NAME_PARAMETER: node}
-    ret = requests.get(_url + "node/iscsi/",
-                       data=data, auth=(_username,
-                                        _password))
-    if ret.status_code == 200:
-        json_ret = json.loads(ret.content)
-        click.echo(json_ret["iscsi_target"])
-    else:
-        click.echo(ret.content)
-
-
 @cli.group(help='ISCSI Related Commands')
 def iscsi():
     pass
@@ -679,6 +654,32 @@ def show_mappings(project):
     #     else:
     #         click.echo(ret[constants.MESSAGE_KEY])
     click.echo("Need to Re-Implement")
+
+
+@iscsi.command('iscsi_target_info',
+               help='Get iSCSI target info for a provisioned node')
+@click.argument(constants.PROJECT_PARAMETER)
+@click.argument(constants.NODE_NAME_PARAMETER)
+@bmi_exception_wrapper
+def iscsi_target_info(project, node):
+    """
+    Get the iSCSI target information for a provisioned node
+
+    \b
+    Arguments:
+    PROJECT  = The HIL Project attached to your credentials
+    NODE     = The node whose iSCSI target info is required
+    """
+    data = {constants.PROJECT_PARAMETER: project,
+            constants.NODE_NAME_PARAMETER: node}
+    ret = requests.get(_url + "iscsi/iscsi_target_info/",
+                       data=data, auth=(_username,
+                                        _password))
+    if ret.status_code == 200:
+        json_ret = json.loads(ret.content)
+        click.echo(json_ret["iscsi_target"])
+    else:
+        click.echo(ret.content)
 
 
 @cli.command(name='upload', help='Upload Image to BMI')
