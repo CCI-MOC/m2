@@ -63,14 +63,14 @@ def cli():
 
 
 @cli.command(name='pro', short_help="Provision a Node")
-@click.option(constants.HIL_OPTION_PARAMETER, default=True,
-              help="enable/disable HIL functionality within BMI")
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NODE_NAME_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 @click.argument(constants.NETWORK_PARAMETER)
 @click.argument(constants.NIC_PARAMETER)
-def provision(hil, project, node, img, network, nic):
+@click.option(constants.HIL_OPTION_PARAMETER, default=True,
+              help="enable/disable HIL functionality within BMI")
+def provision(project, node, img, network, nic, hil):
     """
     Provision a Node
 
@@ -83,25 +83,25 @@ def provision(hil, project, node, img, network, nic):
     CHANNEL = The Channel to Provision On (For HIL It is 'vlan/native')
     NIC     = The NIC to use for Network Boot (For HIL IT is 'enp130s0f0')
     """
-    data = {constants.HIL_OPTION_PARAMETER: hil,
-            constants.PROJECT_PARAMETER: project,
+    data = {constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
             constants.IMAGE_NAME_PARAMETER: img,
             constants.NETWORK_PARAMETER: network,
-            constants.NIC_PARAMETER: nic}
+            constants.NIC_PARAMETER: nic,
+            constants.HIL_OPTION_PARAMETER: hil}
     res = requests.put(_url + "provision/", data=data,
                        auth=(_username, _password))
     click.echo(res.content)
 
 
 @cli.command(name='dpro', short_help='Deprovision a node')
-@click.option(constants.HIL_OPTION_PARAMETER, default=True,
-              help="enable/disable HIL functionality within BMI")
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NODE_NAME_PARAMETER)
 @click.argument(constants.NETWORK_PARAMETER)
 @click.argument(constants.NIC_PARAMETER)
-def deprovision(hil, project, node, network, nic):
+@click.option(constants.HIL_OPTION_PARAMETER, default=True,
+              help="enable/disable HIL functionality within BMI")
+def deprovision(project, node, network, nic, hil):
     """
     Deprovision a Node
 
@@ -112,11 +112,11 @@ def deprovision(hil, project, node, network, nic):
     NETWORK = The Name of the Provisioning Network
     NIC     = The NIC that was used for Network Boot
     """
-    data = {constants.HIL_OPTION_PARAMETER: hil,
-            constants.PROJECT_PARAMETER: project,
+    data = {constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
             constants.NETWORK_PARAMETER: network,
-            constants.NIC_PARAMETER: nic}
+            constants.NIC_PARAMETER: nic,
+            constants.HIL_OPTION_PARAMETER: hil}
     res = requests.delete(_url + "deprovision/", data=data, auth=(
         _username, _password))
     click.echo(res.content)
