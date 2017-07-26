@@ -20,7 +20,8 @@ class RPCClient:
                 "list_images": "0",
                 "list_snapshots": "0",
                 "remove_image": "1",
-                "run_script": "2"
+                "run_script": "2",
+                "iscsi_target_info": "1"
             }
         }
         # The script name and no. of arguments.

@@ -88,6 +88,7 @@ DEPROVISION_COMMAND = "deprovision"
 LIST_SNAPSHOTS_COMMAND = "list_snapshots"
 REMOVE_IMAGE_COMMAND = "remove_image"
 RUN_SCRIPT_COMMAND = "run_script"
+GET_ISCSI_TARGET_COMMAND = "iscsi_target_info"
 
 # Parameters
 NODE_NAME_PARAMETER = 'node'

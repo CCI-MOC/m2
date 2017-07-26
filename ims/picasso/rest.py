@@ -116,3 +116,9 @@ def remove_image():
            [constants.IMAGE_NAME_PARAMETER, constants.SCRIPT_PATH_PARAMETER])
 def run_script():
     pass
+
+
+@rest_call("/iscsi/iscsi_target_info/", "GET",
+           constants.GET_ISCSI_TARGET_COMMAND, [constants.NODE_NAME_PARAMETER])
+def iscsi_target_info():
+    pass

@@ -11,6 +11,7 @@ from stat import S_IRWXU
 import ims.common.config as config
 import ims.common.constants as constants
 import ims.exception.db_exceptions as db_exceptions
+import ims.exception.iscsi_exceptions as iscsi_exceptions
 from ims.common.log import create_logger, log, trace
 from ims.database.database import Database
 from ims.einstein.ceph import RBD
@@ -681,3 +682,30 @@ class BMI:
                                    constants.DEFAULT_SNAPSHOT_NAME)
             self.fs.remove_snapshot(ceph_img_name,
                                     constants.DEFAULT_SNAPSHOT_NAME)
+
+    # TODO: Write tests for this method before merging to main branch
+    @log
+    def iscsi_target_info(self, node_name):
+        """
+        Given the name of a provisioned node, returns the iSCSI
+        target information for a provisioned node
+
+        :param node_name: Name of the provisioned node
+        :return: Returns iSCSI info string containing ip,
+                 port number, LUN ID, and target name
+        """
+        try:
+            if not self.is_admin:
+                raise AuthorizationFailedException()
+            provisioned_nodes = self.list_provisioned_nodes()['retval']
+            if node_name not in [node[0] for node in provisioned_nodes]:
+                raise iscsi_exceptions.TargetDoesntExistException()
+            file_path = self.dhcp.get_ipxe_path(self.cfg, node_name)
+            with open(file_path, "r") as ipxe_file:
+                for line in ipxe_file:
+                    if "iscsi" in line:
+                        target = line.split("--keep ")[1][:-1]
+                        return self.__return_success({'iscsi_target': target})
+        except (FileSystemException, ISCSIException) as e:
+                logger.exception('')
+                return self.__return_error(e)
