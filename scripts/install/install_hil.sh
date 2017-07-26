@@ -39,8 +39,8 @@ hil node_register_nic bmi_node bmi_port "00:00:00:00:00:00"
 
 ### Setup HIL switch
 hil switch_register bmi_switch mock moch-hostname mock-username mock-password
-hil port_register bmi_switch bmi_port
-hil port_connect_nic bmi_switch bmi_port bmi_node bmi_port
+hil port_register bmi_switch gi1/0/1
+hil port_connect_nic bmi_switch gi1/0/1 bmi_node bmi_port
 
 ### Setup HIL network
 hil network_create_simple bmi_network bmi_infra

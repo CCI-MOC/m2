@@ -44,7 +44,10 @@ ceph -s
 ceph-deploy rgw create $node_name
 ceph-deploy mds create $node_name
 
-
+# Note/TODO:
+# This ceph is not presistent across reboots.
+# we have to make the loopback devices again, re-read the partition table
+# (`partprobe /dev/loopx`) and then "ceph activate all osds".
 ### TEST
 
 # sudo pkill -f ceph

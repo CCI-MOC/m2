@@ -2,7 +2,7 @@
 [bmi]
 # uid is given so that images dont clash in ceph pool
 uid = 112233445566778899
-service = service
+service = False
 
 # this section is for db settings
 [db]
@@ -16,7 +16,7 @@ conf_file = /etc/ceph/ceph.conf
 keyring = ceph.client.admin.keyring
 
 [driver]
-net_isolator = haas
+net_isolator = hil
 iscsi = tgt
 fs = ceph
 
@@ -50,4 +50,4 @@ port = 9000
 [logs]
 path = /var/log/bmi/logs
 debug = true
-verbose = true
+verbose = false
