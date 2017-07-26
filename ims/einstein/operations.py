@@ -728,8 +728,8 @@ class BMI:
         target information for a provisioned node
 
         :param node_name: Name of the provisioned node
-        :return: Dictionary of iscsi ip, port number, LUN ID, and
-                 target name
+        :return: Returns iSCSI info string containing ip,
+                 port number, LUN ID, and target name
         """
         try:
             if not self.is_admin:
