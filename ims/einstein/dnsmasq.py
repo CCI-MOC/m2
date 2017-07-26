@@ -12,4 +12,12 @@ class DNSMasq:
             raise dhcp_exceptions.MacAddrNotFoundException(mac_addr)
 
     def get_ipxe_path(self, cfg, node_name):
+        """
+        Given the configuration file and node name, returns the
+        path to the ipxe file.
+
+        :param cfg: BMI configuration file
+        :param node_name: Name of the node
+        :return: Returns the path to the ipxe file for the given node
+        """
         return cfg.tftp.ipxe_path + node_name + ".ipxe"
