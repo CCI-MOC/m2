@@ -1,15 +1,19 @@
 # Tests the rest calls in picasso/rest.py
+# TODO Make a TestLib and add common setup and teardown functions
 
 import time
 import unittest
 from unittest import TestCase
 
 import requests
-
+from threading import Thread
 import ims.common.config as config
 
 config.load()
 
+import ims.picasso.rest as rest
+from ims.rpc.server.name_server import start_name_server
+from ims.rpc.server.rpc_server import start_rpc_server
 import ims.common.constants as constants
 import ims.einstein.ceph as ceph
 from ims.common.log import trace
@@ -34,6 +38,47 @@ EXIST_IMG_NAME = _cfg.tests.exist_img_name
 NEW_SNAP_NAME = _cfg.tests.new_snap_name
 NOT_EXIST_IMG_NAME = _cfg.tests.not_exist_img_name
 NOT_EXIST_SNAP_NAME = _cfg.tests.not_exist_snap_name
+
+# The Coverage Issue for these tests was that no coverage data was
+# being generated for the server processes.
+
+# To solve this I made the server processes to run as threads as
+# coverage.py covers threads by default.
+
+# The next issue was stopping these threads when the tests were done.
+# To solve this I created a child thread that starts the server threads
+# as daemon threads and checks a global variable.
+
+# When the global variable is true the thread exits and the server threads
+# die as they are daemon threads.
+
+# This successfully results in flushing of coverage data.
+threads = []
+stop_services = False
+
+
+def start_services():
+    global threads, stop_services
+    stop_services = False
+    threads = [Thread(target=start_name_server),
+               Thread(target=start_rpc_server),
+               Thread(target=rest.start)]
+    for t in threads:
+        t.daemon = True
+        t.start()
+
+    while not stop_services:
+        time.sleep(0)
+
+
+def setUpModule():
+    t = Thread(target=start_services)
+    t.start()
+
+
+def tearDownModule():
+    global stop_services
+    stop_services = True
 
 
 class TestProvision(TestCase):

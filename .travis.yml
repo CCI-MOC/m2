@@ -35,7 +35,7 @@ before_script:
 
 script:
   # Run Tests in BMI container
-  - sudo docker exec bmi pytest -v --random-order-bucket=global --cov=ims --ignore tests/unit/picasso tests/
+  - sudo docker exec bmi pytest -v --random-order-bucket=global --cov=ims tests/
 
 after_success:
   # Submit Coverage to Coveralls
