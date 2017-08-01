@@ -15,6 +15,14 @@ class MainServer:
     # The commandline arguments following that are the arguments to the method.
     @log
     def execute_command(self, credentials, command, args):
+        """
+        Executes the given BMI command
+
+        :param credentials: The credentials that BMI will use to authenticate.
+        :param command: The BMI command to execute
+        :param args: The Arguments which should be given to BMI Command
+        :return: a dict as { HTTP status code, Output or Error Message }
+        """
         try:
             with BMI(credentials) as bmi:
                 method_to_call = getattr(BMI, command)
@@ -25,6 +33,10 @@ class MainServer:
         except BMIException as ex:
             logger.exception('')
             return {constants.STATUS_CODE_KEY: ex.status_code,
+                    constants.MESSAGE_KEY: str(ex)}
+        except Exception as ex:
+            logger.exception('')
+            return {constants.STATUS_CODE_KEY: 500,
                     constants.MESSAGE_KEY: str(ex)}
 
     @log
