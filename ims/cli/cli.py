@@ -68,7 +68,9 @@ def cli():
 @click.argument(constants.IMAGE_NAME_PARAMETER)
 @click.argument(constants.NETWORK_PARAMETER)
 @click.argument(constants.NIC_PARAMETER)
-def provision(project, node, img, network, nic):
+@click.option(constants.HIL_OPTION_PARAMETER, default=True,
+              help="enable/disable HIL functionality within BMI")
+def provision(project, node, img, network, nic, hil):
     """
     Provision a Node
 
@@ -85,7 +87,8 @@ def provision(project, node, img, network, nic):
             constants.NODE_NAME_PARAMETER: node,
             constants.IMAGE_NAME_PARAMETER: img,
             constants.NETWORK_PARAMETER: network,
-            constants.NIC_PARAMETER: nic}
+            constants.NIC_PARAMETER: nic,
+            constants.HIL_OPTION_PARAMETER: hil}
     res = requests.put(_url + "provision/", data=data,
                        auth=(_username, _password))
     click.echo(res.content)
@@ -96,7 +99,9 @@ def provision(project, node, img, network, nic):
 @click.argument(constants.NODE_NAME_PARAMETER)
 @click.argument(constants.NETWORK_PARAMETER)
 @click.argument(constants.NIC_PARAMETER)
-def deprovision(project, node, network, nic):
+@click.option(constants.HIL_OPTION_PARAMETER, default=True,
+              help="enable/disable HIL functionality within BMI")
+def deprovision(project, node, network, nic, hil):
     """
     Deprovision a Node
 
@@ -110,7 +115,8 @@ def deprovision(project, node, network, nic):
     data = {constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
             constants.NETWORK_PARAMETER: network,
-            constants.NIC_PARAMETER: nic}
+            constants.NIC_PARAMETER: nic,
+            constants.HIL_OPTION_PARAMETER: hil}
     res = requests.delete(_url + "deprovision/", data=data, auth=(
         _username, _password))
     click.echo(res.content)
