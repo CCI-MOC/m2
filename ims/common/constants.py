@@ -103,6 +103,7 @@ NETWORK_PARAMETER = "network"
 NIC_PARAMETER = "nic"
 CHANNEL_PARAMETER = "channel"
 SCRIPT_PATH_PARAMETER = "script"
+HIL_OPTION_PARAMETER = "--hil/--no-hil"
 
 # Template Parameters
 IPXE_TARGET_NAME = "${target_name}"
