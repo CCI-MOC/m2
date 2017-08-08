@@ -33,11 +33,22 @@ elif [[ -f /etc/redhat-release ]]; then
     sudo subscription-manager attach --pool=$pool_id
     sudo subscription-manager repos --enable=rhel-7-server-rpms --enable=rhel-7-server-extras-rpms --enable=rhel-7-server-optional-rpms --enable=rhel-7-server-rhceph-1.2-calamari-rpms --enable=rhel-7-server-rhceph-1.2-installer-rpms --enable=rhel-7-server-rhceph-1.2-mon-rpms --enable=rhel-7-server-rhceph-1.2-osd-rpms
 
+    # set enforce to permissive
+    sudo setenforce permissive
+
     # Packages for script
-    sudo yum install -y git gcc wget cpan make 
+    sudo yum install -y git gcc wget cpan make
+
+    # enable epel and install pip
+    wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    sudo yum install -y ./epel-release-latest-*.noarch.rpm
+    sudo yum install -y python-pip
 
     # Packages for Ceph
     sudo pip install -U ceph-deploy # yum installs an older version
+
+    # Install Perl General config
+    sudo yum install -y perl-Config-General.noarch
 
     # Headers for tgt source compilation
     sudo yum install -y librbd1-devel librados2-devel
@@ -52,14 +63,11 @@ elif [[ -f /etc/redhat-release ]]; then
 
     sudo cp scripts/tgtd.service /usr/lib/systemd/system/
     sudo systemctl daemon-reload
-    sudo systemctl list-unit-files | grep -i tgt
 
     sudo iptables -I INPUT -p tcp -m tcp --dport 3260 -j ACCEPT
-    sudo service iptables save
 
     sudo systemctl start tgtd
-    sudo chkconfig tgtd on
-    sudo systemctl status tgtd
+    sudo systemctl enable tgtd
 
     popd
 
