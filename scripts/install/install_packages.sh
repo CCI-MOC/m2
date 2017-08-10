@@ -51,7 +51,7 @@ elif [[ -f /etc/redhat-release ]]; then
     sudo yum install -y perl-Config-General.noarch
 
     # Headers for tgt source compilation
-    sudo yum install -y librbd1-devel librados2-devel
+    sudo yum install -y librbd1-devel librados2-devel libvirt
 
     ## Install tgt from source
     git clone https://github.com/fujita/tgt
@@ -72,8 +72,8 @@ elif [[ -f /etc/redhat-release ]]; then
     popd
 
     # Install packages for HIL
-    sudo yum install -y epel-release bridge-utils  gcc  httpd  ipmitool libvirt \
-	libxml2-devel  libxslt-devel  mod_wsgi net-tools python-pip python-psycopg2 \
+    sudo yum install -y epel-release bridge-utils httpd ipmitool \
+	libxml2-devel libxslt-devel mod_wsgi net-tools python-psycopg2 \
 	python-virtinst python-virtualenv qemu-kvm telnet vconfig virt-install
 
 else
