@@ -48,6 +48,6 @@ port = 9000
 
 # this section is for logs
 [logs]
-path = /var/log/bmi/logs
+path = /var/log/bmi/logs/
 debug = true
 verbose = false
