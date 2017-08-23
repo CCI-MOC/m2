@@ -1,0 +1,53 @@
+# this section is for basic bmi settings
+[bmi]
+# uid is given so that images dont clash in ceph pool
+uid = 112233445566778899
+service = False
+
+# this section is for db settings
+[db]
+path = /opt/bmi/bmi.db
+
+# This section is for ceph config
+[fs]
+id = admin
+pool = rbd
+conf_file = /etc/ceph/ceph.conf
+keyring = ceph.client.admin.keyring
+
+[driver]
+net_isolator = hil
+iscsi = tgt
+fs = ceph
+
+# This section is for haas related config
+[net_isolator]
+url = http://127.0.0.1:5000
+
+# This section is for iscsi related config
+[iscsi]
+ip = 127.0.0.1
+password = password
+
+# this section is for rpc server config
+[rpc]
+name_server_ip = 127.0.0.1
+name_server_port = 8000
+rpc_server_ip = 127.0.0.1
+rpc_server_port = 8001
+
+# this section is for specifying tftp settings
+[tftp]
+pxelinux_path = /etc/bmi/pxelinux.cfg
+ipxe_path = /etc/bmi/ipxe.cfg
+
+# this section is for http config
+[rest_api]
+ip = 127.0.0.1
+port = 9000
+
+# this section is for logs
+[logs]
+path = /var/log/bmi/logs/
+debug = true
+verbose = false
