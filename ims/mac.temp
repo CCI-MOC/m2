@@ -1,0 +1,11 @@
+DEFAULT menu
+  PROMPT 0
+  MENU TITLE PXE Menu
+  TIMEOUT 30
+  ONTIMEOUT ${img_name}
+
+
+LABEL ${img_name}
+     MENU LABEL ${img_name}
+     KERNEL ipxe.lkrn
+     INITRD ${ipxe.file}

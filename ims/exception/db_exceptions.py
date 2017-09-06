@@ -1,4 +1,4 @@
-from exception import DBException
+from ims.exception.exception import DBException
 
 
 # this exception should be raised when a project is not found in the db
@@ -25,6 +25,18 @@ class ImageNotFoundException(DBException):
 
     def __str__(self):
         return self.name + " not found"
+
+
+class ImageHasClonesException(DBException):
+    @property
+    def status_code(self):
+        return 500
+
+    def __init__(self, name):
+        self.name = name
+
+    def __str__(self):
+        return self.name + " has clones, please deprovision before deleting"
 
 
 # this class is a wrapper for any orm specific exception like sqlalchemy

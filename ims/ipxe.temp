@@ -1,0 +1,5 @@
+#!ipxe
+      set keep-san 1
+      ifconf --configurator=dhcp net2
+      sanboot --keep iscsi:${iscsi_ip}:tcp:3260:1:${target_name}
+      boot

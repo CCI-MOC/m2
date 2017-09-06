@@ -4,8 +4,9 @@ from sqlalchemy.orm import relationship
 
 # Dont need it for now. Keeping just in case and is incomplete
 
-# This class represents the image table  # the Column variables are the columns in the table
-# the relationship variable is loaded eagerly as the session is terminated after the object is retrieved
+# This class represents the image table  # the Column variables are the columns
+# in the table the relationship variable is loaded eagerly as the session is
+# terminated after the object is retrieved
 class Snapshot():
     __tablename__ = "snapshot"
 
@@ -33,7 +34,8 @@ class Snapshot():
     def delete_with_name(self, name):
         try:
             self.database.create_session()
-            for image in self.database.session.query(Snapshot).filter_by(name=name):
+            for image in self.database.session.query(Snapshot).filter_by(
+                    name=name):
                 self.database.delete(image)
 
             self.database.session.commit()
@@ -47,13 +49,15 @@ class Snapshot():
         try:
             self.database.create_session()
             images = []
-            for image in self.database.session.query(Image).filter_by(name=name):
+            for image in self.database.session.query(Image).filter_by(
+                    name=name):
                 if image.project.name == project_name:
                     images.append(image)
 
             return images
 
         except Exception as e:
-            print "Database Exception: Something bad happened related to database"
+            print "Database Exception: Something bad happened related to " \
+                  "database"
         finally:
             self.database.close_session()

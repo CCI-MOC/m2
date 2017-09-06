@@ -1,0 +1,8 @@
+<target ${target_name}>
+    driver iscsi
+    bs-type rbd
+    backing-store ${pool}/${target_name}
+    bsopts ""conf=${ceph_config};id=${ceph_user}""
+    write-cache off
+    initiator-address ALL
+</target>
