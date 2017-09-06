@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/CCI-MOC/ims.svg?branch=dev)](https://travis-ci.org/CCI-MOC/ims)
-[![Coverage Status](https://coveralls.io/repos/github/CCI-MOC/ims/badge.svg?branch=dev)](https://coveralls.io/github/CCI-MOC/ims?branch=dev)
+[![Build Status](https://travis-ci.org/CCI-MOC/ims.svg?branch=master)](https://travis-ci.org/CCI-MOC/ims)
+[![Coverage Status](https://coveralls.io/repos/github/CCI-MOC/ims/badge.svg?branch=master)](https://coveralls.io/github/CCI-MOC/ims?branch=master)
 # BMI
 
 
@@ -23,7 +23,7 @@ The main concerns of a bare metal system are the inherent slowness in provisioni
 This project proposes a system that includes all of the above advantages and also addresses the fast provisioning issue for a bare metal system. Using this system, we propose to provision and release hundreds of nodes as quickly as possible with little impact on application performance.
 Current BMI (IMS) Architecture
 
-![](https://github.com/CCI-MOC/ims/blob/dev/Selection_003.png)
+![](https://github.com/CCI-MOC/ims/blob/master/Selection_003.png)
 
 
 BMIS Architecture
