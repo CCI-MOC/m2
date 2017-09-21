@@ -19,10 +19,9 @@
         name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
         state: present
     - name: Install pip
-      yum: name={{ item }} state=latest
-      with_items:
-       - ./epel-release-latest-*.noarch.rpm
-       - python-pip
+      yum: 
+        name: python-pip
+        state: present
     - name: Install Perl General config
       yum: 
         name: perl-Config-General.noarch
@@ -36,24 +35,26 @@
     - name: Install tgt from source
       git: 
         repo: https://github.com/fujita/tgt
-        dest: playbook_dir
+        dest: "{{playbook_dir}}/tgt"
     #Need to write command for the 3 make commands in install_packages
     - name: Make clean
-      command: chdir=./tgt/ {{ item }}
+      command: "sudo {{ item }}"
+      args:
+        chdir: "{{ playbook_dir }}/tgt"
       with_items:
-       - make CEPH_RBD=1 clean
-       - make CEPH_RBD=1
-       - make CEPH_RBD=1 install
+        - "/usr/bin/make CEPH_RBD=1 clean"
+        - "/usr/bin/make CEPH_RBD=1"
+        - "/usr/bin/make CEPH_RBD=1 install"
     - name: Copy tgtd.service to system folder
       copy:
-        src: scripts/tgtd.service
+        src: "{{playbook_dir}}/tgt/scripts/tgtd.service"
         dest: /usr/lib/systemd/system/
     - name: Allow tcp via iptables
       iptables:
         chain: INPUT
         protocol: tcp
         match: tcp
-        to_ports: 3260
+        destination_port: 3260
         jump: ACCEPT
     - name: Systemctl commands for tgtd
       systemd:
