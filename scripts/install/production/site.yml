@@ -1,0 +1,8 @@
+---
+# This playbook deploys bmi, including the iscsi server and dhcp server.
+
+- hosts:  all
+  become: true
+
+  roles:
+    - dhcp

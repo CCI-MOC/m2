@@ -1,0 +1,31 @@
+---
+#This role instals and configures the DHCP server
+- name: Install dnsmasq
+  yum:
+    name: dnsmasq
+- name: Comment/uncomment options in dnsmasq.conf
+  lineinfile:
+    path: /etc/dnsmasq.conf
+    backrefs: yes
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: '#log-dhcp', line: 'log-dhcp' }
+    - { regexp: 'conf-dir=/etc/dnsmasq.d', line: '#conf-dir=/etc/dnsmasq.d' }
+- name: Add DHCP configuration to dnsmasq.conf
+  lineinfile:
+    path: /etc/dnsmasq.conf
+    line: "{{ item }}"
+  with_items:
+      - 'interface=eth3'
+      - 'dhcp-range=172.16.10.51,172.16.10.70,7d'
+      - 'enable-tftp'
+      - 'tftp-root=/var/lib/tftpboot'
+      - 'dhcp-userclass=set:ENH,iPXE'
+      - 'dhcp-boot=tag:!ENH,pxelinux.0,servername,172.16.10.1'
+- name: Systemctl commands for dnsmasq
+  systemd:
+    name: dnsmasq
+    daemon-reload: yes
+    state: started
+    enabled: yes

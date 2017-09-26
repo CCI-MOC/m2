@@ -1,0 +1,60 @@
+---
+- name: Install Packages for Playbook
+  yum: name={{ item }} state=latest
+  with_items:
+   - git
+   - gcc
+   - cpan
+   - make
+- name: Change SELinux to permissive
+  selinux:
+    policy: targeted
+    state: permissive
+- name: Install EPEL repo
+  yum:
+    name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    state: present
+- name: Install pip
+  yum: 
+    name: python-pip
+    state: present
+- name: Install Perl General config
+  yum: 
+    name: perl-Config-General.noarch
+    state: present
+- name: Install Headers for tgt source compilation
+  yum: name={{ item }} state=latest
+  with_items:
+   - librbd1-devel
+   - librados2-devel
+   - libvirt
+- name: Install tgt from source
+  git: 
+    repo: https://github.com/fujita/tgt
+    dest: "{{playbook_dir}}/tgt"
+#Need to write command for the 3 make commands in install_packages
+- name: Make clean
+  command: "sudo {{ item }}"
+  args:
+    chdir: "{{ playbook_dir }}/tgt"
+  with_items:
+    - "/usr/bin/make CEPH_RBD=1 clean"
+    - "/usr/bin/make CEPH_RBD=1"
+    - "/usr/bin/make CEPH_RBD=1 install"
+- name: Copy tgtd.service to system folder
+  copy:
+    src: "{{playbook_dir}}/tgt/scripts/tgtd.service"
+    dest: /usr/lib/systemd/system/
+- name: Allow tcp via iptables
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    match: tcp
+    destination_port: 3260
+    jump: ACCEPT
+- name: Systemctl commands for tgtd
+  systemd:
+    name: tgtd.service
+    daemon-reload: yes
+    state: started
+    enabled: yes
