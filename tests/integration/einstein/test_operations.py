@@ -30,6 +30,8 @@ NEW_SNAP_NAME = _cfg.tests.new_snap_name
 NOT_EXIST_IMG_NAME = _cfg.tests.not_exist_img_name
 NOT_EXIST_SNAP_NAME = _cfg.tests.not_exist_snap_name
 
+IMG2 = 'img2'
+
 
 class TestProvision(TestCase):
     """
@@ -219,6 +221,44 @@ class TestRemoveImage(TestCase):
         self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
 
     def tearDown(self):
+        self.db.project.delete_with_name(PROJECT)
+        self.db.close()
+        self.good_bmi.shutdown()
+
+
+class TestCopyImage(TestCase):
+    """
+    Creating a flatten copy of an image
+    """
+    @trace
+    def setUp(self):
+        self.db = Database()
+        self.db.project.insert(PROJECT, NETWORK)
+
+        self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
+                            PROJECT)
+        self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
+
+    def runTest(self):
+        response = self.good_bmi.copy_image(EXIST_IMG_NAME, PROJECT,
+                                            IMG2)
+        self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
+        images = self.db.image.fetch_images_from_project(PROJECT)
+        exists_image = False
+        for image in images:
+            if IMG2 == image:
+                exists_image = True
+                break
+        self.assertTrue(exists_image)
+        with ceph.RBD(_cfg.fs,
+                      _cfg.iscsi.password) as fs:
+            img_id = self.good_bmi.get_ceph_image_name_from_project(
+                IMG2, PROJECT)
+            fs.get_image(img_id)
+
+    def tearDown(self):
+        self.good_bmi.remove_image(IMG2)
+        self.good_bmi.remove_image(EXIST_IMG_NAME)
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
