@@ -1,0 +1,9 @@
+---
+#This role installs and configures tftp-server
+- name: Install tftpboot
+  yum:
+    name: tftp-server
+- name: Create pxelinux directory
+  file:
+    path: /var/lib/tftpboot/pxelinux.cfg
+    state: directory
