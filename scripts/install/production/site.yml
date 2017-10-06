@@ -5,4 +5,7 @@
   become: true
 
   roles:
+    - iscsi
+    - pxe
     - dhcp
+    - bmi

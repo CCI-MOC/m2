@@ -1,7 +1,7 @@
 ---
 #This role instals and configures the DHCP server
 - name: Install dnsmasq
-  yum:
+  package:
     name: dnsmasq
 - name: Comment/uncomment options in dnsmasq.conf
   lineinfile:
