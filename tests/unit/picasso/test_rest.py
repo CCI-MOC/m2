@@ -71,14 +71,22 @@ def start_services():
         time.sleep(0)
 
 
-def setUpModule():
+# def setUpModule():
+#     t = Thread(target=start_services)
+#     t.start()
+
+def start_threads():
     t = Thread(target=start_services)
     t.start()
 
 
-def tearDownModule():
+def stop_threads():
     global stop_services
     stop_services = True
+
+# def tearDownModule():
+#     global stop_services
+#     stop_services = True
 
 
 class TestProvision(TestCase):
@@ -93,6 +101,8 @@ class TestProvision(TestCase):
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
+        start_threads()
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def runTest(self):
         data = {constants.PROJECT_PARAMETER: PROJECT,
@@ -111,6 +121,7 @@ class TestProvision(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
+        stop_threads()
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
 
@@ -127,6 +138,7 @@ class TestDeprovision(TestCase):
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
         self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
+        start_threads()
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def runTest(self):
@@ -146,6 +158,8 @@ class TestDeprovision(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
+        stop_threads()
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
 
 class TestCreateSnapshot(TestCase):
@@ -161,6 +175,7 @@ class TestCreateSnapshot(TestCase):
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
         self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
+        start_threads()
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def runTest(self):
@@ -191,6 +206,7 @@ class TestCreateSnapshot(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
+        stop_threads()
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
 
@@ -207,6 +223,7 @@ class TestListSnapshots(TestCase):
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
         self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
+        start_threads()
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
         self.good_bmi.create_snapshot(NODE_NAME, NEW_SNAP_NAME)
@@ -228,6 +245,7 @@ class TestListSnapshots(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
+        stop_threads()
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
 
@@ -259,6 +277,8 @@ class TestListImages(TestCase):
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
+        start_threads()
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def runTest(self):
         data = {constants.PROJECT_PARAMETER: PROJECT}
@@ -274,6 +294,8 @@ class TestListImages(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
+        stop_threads()
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
 
 class TestRemoveImage(TestCase):
@@ -288,6 +310,8 @@ class TestRemoveImage(TestCase):
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
+        start_threads()
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def runTest(self):
         data = {constants.PROJECT_PARAMETER: PROJECT,
@@ -300,3 +324,5 @@ class TestRemoveImage(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
+        stop_threads()
+        time.sleep(constants.HIL_CALL_TIMEOUT)
