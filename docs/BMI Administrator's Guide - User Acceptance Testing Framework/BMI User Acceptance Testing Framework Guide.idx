@@ -1,0 +1,29 @@
+\indexentry{complete coverage}{3}
+\indexentry{V-Model}{3}
+\indexentry{system testing}{4}
+\indexentry{functional testing}{4}
+\indexentry{scientific method}{5}
+\indexentry{Behavior-Driven Development (BDD)}{5}
+\indexentry{BDD (Given)}{6}
+\indexentry{BDD (When)}{6}
+\indexentry{BDD (Then)}{6}
+\indexentry{end-to-end scenario}{6}
+\indexentry{premises}{6}
+\indexentry{conclusions}{6}
+\indexentry{config directory}{12}
+\indexentry{doc directory}{12}
+\indexentry{scripts directory}{12}
+\indexentry{prepare-environment.sh script}{12}
+\indexentry{bmi-uat.py script}{12}
+\indexentry{test-results}{12}
+\indexentry{\texttt  {Pull-Request Test}}{12}
+\indexentry{\texttt  {Repository Test}}{12}
+\indexentry{config directory}{13}
+\indexentry{\texttt  {bmi-config.sh} script}{13}
+\indexentry{BDD features}{13}
+\indexentry{BDD steps}{13}
+\indexentry{\texttt  {BMI\_RELEASE\_NAME}}{13}
+\indexentry{\texttt  {E2E Test Configs}}{14}
+\indexentry{\texttt  {BMI and HIL Configurations}}{14}
+\indexentry{running User Acceptance Tests}{15}
+\indexentry{interactive session}{17}

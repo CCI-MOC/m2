@@ -1,0 +1,65 @@
+\begin{theindex}
+
+  \item \texttt  {BMI and HIL Configurations}, 14
+  \item \texttt  {BMI\_RELEASE\_NAME}, 13
+  \item \texttt  {E2E Test Configs}, 14
+  \item \texttt  {Pull-Request Test}, 12
+  \item \texttt  {Repository Test}, 12
+  \item \texttt  {bmi-config.sh} script, 13
+
+  \indexspace
+
+  \item BDD (Given), 6
+  \item BDD (Then), 6
+  \item BDD (When), 6
+  \item BDD features, 13
+  \item BDD steps, 13
+  \item Behavior-Driven Development (BDD), 5
+  \item bmi-uat.py script, 12
+
+  \indexspace
+
+  \item complete coverage, 3
+  \item conclusions, 6
+  \item config directory, 12, 13
+
+  \indexspace
+
+  \item doc directory, 12
+
+  \indexspace
+
+  \item end-to-end scenario, 6
+
+  \indexspace
+
+  \item functional testing, 4
+
+  \indexspace
+
+  \item interactive session, 17
+
+  \indexspace
+
+  \item premises, 6
+  \item prepare-environment.sh script, 12
+
+  \indexspace
+
+  \item running User Acceptance Tests, 15
+
+  \indexspace
+
+  \item scientific method, 5
+  \item scripts directory, 12
+  \item system testing, 4
+
+  \indexspace
+
+  \item test-results, 12
+
+  \indexspace
+
+  \item V-Model, 3
+
+\end{theindex}

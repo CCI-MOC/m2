@@ -1,0 +1,16 @@
+\BOOKMARK [0][-]{section*.1}{Contents}{}% 1
+\BOOKMARK [-1][-]{part.1}{An Approach to Delivering Defect-Free Software Products}{}% 2
+\BOOKMARK [0][-]{chapter.1}{Document-Driven Testing for Optimal Deployments}{part.1}% 3
+\BOOKMARK [1][-]{section.1.1}{How to guarantee a defect-free software product}{chapter.1}% 4
+\BOOKMARK [1][-]{section.1.2}{Testing Under Changing Environments Via System Testing}{chapter.1}% 5
+\BOOKMARK [1][-]{section.1.3}{Behavior-Driven Development: A Scientific-Method Approach to Testing}{chapter.1}% 6
+\BOOKMARK [-1][-]{part.2}{Getting Started With The User Acceptance Testing Framework}{}% 7
+\BOOKMARK [0][-]{chapter.2}{The User Acceptance Testing Framework}{part.2}% 8
+\BOOKMARK [1][-]{section.2.1}{The User Acceptance Testing Architecture}{chapter.2}% 9
+\BOOKMARK [2][-]{subsection.2.1.1}{Configuring a Testing Environment}{section.2.1}% 10
+\BOOKMARK [2][-]{subsection.2.1.2}{Structure of Test Directory}{section.2.1}% 11
+\BOOKMARK [2][-]{subsection.2.1.3}{The config file}{section.2.1}% 12
+\BOOKMARK [1][-]{section.2.2}{Preparing The Environment }{chapter.2}% 13
+\BOOKMARK [1][-]{section.2.3}{Performing the Acceptance Tests }{chapter.2}% 14
+\BOOKMARK [2][-]{subsection.2.3.1}{Entering an Interactive Session}{section.2.3}% 15
+\BOOKMARK [0][-]{section*.4}{Index}{part.2}% 16
