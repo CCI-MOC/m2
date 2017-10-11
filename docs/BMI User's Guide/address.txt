@@ -1,0 +1,5 @@
+if [ ! -z "`ifconfig | grep inet | head -n1 | grep :`" ]; then
+  IP_ADDRESS=`ifconfig | grep inet | head -n1 | cut -f2 -d':' | cut -f1 -d' '`
+else
+  IP_ADDRESS=`ifconfig | grep inet | head -n1 | cut -f2 -d'i' | cut -f2 -d' '`
+fi

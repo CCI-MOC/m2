@@ -1,0 +1,39 @@
+\BOOKMARK [0][-]{section*.1}{Contents}{}% 1
+\BOOKMARK [-1][-]{part.1}{HIL and BMI Ecosystem}{}% 2
+\BOOKMARK [0][-]{chapter.1}{Overview of HIL and BMI}{part.1}% 3
+\BOOKMARK [1][-]{section.1.1}{What is MOC, HIL and BMI?}{chapter.1}% 4
+\BOOKMARK [1][-]{section.1.2}{Network Isolation}{chapter.1}% 5
+\BOOKMARK [1][-]{section.1.3}{Bare Metal Imaging \(BMI\)}{chapter.1}% 6
+\BOOKMARK [2][-]{subsection.1.3.1}{Preboot Execution Environment \(PXE\) Protocol}{section.1.3}% 7
+\BOOKMARK [2][-]{subsection.1.3.2}{Advertising iSCSI Targets}{section.1.3}% 8
+\BOOKMARK [1][-]{section.1.4}{Communication Protocols for BMI}{chapter.1}% 9
+\BOOKMARK [2][-]{subsection.1.4.1}{REST API \(Picasso\)}{section.1.4}% 10
+\BOOKMARK [2][-]{subsection.1.4.2}{BMI Operations \(Einstein\)}{section.1.4}% 11
+\BOOKMARK [1][-]{section.1.5}{BMI Configuration}{chapter.1}% 12
+\BOOKMARK [1][-]{section.1.6}{Boot Order of a Node}{chapter.1}% 13
+\BOOKMARK [-1][-]{part.2}{Getting Started With BMI}{}% 14
+\BOOKMARK [0][-]{chapter.2}{Working With BMI}{part.2}% 15
+\BOOKMARK [1][-]{section.2.1}{Core Commands in BMI}{chapter.2}% 16
+\BOOKMARK [1][-]{section.2.2}{Creating a Mock HIL and BMI Ecosystem}{chapter.2}% 17
+\BOOKMARK [2][-]{subsection.2.2.1}{Installing Ceph, HIL and BMI}{section.2.2}% 18
+\BOOKMARK [2][-]{subsection.2.2.2}{The HIL Configuration}{section.2.2}% 19
+\BOOKMARK [1][-]{section.2.3}{Using BMI}{chapter.2}% 20
+\BOOKMARK [2][-]{subsection.2.3.1}{Creating a new image}{section.2.3}% 21
+\BOOKMARK [2][-]{subsection.2.3.2}{Import the new image into BMI}{section.2.3}% 22
+\BOOKMARK [2][-]{subsection.2.3.3}{Provisioning a Node Using BMI}{section.2.3}% 23
+\BOOKMARK [2][-]{subsection.2.3.4}{Creating a Snapshot Using BMI}{section.2.3}% 24
+\BOOKMARK [2][-]{subsection.2.3.5}{Deprovisioning a Node Using BMI}{section.2.3}% 25
+\BOOKMARK [2][-]{subsection.2.3.6}{Removing a Snapshot Using BMI}{section.2.3}% 26
+\BOOKMARK [2][-]{subsection.2.3.7}{Removing an Image Using BMI}{section.2.3}% 27
+\BOOKMARK [1][-]{section.2.4}{Existing the Virtual Environment}{chapter.2}% 28
+\BOOKMARK [0][-]{chapter.3}{BMI Internals}{part.2}% 29
+\BOOKMARK [1][-]{section.3.1}{The Clone-Snapshot Workflow}{chapter.3}% 30
+\BOOKMARK [1][-]{section.3.2}{Importing an Image}{chapter.3}% 31
+\BOOKMARK [2][-]{subsection.3.2.1}{Ceph Image Name Format In The BMI Database}{section.3.2}% 32
+\BOOKMARK [-1][-]{part.3}{Appendices}{}% 33
+\BOOKMARK [0][-]{appendix.A}{Appendix}{part.3}% 34
+\BOOKMARK [1][-]{section.A.1}{User Acceptance Testing}{appendix.A}% 35
+\BOOKMARK [2][-]{subsection.A.1.1}{Behavior-Driven Development \(BDD\)}{section.A.1}% 36
+\BOOKMARK [2][-]{subsection.A.1.2}{Configuring the Acceptance Tests \040}{section.A.1}% 37
+\BOOKMARK [2][-]{subsection.A.1.3}{Performing the Acceptance Tests }{section.A.1}% 38
+\BOOKMARK [0][-]{section*.5}{Index}{part.3}% 39

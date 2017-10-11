@@ -1,0 +1,42 @@
+\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
+\defcounter {refsection}{0}\relax 
+\select@language {english}
+\contentsline {chapter}{Contents}{ii}{section*.1}
+\contentsline {part}{\partnumberline {I}HIL and BMI Ecosystem}{1}{part.1}
+\contentsline {chapter}{\chapternumberline {1}Overview of HIL and BMI}{3}{chapter.1}
+\contentsline {section}{\numberline {1.1}What is MOC, HIL and BMI?}{3}{section.1.1}
+\contentsline {section}{\numberline {1.2}Network Isolation}{3}{section.1.2}
+\contentsline {section}{\numberline {1.3}Bare Metal Imaging (BMI)}{4}{section.1.3}
+\contentsline {subsection}{\numberline {1.3.1}Preboot Execution Environment (PXE) Protocol}{5}{subsection.1.3.1}
+\contentsline {subsection}{\numberline {1.3.2}Advertising iSCSI Targets}{5}{subsection.1.3.2}
+\contentsline {section}{\numberline {1.4}Communication Protocols for BMI}{7}{section.1.4}
+\contentsline {subsection}{\numberline {1.4.1}REST API (Picasso)}{9}{subsection.1.4.1}
+\contentsline {subsection}{\numberline {1.4.2}BMI Operations (Einstein)}{9}{subsection.1.4.2}
+\contentsline {section}{\numberline {1.5}BMI Configuration}{9}{section.1.5}
+\contentsline {section}{\numberline {1.6}Boot Order of a Node}{10}{section.1.6}
+\contentsline {part}{\partnumberline {II}Getting Started With BMI}{11}{part.2}
+\contentsline {chapter}{\chapternumberline {2}Working With BMI}{13}{chapter.2}
+\contentsline {section}{\numberline {2.1}Core Commands in BMI}{13}{section.2.1}
+\contentsline {section}{\numberline {2.2}Creating a Mock HIL and BMI Ecosystem}{13}{section.2.2}
+\contentsline {subsection}{\numberline {2.2.1}Installing Ceph, HIL and BMI}{15}{subsection.2.2.1}
+\contentsline {subsection}{\numberline {2.2.2}The HIL Configuration}{18}{subsection.2.2.2}
+\contentsline {section}{\numberline {2.3}Using BMI}{18}{section.2.3}
+\contentsline {subsection}{\numberline {2.3.1}Creating a new image}{18}{subsection.2.3.1}
+\contentsline {subsection}{\numberline {2.3.2}Import the new image into BMI}{19}{subsection.2.3.2}
+\contentsline {subsection}{\numberline {2.3.3}Provisioning a Node Using BMI}{20}{subsection.2.3.3}
+\contentsline {subsection}{\numberline {2.3.4}Creating a Snapshot Using BMI}{20}{subsection.2.3.4}
+\contentsline {subsection}{\numberline {2.3.5}Deprovisioning a Node Using BMI}{21}{subsection.2.3.5}
+\contentsline {subsection}{\numberline {2.3.6}Removing a Snapshot Using BMI}{22}{subsection.2.3.6}
+\contentsline {subsection}{\numberline {2.3.7}Removing an Image Using BMI}{22}{subsection.2.3.7}
+\contentsline {section}{\numberline {2.4}Existing the Virtual Environment}{24}{section.2.4}
+\contentsline {chapter}{\chapternumberline {3}BMI Internals}{25}{chapter.3}
+\contentsline {section}{\numberline {3.1}The Clone-Snapshot Workflow}{25}{section.3.1}
+\contentsline {section}{\numberline {3.2}Importing an Image}{26}{section.3.2}
+\contentsline {subsection}{\numberline {3.2.1}Ceph Image Name Format In The BMI Database}{27}{subsection.3.2.1}
+\contentsline {part}{\partnumberline {III}Appendices}{29}{part.3}
+\contentsline {appendix}{\chapternumberline {A}Appendix}{31}{appendix.A}
+\contentsline {section}{\numberline {A.1}User Acceptance Testing}{31}{section.A.1}
+\contentsline {subsection}{\numberline {A.1.1}Behavior-Driven Development (BDD)}{31}{subsection.A.1.1}
+\contentsline {subsection}{\numberline {A.1.2}Configuring the Acceptance Tests \\ }{33}{subsection.A.1.2}
+\contentsline {subsection}{\numberline {A.1.3}Performing the Acceptance Tests \\}{34}{subsection.A.1.3}
+\contentsline {chapter}{Index}{37}{section*.5}
