@@ -1,0 +1,11 @@
+ bmi pro bmi_infra cisco-05 bmi-test-image bmi-provision-dev enp130s0f0
+ 192.168.122.218 - - [13/Jul/2017 23:45:37] "PUT /provision/ HTTP/1.1" 500 -
+ Got status code 409 from HaaS with message : The network is already attached
+ to the nic.
+
+
+haas node_detach_network cisco-05 enp130s0f0 bmi-provision-dev
+
+haas show_node cisco-05
+
+

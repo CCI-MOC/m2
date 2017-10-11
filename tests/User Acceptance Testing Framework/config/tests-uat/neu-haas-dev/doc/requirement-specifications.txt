@@ -1,0 +1,16 @@
+
+  Specification Requirements List for MOC 0.5 User Acceptance Testing
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+  [DONE] snapshot
+
+  [DONE] provision/deprovision
+
+  [DONE] import/remove
+
+  [DONE] log file changes
+
+  [DONE] check for typos via random testing (will part of unit/sanity-check)
+
+
+

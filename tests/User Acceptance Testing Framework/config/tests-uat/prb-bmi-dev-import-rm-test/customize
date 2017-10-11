@@ -1,0 +1,9 @@
+
+cat ${BDD_FEATURES_DIR}/end-to-end-acceptance-test.template | \
+  sed -e "s/bmi_infra/${BMI_PROJECT}/g" | \
+  sed -e "s/bmi-test-image-snapshot/${BMI_SNAPSHOT_NAME}/g" | \
+  sed -e "s/bmi-test-image/${BMI_IMAGE_NAME}/g" | \
+  sed -e "s/cisco-05/${HIL_NODE}/g" | \
+  sed -e "s/enp130s0f0/${HIL_NIC}/g" | \
+  sed -e "s/bmi-provision-dev/${HIL_NETWORK}/g" > ${BDD_FEATURES_DIR}/end-to-end-acceptance-test.feature
+

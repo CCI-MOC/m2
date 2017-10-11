@@ -1,0 +1,6 @@
+
+mv ims/common/constants.py ims/common/constants-orig.py
+
+cat ims/common/constants-orig.py | \
+  sed -e "s/bmi_infra/${BMI_PROJECT}/g" > ims/common/constants.py
+

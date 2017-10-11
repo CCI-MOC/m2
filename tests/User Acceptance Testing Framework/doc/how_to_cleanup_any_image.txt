@@ -1,0 +1,6 @@
+
+rbd ls | grep 5img
+
+./scripts/cleanup-first-pass.sh bmi_infra 5img1 5img1
+
+
