@@ -1,2 +1,33 @@
 ---
+#This role performs the steps to install BMI
 
+- name: get the username running the deploy
+  local_action: command whoami
+  register: user
+  become: false
+
+- name: Create necessary files
+  file:
+    state: directory
+    path: "{{ item }}"
+    mode: 0775
+    group: "{{ lookup('env', 'USER') }} "
+    owner: "{{ lookup('env', 'USER') }} "
+  with_items:
+    - "/var/log/bmi/logs"
+    - "/etc/bmi"
+    - "/opt/bmi"
+
+- name: Install setup.py
+  command: "python setup.py install"
+  args:
+    chdir: "{{playbook_dir}}/../../.."
+
+- name: Install cephlibs
+  pip:
+    name: python-cephlibs
+
+- name: Bootstrap the database
+  command: "{{ item }}"
+  with_items:
+    - sqlite3 /opt/bmi/bmi.db "insert into project values (0, 'bmi_infra', 'bmi_network')" 

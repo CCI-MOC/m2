@@ -3,6 +3,8 @@
 - name: Install dnsmasq
   package:
     name: dnsmasq
+  become: true
+
 - name: Comment/uncomment options in dnsmasq.conf
   lineinfile:
     path: /etc/dnsmasq.conf
@@ -12,6 +14,7 @@
   with_items:
     - { regexp: '#log-dhcp', line: 'log-dhcp' }
     - { regexp: 'conf-dir=/etc/dnsmasq.d', line: '#conf-dir=/etc/dnsmasq.d' }
+
 - name: Add DHCP configuration to dnsmasq.conf
   lineinfile:
     path: /etc/dnsmasq.conf
@@ -29,3 +32,4 @@
     daemon-reload: yes
     state: started
     enabled: yes
+  become: true

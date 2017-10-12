@@ -4,12 +4,16 @@
   yum:
     name: tftp-server
     state: present
+  become: true
   when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
 - name: Install tftpboot for Ubuntu
   apt:
     name: tftpd-hpa
     state: present
+  become: true
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
 - name: Create pxelinux directory
   file:
     path: /var/lib/tftpboot/pxelinux.cfg
