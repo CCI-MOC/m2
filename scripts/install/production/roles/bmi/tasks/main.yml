@@ -1,7 +1,7 @@
 ---
 #This role performs the steps to install BMI
 
-- name: Create necessary files
+- name: Create necessary directories
   file:
     state: directory
     group: "{{ lookup('env', 'USER') }}"
@@ -38,6 +38,26 @@
     name: python-cephlibs
   become: true
 
+- name: Install sqlite3
+  apt:
+    name: sqlite3
+  become: true
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Create database file
+  copy:
+    content: ""
+    dest: "/opt/bmi/bmi.db"
+    force: no
+    group: "{{ lookup('env', 'USER') }}"
+    owner: "{{ lookup('env', 'USER') }}"
+    mode: 0775
+  become: true
+
+- stat:
+    path: "/opt/bmi/bmi.db"
+  register: db
+
 - name: Bootstrap the database
   command: "{{ item }}"
   environment:
@@ -45,4 +65,5 @@
     HIL_PASSWORD: secret
   with_items:
     - bmi db ls
-    - sqlite3 /opt/bmi/bmi.db "insert into project values (0, 'bmi_infra', 'bmi_network')" 
+    - sqlite3 /opt/bmi/bmi.db "insert into project values (0, 'bmi_infra', 'bmi_network')"
+  when: db.stat.size == 0
