@@ -11,6 +11,7 @@
     backrefs: yes
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
+  become: true
   with_items:
     - { regexp: '#log-dhcp', line: 'log-dhcp' }
     - { regexp: 'conf-dir=/etc/dnsmasq.d', line: '#conf-dir=/etc/dnsmasq.d' }
@@ -19,6 +20,7 @@
   lineinfile:
     path: /etc/dnsmasq.conf
     line: "{{ item }}"
+  become: true
   with_items:
       - 'interface=eth3'
       - 'dhcp-range=172.16.10.51,172.16.10.70,7d'
@@ -26,6 +28,7 @@
       - 'tftp-root=/var/lib/tftpboot'
       - 'dhcp-userclass=set:ENH,iPXE'
       - 'dhcp-boot=tag:!ENH,pxelinux.0,servername,172.16.10.1'
+
 - name: Systemctl commands for dnsmasq
   systemd:
     name: dnsmasq

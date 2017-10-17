@@ -1,0 +1,102 @@
+---
+- name: Install Packages for Playbook
+  package: name={{ item }} state=latest
+  with_items:
+   - gcc
+   - cpan
+   - make
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Change SELinux to permissive
+  selinux:
+    policy: targeted
+    state: permissive
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Install EPEL repo
+  yum:
+    name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    state: present
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Install git
+  package:
+    name: git 
+    state: present
+  become: true
+
+- name: Install pip
+  package:
+    name: python-pip
+    state: present
+  become: true
+
+- name: Install TGT for Debian/Ubuntu
+  apt: name={{ item }} state=latest
+  with_items:
+   - tgt
+   - tgt-rbd
+  become: true
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Install Perl General config
+  yum: 
+    name: perl-Config-General.noarch
+    state: present
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Install Headers for tgt source compilation
+  yum: name={{ item }} state=latest
+  with_items:
+   - librbd1-devel
+   - librados2-devel
+   - libvirt
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Install tgt from source
+  git: 
+    repo: https://github.com/fujita/tgt
+    dest: "{{playbook_dir}}/tgt"
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Make tgt
+  command: "{{ item }}"
+  args:
+    chdir: "{{ playbook_dir }}/tgt"
+  with_items:
+    - "/usr/bin/make CEPH_RBD=1 clean"
+    - "/usr/bin/make CEPH_RBD=1"
+    - "/usr/bin/make CEPH_RBD=1 install"
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Copy tgtd.service to system folder
+  copy:
+    src: "{{playbook_dir}}/tgt/scripts/tgtd.service"
+    dest: /usr/lib/systemd/system/
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Allow tcp via iptables
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    match: tcp
+    destination_port: 3260
+    jump: ACCEPT
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Systemctl commands for tgtd
+  systemd:
+    name: tgtd.service
+    daemon-reload: yes
+    state: started
+    enabled: yes
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'

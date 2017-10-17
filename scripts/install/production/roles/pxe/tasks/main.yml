@@ -18,3 +18,6 @@
   file:
     path: /var/lib/tftpboot/pxelinux.cfg
     state: directory
+    group: "{{ lookup('env', 'USER') }}"
+    owner: "{{ lookup('env', 'USER') }}"
+  become: true

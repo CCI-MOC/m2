@@ -1,33 +1,48 @@
 ---
 #This role performs the steps to install BMI
 
-- name: get the username running the deploy
-  local_action: command whoami
-  register: user
-  become: false
-
 - name: Create necessary files
   file:
     state: directory
+    group: "{{ lookup('env', 'USER') }}"
+    owner: "{{ lookup('env', 'USER') }}"
     path: "{{ item }}"
     mode: 0775
-    group: "{{ lookup('env', 'USER') }} "
-    owner: "{{ lookup('env', 'USER') }} "
+  become: true
   with_items:
     - "/var/log/bmi/logs"
     - "/etc/bmi"
     - "/opt/bmi"
 
+- name: Copy necessary files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ lookup('env', 'USER') }}" 
+    group: "{{ lookup('env', 'USER') }}" 
+    mode: 0775
+  become: true
+  with_items:
+    - { src: '../../../bmi_config.cfg.test', dest: '/etc/bmi/bmiconfig.cfg' }
+    - { src: '../../../ims/ipxe.temp', dest: '/etc/bmi/ipxe.config' }
+    - { src: '../../../ims/mac.temp', dest: '/etc/bmi/pxelinux.cfg' }
+
 - name: Install setup.py
   command: "python setup.py install"
   args:
     chdir: "{{playbook_dir}}/../../.."
+  become: true
 
 - name: Install cephlibs
   pip:
     name: python-cephlibs
+  become: true
 
 - name: Bootstrap the database
   command: "{{ item }}"
+  environment:
+    HIL_USERNAME: hil
+    HIL_PASSWORD: secret
   with_items:
+    - bmi db ls
     - sqlite3 /opt/bmi/bmi.db "insert into project values (0, 'bmi_infra', 'bmi_network')" 
