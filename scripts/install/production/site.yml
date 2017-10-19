@@ -5,6 +5,5 @@
 
   roles:
     - tgt
-    - pxe
     - dhcp
     - bmi

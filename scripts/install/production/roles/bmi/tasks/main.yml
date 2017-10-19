@@ -11,8 +11,7 @@
   become: true
   with_items:
     - "/var/log/bmi/logs"
-    - "/etc/bmi"
-    - "/opt/bmi"
+    - "/etc/bmi/pxelinux.cfg"
 
 - name: Copy necessary files
   copy:
@@ -23,9 +22,9 @@
     mode: 0775
   become: true
   with_items:
-    - { src: '../../../bmi_config.cfg.test', dest: '/etc/bmi/bmiconfig.cfg' }
-    - { src: '../../../ims/ipxe.temp', dest: '/etc/bmi/ipxe.config' }
-    - { src: '../../../ims/mac.temp', dest: '/etc/bmi/pxelinux.cfg' }
+    - { src: '../../../bmi_config.cfg', dest: '/etc/bmi/bmi_config.cfg' }
+    - { src: '../../../ims/ipxe.temp', dest: '/etc/bmi/ipxe_example.temp' }
+    - { src: '../../../ims/mac.temp', dest: '/etc/bmi/pxelinux.cfg/mac_example.temp' }
 
 - name: Install setup.py
   command: "python setup.py install"
@@ -47,7 +46,7 @@
 - name: Create database file
   copy:
     content: ""
-    dest: "/opt/bmi/bmi.db"
+    dest: "/etc/bmi/bmi.db"
     force: no
     group: "{{ lookup('env', 'USER') }}"
     owner: "{{ lookup('env', 'USER') }}"
@@ -55,7 +54,7 @@
   become: true
 
 - stat:
-    path: "/opt/bmi/bmi.db"
+    path: "/etc/bmi/bmi.db"
   register: db
 
 - name: Bootstrap the database
@@ -65,5 +64,5 @@
     HIL_PASSWORD: secret
   with_items:
     - bmi db ls
-    - sqlite3 /opt/bmi/bmi.db "insert into project values (0, 'bmi_infra', 'bmi_network')"
+    - sqlite3 /etc/bmi/bmi.db "insert into project values (0, 'bmi_infra', 'bmi_network')"
   when: db.stat.size == 0

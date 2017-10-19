@@ -1,5 +1,14 @@
 ---
 #This role instals and configures the DHCP server
+
+- name: Create pxelinux directory
+  file:
+    path: /var/lib/tftpboot/pxelinux.cfg
+    state: directory
+    group: "{{ lookup('env', 'USER') }}"
+    owner: "{{ lookup('env', 'USER') }}"
+  become: true 
+
 - name: Install dnsmasq
   package:
     name: dnsmasq
