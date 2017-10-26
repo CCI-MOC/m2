@@ -7,13 +7,12 @@
     group: "{{ lookup('env', 'USER') }}"
     owner: "{{ lookup('env', 'USER') }}"
     path: "{{ item }}"
-    mode: 0664
   become: true
   with_items:
     - "/var/log/bmi/logs"
     - "/etc/bmi/pxelinux.cfg"
 
-- name: Copy config, ipxe and max templates to the correct directories
+- name: Copy config, ipxe and mac templates to the correct directories
   copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
