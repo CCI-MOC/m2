@@ -1,5 +1,5 @@
 ---
-# This playbook deploys bmi, including the iscsi server and dhcp server.
+# This playbook installs bmi and all of its necessary dependencies.
 
 - hosts:  all
 

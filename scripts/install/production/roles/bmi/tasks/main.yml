@@ -1,28 +1,28 @@
 ---
 #This role performs the steps to install BMI
 
-- name: Create necessary directories
+- name: Create log and pxelinux directories
   file:
     state: directory
     group: "{{ lookup('env', 'USER') }}"
     owner: "{{ lookup('env', 'USER') }}"
     path: "{{ item }}"
-    mode: 0775
+    mode: 0664
   become: true
   with_items:
     - "/var/log/bmi/logs"
     - "/etc/bmi/pxelinux.cfg"
 
-- name: Copy necessary files
+- name: Copy config, ipxe and max templates to the correct directories
   copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: "{{ lookup('env', 'USER') }}" 
     group: "{{ lookup('env', 'USER') }}" 
-    mode: 0775
+    mode: 0664
   become: true
   with_items:
-    - { src: '../../../bmi_config.cfg', dest: '/etc/bmi/bmi_config.cfg' }
+    - { src: '../../../bmi_config.cfg', dest: '/etc/bmi/bmiconfig.cfg' }
     - { src: '../../../ims/ipxe.temp', dest: '/etc/bmi/ipxe_example.temp' }
     - { src: '../../../ims/mac.temp', dest: '/etc/bmi/pxelinux.cfg/mac_example.temp' }
 
@@ -50,8 +50,10 @@
     force: no
     group: "{{ lookup('env', 'USER') }}"
     owner: "{{ lookup('env', 'USER') }}"
-    mode: 0775
+    mode: 0664
   become: true
+
+#register the db to use as a check later to make sure the database is only bootstrapped if empty
 
 - stat:
     path: "/etc/bmi/bmi.db"
@@ -64,5 +66,5 @@
     HIL_PASSWORD: secret
   with_items:
     - bmi db ls
-    - sqlite3 /etc/bmi/bmi.db "insert into project values (0, 'bmi_infra', 'bmi_network')"
+    - sqlite3 /etc/bmi/bmi.db "insert into project values (1, 'bmi_infra', 'bmi_network')"
   when: db.stat.size == 0
