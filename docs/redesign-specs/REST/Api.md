@@ -344,11 +344,16 @@ Create deep copy from tag.
 
 `POST /nodes/<nodeId>/tags/<tagId>/flatten`
 
-**Request Body**: No Body
+**Request Body Example**:
+
+    {
+	  "name": "flattened-tag-01"
+    }
 
 **Parameters**:
 * `nodeId`: Id of the node
 * `tagId`: Id of the tag
+* `name`: name of the flattened image 
 
 **Authorization**: User/Admin
 
