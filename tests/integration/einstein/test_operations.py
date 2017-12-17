@@ -23,7 +23,9 @@ NODE_NAME = _cfg.tests.node_name
 NIC = _cfg.tests.nic
 
 PROJECT = _cfg.tests.project
+DEST_PROJECT = _cfg.tests.dest_project
 NETWORK = _cfg.tests.network
+
 
 EXIST_IMG_NAME = _cfg.tests.exist_img_name
 NEW_SNAP_NAME = _cfg.tests.new_snap_name
@@ -222,3 +224,39 @@ class TestRemoveImage(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
+
+
+class TestCopyImage(TestCase):
+    """
+    Image copy between two projects
+    """
+    @trace
+    def setUp(self):
+        self.db = Database()
+        self.db.project.insert(PROJECT, NETWORK)
+
+        self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
+                            PROJECT)
+        self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
+
+    def runTest(self):
+        response = self.good_bmi.copy_image(EXIST_IMG_NAME, DEST_PROJECT, NOT_EXIST_IMG_NAME)
+        self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
+
+        images = self.db.image.fetch_images_from_project(DEST_PROJECT)
+
+        self.assertTrue(NOT_EXIST_IMG_NAME in images)
+
+        with ceph.RBD(_cfg.fs,
+                      _cfg.iscsi.password) as fs:
+            img_id = self.good_bmi.get_ceph_image_name_from_project(
+                NOT_EXIST_IMG_NAME, PROJECT)
+            fs.get_image(img_id)
+
+    def tearDown(self):
+        self.good_bmi.remove_image(NOT_EXIST_IMG_NAME)
+        self.good_bmi.remove_image(EXIST_IMG_NAME)
+        self.db.project.delete_with_name(PROJECT)
+        self.db.close()
+        self.good_bmi.shutdown()
+        time.sleep(constants.HIL_CALL_TIMEOUT)
