@@ -86,9 +86,11 @@ class BMI:
         return True
 
     @trace
-    def __get_ceph_image_name(self, name):
-        img_id = self.db.image.fetch_id_with_name_from_project(name,
-                                                               self.proj)
+    def __get_ceph_image_name(self, name, proj=None):
+        if proj == None:
+          proj=self.proj
+
+        img_id = self.db.image.fetch_id_with_name_from_project(name, proj)
         if img_id is None:
             logger.info("Raising Image Not Found Exception for %s", name)
             raise db_exceptions.ImageNotFoundException(name)
