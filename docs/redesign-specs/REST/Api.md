@@ -1,17 +1,25 @@
 # Overview
 
-This file describes an initial proposal for the BMI REST API.
+This file describes the simplified proposal (after the discussion with the larger MOC group) for the BMI REST API.
 
-# Resources in BMI
+# BMI Core Resources
 
-* Node - Bare metal server (physical server).
-* User - An entity using BMI.
-* Access Control List (ACL) - List of users who may access an image.
+* ProvisionedInstance - Bare metal server (physical server) attached with a boot image.
 * Image/Snapshot - A virtual disk (a.k.a. golden image) whose clone (linked clone) is used to provision a node. Snapshot is created from an existing provisioned image by the user, while an image is uploaded by the user.
-* Data Store - A filesystem/service where images are stored.
-* Authentication - A service used to authenticate the legitimacy of a user request.
-* Provisioning Engine - A service used to (de)-provision a node.
-* VLAN - Provisioning network.
+* Tag - A lighweight checkpoint of the exsiting disk image state.
+
+# BACKGROUND
+
+* The re-designed version of BMI can provision either Bare-Metal machines (physical servers) or Virtual machines.
+* BMI now follows a driver based model.
+* Below is the list of driver interfaces:
+  * Diskless Provisioning: This interfaces exposes function signatures pertaining to provisioning related operations (e.g. (De)-Provisioning, Migration, etc.).
+  * Storage: This interfaces exposes function signatures pertaining to image management operations (e.g. Cloning,  Snapshotting, Tagging, etc.)
+  * Authentication (Optional): This interfaces exposes function signatures pertaining to legitimacy verification of the `entity` requesting a BMI operation.
+  * Authorization (Optional): This interfaces exposes function signatures pertaining to `entity-resource` ownership verification.  
+  * Multi-Tenancy (Optional): This interfaces exposes function signatures pertaining to maintaining isolation between different entities using the same BMI service.
+* Entity: Project's/User's accessing BMI service are registered with an authentication service. BMI will talk to the authentication service to verify whoever calls the BMI API. 
+* Quota: Each `entity` will have a default allocated storage quota (as specified by the BMI admin in the configuration file). An admin may choose to update the default quota of any Project/User.
 
 # REST API call semantics
 
