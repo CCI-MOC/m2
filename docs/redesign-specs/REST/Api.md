@@ -443,72 +443,22 @@ Show the details of user's provisioned instance.
 * `nic`: The NIC that is used to provision
 * `provisionEngineId`: The provision engine that is used to provision the instance
 
-## User
-### add
-
-Register a new user.
-
-`POST  /users`
-
-**Request Body Example**:
-
-    {
-                "name": "user01",
-                "authenticationId": 123
-    }
-
-**Parameters**:
-* `name`: Name of the new user to be created
-* `authenticationId`: Id of the authentication server to be used for this user
-
-**Authorization**: Admin
-
-**Response (on success)**:
-
-    {
-                "userId": 1
-    }
-
-**Response Parameters**:
-* `userId`: Unique Id of the user
-
-***
+## Quota
 ### update
 
-Update attributes of a user.
+Update allocated disk of an entity. If node request body is provided, the quota is set to default.
 
-**Supported attributes**
-* status
-* quota
+`PATCH /quota/<entityId>`
 
-`PATCH /users/<userId>`
-
-**Request Body Example**:
+**Request Body Example (Optional)**:
 
     {
-        "status": "disabled",
         "quota": 10.0
     }
 
 **Parameters**:
-* `status`: The new status of the user
+* `entityId`: Id of the entity whoes quota needs to be updated
 * `quota`: The new quota of the user (In GBs)
-
-**Authorization**: Admin
-
-**Response (on success)**: No Body
-
-***
-### delete
-
-Remove an existing user.
-
-`DELETE  /users/<userId>`
-
-**Request Body**: No Body
-
-**Parameters**:
-* `userId`: Id of the user to be removed from the system
 
 **Authorization**: Admin
 
@@ -517,9 +467,9 @@ Remove an existing user.
 ***
 ### list  
 
-List all users.
+List entities whoes quota was updated.
 
-`GET /users`
+`GET /quota`
 
 **Request Body**: No Body
 
@@ -528,45 +478,36 @@ List all users.
 **Response (on success)**:
 
     {
-                "users": [
-                    { "id":1, "name":"user01"},
-                    ...
-                ]
+                "entities": ["entity01", "entity04", ...]
     }
 
 **Response Parameters**:
-* `users`: List of all  registered users
+* `entities`: List of all entities whose quota was update. 
 
 ***
 ### show
 
 Show details of a user.
 
-`GET /users/<userId>`
+`GET /quota/<entityId>`
 
 **Request Body**: No Body
 
 **Parameters**:
-* `userId`: Id of the user
+* `entityId`: Id of the entity
 
 **Authorization**: Admin
 
 **Response (on success)**:
 
     {
-                "name": "user01",
-                "type": "user",
-                "quota": 10.0,
-                "status": "active",
-                "authenticationId": 1
+                "entityId": 2112,
+                "quota": 10.0
     }
 
 **Response Parameters**:
-* `name`: Name of the user
-* `type`: Type of user
-* `quota`: Datastore quota allocated to user in GBs
-* `status`: Current status of the user
-* `authenticationId`: Id of the Authentication Server
+* `entityId`: Id of the entity
+* `quota`: Datastore quota allocated to entity in GBs
 
 ## Image/Snapshot
 ### upload
