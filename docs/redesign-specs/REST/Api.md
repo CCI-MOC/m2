@@ -4,8 +4,8 @@ This file describes the simplified proposal (after the discussion with the large
 
 # BMI Core Resources
 
-* ProvisionedInstance - Bare metal server (physical server) attached with a boot image.
-* Image/Snapshot - A virtual disk (a.k.a. golden image) whose clone (linked clone) is used to provision a node. Snapshot is created from an existing provisioned image by the user, while an image is uploaded by the user.
+* Provisioned Instance - Bare-Metal/Virtual machine instance attached with a boot image.
+* Image/Snapshot - A virtual disk (a.k.a. golden image) whose clone (linked clone) is used to provision an instance. Snapshot is created from an existing provisioned image by the user, while an image is uploaded by the user.
 * Tag - A lighweight checkpoint of the exsiting disk image state.
 
 # BACKGROUND
@@ -18,13 +18,16 @@ This file describes the simplified proposal (after the discussion with the large
   * Authentication (Optional): This interfaces exposes function signatures pertaining to legitimacy verification of the `entity` requesting a BMI operation.
   * Authorization (Optional): This interfaces exposes function signatures pertaining to `entity-resource` ownership verification.  
   * Multi-Tenancy (Optional): This interfaces exposes function signatures pertaining to maintaining isolation between different entities using the same BMI service.
+* Each driver may choose to maintain table(s) in the BMI database that are visible to BMI Core and the driver itself. These table(s) are not visible between drivers.
 * Entity: Project's/User's accessing BMI service are registered with an authentication service. BMI will talk to the authentication service to verify whoever calls the BMI API. 
 * Quota: Each `entity` will have a default allocated storage quota (as specified by the BMI admin in the configuration file). An admin may choose to update the default quota of any Project/User.
+* A BMI generated UUID is associated to each resource that helps identifying the resource. 
+* A resource name has to be unique for an entity but different entities may have same resource name.
+* BMI expects that the authentication service provides a unique identifier (associated with an entity) with the response - upon successful authentication.
 
 # REST API call semantics
 
-* An HTTP method and URL path, including possible `<parameters>` in the
-  path to be treated as arguments.
+* An HTTP method and URL path, including possible `<parameters>` in the path to be treated as arguments.
 * A summary of the request body (which will always be a JSON
   object).
 * A human readable description of the semantics of the call.
@@ -119,20 +122,22 @@ The response header will contain the HTTP status code:
 
 REST API calls exposed to the external world by the BMI-core.
 
-## Node
+## Provisioned Instance
 ### provision
 
 Provision a `node` using an`image`.
 
-`POST /nodes`
+`POST /provisionedInstance`
 
 **Request Body Example**:
 
     {
+                "instanceName": "instance01",
                 "parentImageId": 1231456789 ,  
                 "macAddr: "00:00:00:00:00:00",
                 "nic": "net01",
-                "provisionEngineId": 5,  
+                "provisionEngineId": 5,
+		"type": "PHYSICAL"
                 "vlan": 1000,
                 "extraParamDict": {
                         "param1": "value1",
@@ -141,10 +146,12 @@ Provision a `node` using an`image`.
     }
 
 **Parameters**:
-* `parentImageId`: Id of the golden image to be used for provisioning the node  
-* `macAddr`: MAC address of the node to be provisioned
-* `nic`: Network interface of the node to be used for provisioning
+* `instanceName`: Name of the provioned instance.
+* `parentImageId`: Id of the golden image to be used for provisioning the instace  
+* `macAddr`: MAC address of the instance to be provisioned
+* `nic`: Network interface of the instance to be used for provisioning (as registered in BIOS)
 * `provisionEngineId`: Id of the provisioning engine to be used for provisioning
+* `type`: Type of the instance to be provisioned (`PHYSICAL` or `VIRTUAL`)
 * `vlan` (Optional): VLAN Number. Only required in the `Multi-tenant` mode.
 * `extraParamDict` (Optional): Extra Parameters that can be passed to provide additional information required by a driver
 
@@ -153,18 +160,18 @@ Provision a `node` using an`image`.
 **Response body Example (on success)**:
 
     {
-                "nodeId": 1
+                "provisionedInstanceId": 1
     }
 
 **Response Parameters**:
-* `nodeId`: Unique provisioning Id of the node
+* `provisionedInstanceId`: Unique provisioning Id of the instace
 
 ***
 ### migrate
 
-Detach the image from a provisioned node and attach it to a new node.
+Detach the image from a provisioned instance and attach it to a new node.
 
-`PATCH /nodes/<nodeId>`
+`PATCH /provisionedInstance/<provisionedInstanceId>`
 
 **Request Body Example**:
 
@@ -174,7 +181,7 @@ Detach the image from a provisioned node and attach it to a new node.
     }
 
 **Parameters**:
-* `nodeId`: Id of the Node that is to be migrated.
+* `provisionedInstanceId`: Id of the Node that is to be migrated.
 * `macAddr`: MAC address of the destination node.
 * `nic`: Network interface of the destination node.
 
@@ -185,14 +192,14 @@ Detach the image from a provisioned node and attach it to a new node.
 ***
 ### deprovision
 
-Free a provisioned node.
+Free a provisioned instance.
 
-`DELETE  /nodes/<nodeId>`
+`DELETE  /provisionedInstance/<provisionedInstanceId>`
 
 **Request Body**: No Body
 
 **Parameters**:
-* `nodeId`: Id of the node to be de-provisioned.
+* `provisionedInstanceId`: Id of the instance to be de-provisioned.
 
 **Authorization**: User/Admin
 
@@ -201,11 +208,11 @@ Free a provisioned node.
 ***
 ### snapshot   
 
-A deep copy of the current state of the node is created.
+A deep copy of the current disk state of the instance is created.
 
-**NOTE**: Snapshot is eventually an image, but its `isSnapshot` is set.
+**NOTE**: Snapshot is eventually an image, but its `isSnapshot` field in the image table is set.
 
-`POST /nodes/<nodeId>/snapshot`
+`POST /provisionedInstance/<provisionedInstanceId>/snapshot`
 
 **Request Body Example**:
 
@@ -214,6 +221,7 @@ A deep copy of the current state of the node is created.
     }
 
 **Parameters**:
+* `provisionedInstanceId`: Id of the instance
 * `name`: Name of the snap which will be created
 
 **Authorization**: User/Admin
@@ -230,9 +238,9 @@ A deep copy of the current state of the node is created.
 ***
 ### tag        
 
-A shallow copy of the current state of the node is created.
+A shallow copy of the current disk state of the instance is created.
 
-`POST /nodes/<nodeId>/tags`
+`POST /provisionedInstance/<provisionedInstanceId>/tag`
 
 **Request Body Example**:
 
@@ -241,7 +249,7 @@ A shallow copy of the current state of the node is created.
     }
 
 **Parameters**:
-* `nodeId`: Id of the node
+* `provisionedInstanceId`: Id of the instance
 * `name`: Name of the tag
 
 **Authorization**: User/Admin
@@ -263,7 +271,7 @@ Update attributes of a tag.
 **Supported attributes**
 * name
 
-`PATCH /nodes/<nodeId>/tags/<tagId>`
+`PATCH /provisionedInstance/<provisionedInstanceId>/tag/<tagId>`
 
 **Request Body Example**:
 
@@ -272,6 +280,7 @@ Update attributes of a tag.
     }
 
 **Parameters**:
+* `provisionedInstanceId`: Id of the instance
 * `name`: The new name of the tag
 
 **Authorization**: User / Admin
@@ -283,12 +292,12 @@ Update attributes of a tag.
 
 Delete an existing tag.
 
-`DELETE  /nodes/<nodeId>/tags/<tagId>`
+`DELETE  /provisionedInstance/<provisionedInstanceId>/tag/<tagId>`
 
 **Request Body**: No Body
 
 #### Parameters:
-* `nodeId`: Id of the node
+* `provisionedInstanceId`: Id of the instance
 * `tagId`: Id of the tag
 
 **Authorization**: User/Admin
@@ -298,14 +307,14 @@ Delete an existing tag.
 ***
 ### list-tags
 
-List all tags for a node.
+List all tags for a instance.
 
-`GET /nodes/<nodeId>/tags`
+`GET /provisionedInstance/<provisionedInstanceId>/tag`
 
 **Request Body**: No Body
 
 **Parameters**:
-* `nodeId`: Id of the node
+* `provisionedInstanceId`: Id of the instance
 
 **Authorization**: User/Admin
 
@@ -326,12 +335,12 @@ List all tags for a node.
 
 Show details of a tag.
 
-`GET /nodes/<nodeId>/tags/<tagId>`
+`GET /provisionedInstance/<provisionedInstanceId>/tag/<tagId>`
 
 **Request Body**: No Body
 
 **Parameters**:
-* `nodeId`: Id of the node
+* `provisionedInstanceId`: Id of the instance
 * `tagId`: Id of the tag
 
 **Authorization**: User/Admin
@@ -350,7 +359,7 @@ Show details of a tag.
 
 Create deep copy from tag.
 
-`POST /nodes/<nodeId>/tags/<tagId>/flatten`
+`POST /provisionedInstance/<provisionedInstanceId>/tag/<tagId>/flatten`
 
 **Request Body Example**:
 
@@ -359,7 +368,7 @@ Create deep copy from tag.
     }
 
 **Parameters**:
-* `nodeId`: Id of the node
+* `provisionedInstanceId`: Id of the instance
 * `tagId`: Id of the tag
 * `name`: name of the flattened image 
 
@@ -377,9 +386,9 @@ Create deep copy from tag.
 ***
 ### list
 
-List user's provisioned nodes.
+List user's provisioned instance(s).
 
-`GET  /nodes`
+`GET  /provisionedInstance`
 
 **Request Body**: No Body
 
@@ -391,8 +400,8 @@ List user's provisioned nodes.
 **Response (on success)**:
 
     {
-                "nodes": [
-                    { "id": 123456789, "name": "node01"},
+                "instances": [
+                    { "id": 123456789, "name": "instance01"},
                     ...
                 ]
 
@@ -404,20 +413,21 @@ List user's provisioned nodes.
 ***
 ### show
 
-Show the details of user's provisioned node.
+Show the details of user's provisioned instance.
 
-`GET  /nodes/<nodeId>`
+`GET  /provisionedInstance/<provisionedInstanceId>`
 
 **Request Body**: No Body
 
 **Parameters**:
-* `nodeId`: Id of the node whose details are requested
+* `provisionedInstanceId`: Id of the instance whose details are requested
 
 **Authorization**: User/Admin
 
 **Response (on success)**:
 
-    {                
+    {               
+            "instanceName": "instance01",
             "macAddr": "00:00:00:00:00:00",
             "imageId": 241,
             "vlan": 1000,
@@ -426,11 +436,12 @@ Show the details of user's provisioned node.
     }
 
 **Response Parameters**:
-* `macAddr`: Mac Address of the Node
+* `instanceName`: Name of the provisioned instance
+* `macAddr`: Mac Address of the instance
 * `imageId`: Image Id of golden image which is used to provision
-* `vlan`: The VLAN to which the node is connected
+* `vlan`: The VLAN to which the instance is connected
 * `nic`: The NIC that is used to provision
-* `provisionEngineId`: The provision engine that is used to provision the node
+* `provisionEngineId`: The provision engine that is used to provision the instance
 
 ## User
 ### add
