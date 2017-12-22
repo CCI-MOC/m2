@@ -514,29 +514,23 @@ Show details of a user.
 
 Upload an image (which could be local or in a given url) to a data store.
 
-`POST /images`
+`POST /image`
 
 **Request Body Example**:
 
     {
                 "name": "ubuntu-1404",
                 "type": "qcow",
-                "visibility": 0,
+                "isPublic": False,
                 "dataStoreId": 1,
-                 "acls": [
-                        1,
-                        2,
-                        ...
-                ]
                 "url": ""
     }
 
 **Parameters**:
 * `name`: Name of the image which is about to be uploaded
-* `type`: Type of image that could be crow, etc
-* `visibility`: Visibility of the image that could be public, semi-public (public to a group(s) of users), or private
+* `type`: Type of image that could be raw, qcow, etc.
+* `isPublic`: Is the image publically visible.
 * `dataStoreId`: Id of the storage in which the image will be stored
-* `acls`: List of access control list Ids with whom the image is shared
 * `url` (Optional): URL address of the image
 
 **Authorization**: User/Admin
@@ -555,7 +549,7 @@ Upload an image (which could be local or in a given url) to a data store.
 
 Fetch an image from data store to save on local disk.
 
-`GET /images/<imageId>`
+`GET /image/<imageId>`
 
 **Request Headers**:
 * `Accept`: Set this header to `application/octet-stream`
@@ -571,18 +565,20 @@ Fetch an image from data store to save on local disk.
 
 Make a golden copy of source image (its Id is part of url).
 
-`POST /images/<imageId>/copy`
+`POST /image/<imageId>/copy`
 
 **Request Body Example**:
 
     {
                 "name": "ubuntu-1404-cassandra_new",
-                "dataStoreId": 1
+                "dataStoreId": 1,
+		"entityId": 1232121
     }
 
 **Parameters**:
 * `name`: Name for the destination image
-* `dataStoreId`: Id of the storage in which the copy image will be stored
+* `dataStoreId`(Optional): Id of the storage in which the copy image will be stored. If no `dataStoreId` is provided, source and destination datastores will be the same.
+* `entityId`(Optional/Admin-only): An admin can copy images between different entities.
 
 **Authorization**: User/Admin
 
@@ -602,30 +598,20 @@ Update attributes of an image.
 
 **Supported Attributes**
 * name
-* ownerUserId
-* visibility
-* acls
+* isPublic
 
-`PATCH /images/<imageId>`
+`PATCH /image/<imageId>`
 
 **Request Body Example**:
 
     {
                 "name": "ubuntu-1404-cassandra",
-                "ownerUserId": 2,
-                "visibility": 1
-                "acls": [
-                      1,
-                      3,
-                      ...
-                ]
+                "isPublic": 1
     }
 
 **Parameters**:
 * `name`: New name for the image
-* `ownerUserId`: Id of the owner
-* `visibility`: New visibility level of the image
-* `acls`: New list of ACLs that will have access to the image
+* `isPublic`: New visibility level of the image
 
 **Response body (on success)**: No Body
 
@@ -634,7 +620,7 @@ Update attributes of an image.
 
 Delete an image.
 
-`DELETE /images/<imageId>`
+`DELETE /image/<imageId>`
 
 **Request Body**: No Body
 
@@ -646,45 +632,11 @@ Delete an image.
 **Response (on success)**: No Body
 
 ***
-### add-acl
-
-Share an image with an ACL.
-
-`PUT /images/<imageId>/acls/<aclId>`
-
-**Request Body**: No Body
-
-**Parameters**:
-* `imageId`: Id of the image
-* `aclId`: Id of the ACL that needs to be added to the image's ACLs
-
-**Authorization**: User/Admin
-
-**Response (on success)**: No Body
-
-***
-### remove-acl
-
-Un-share an image with an ACL.
-
-`DELETE /images/<imageId>/acls/<aclId>`
-
-**Request Body**: No Body
-
-**Parameters**:
-* `imageId`: Id of the image
-* `aclId`: Id of the ACL with whom the image won't be shared anymore
-
-**Authorization**: User/Admin
-
-**Response (on success)**: No Body
-
-***
 ### list
 
 List user's images (and snapshots). In case of admin, all images (and snapshots) will be listed.
 
-`GET /images`
+`GET /image`
 
 **Request Body**: No Body
 
@@ -707,7 +659,7 @@ List user's images (and snapshots). In case of admin, all images (and snapshots)
 
 Show details of an image.
 
-`GET  /images/<imageId>`
+`GET  /image/<imageId>`
 
 **Request Headers**:
 * `Accept`: Set this to `application/json`
@@ -721,23 +673,16 @@ Show details of an image.
     {
                 "imageName": "ubuntu-1404",
                 "ownerUserId": 123,
-                "type": "crow",
-                "visibility": 0,
+                "type": "raw",
+                "isPublic": 0,
                 "isSnapshot": 0,
-                "dataStoreId": 1,
-                 "acls": [
-                        1,
-                        2
-                        ...
-                ]
+                "dataStoreId": 1
     }
 
 **Response Parameters**:
 * `name`: Name of the image
 * `ownerUserId`: User Id of the image's owner
 * `type`: Type of image that could be crow, etc
-* `visibility`: Visibility of the image that could be public, semi-public (public to a group(s) of users), or private
+* `isPublic`: If the image is visible publicly
 * `isSnapshot`: Whether the image is snapshot or not
 * `dataStoreId`: Id of the storage in which the image will be stored
-* `acls`: List of ACLs with whom the image is shared
-
