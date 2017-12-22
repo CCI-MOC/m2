@@ -509,6 +509,8 @@ Show details of a user.
 * `entityId`: Id of the entity
 * `quota`: Datastore quota allocated to entity in GBs
 
+
+
 ## Image/Snapshot
 ### upload
 
@@ -655,6 +657,26 @@ List user's images (and snapshots). In case of admin, all images (and snapshots)
 * `images`: List of images for the user
 
 ***
+### supported image types
+
+List support image types
+
+`GET /image/type`
+
+**Request Body**: No Body
+
+**Authorization**: User/Admin
+
+**Response body Example (on success)**:
+
+    {
+              "supportedImageTypes": [ "raw", "qcow", ..]
+    }
+
+**Response Parameters**:
+* `supportedImageTypes`: List of supported image types
+
+***
 ### show
 
 Show details of an image.
@@ -686,3 +708,43 @@ Show details of an image.
 * `isPublic`: If the image is visible publicly
 * `isSnapshot`: Whether the image is snapshot or not
 * `dataStoreId`: Id of the storage in which the image will be stored
+
+## DataStore
+### list  
+
+List available datastores.
+
+`GET /datastore`
+
+**Request Body**: No Body
+
+**Authorization**: User/Admin
+
+**Response (on success)**:
+
+    {
+                "datastores": ["ceph", "lustre", ...]
+    }
+
+**Response Parameters**:
+* `datastores`: List of all available datastores
+
+## Provisioning Engine
+### list  
+
+List available datastores.
+
+`GET /provisionEngine`
+
+**Request Body**: No Body
+
+**Authorization**: User/Admin
+
+**Response (on success)**:
+
+    {
+                "provionEngine": ["tgt", "iet", ...]
+    }
+
+**Response Parameters**:
+* `datastores`: List of all available provisioning engines
