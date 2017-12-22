@@ -217,7 +217,7 @@ class BMI:
 
     # Provisions from HIL and Boots the given node with given image
     @log
-    def provision(self, node_name, img_name, network, nic, hil_flag):
+    def provision(self, node_name, img_name, network, nic, hil_flag="True"):
         try:
             hil_bool = bool(hil_flag == "True")
 
@@ -294,7 +294,7 @@ class BMI:
     # This is for detach a node and removing it from iscsi
     # and destroying its image
     @log
-    def deprovision(self, node_name, network, nic, hil_flag):
+    def deprovision(self, node_name, network, nic, hil_flag="True"):
         ceph_img_name = None
         try:
             hil_bool = bool(hil_flag == "True")
