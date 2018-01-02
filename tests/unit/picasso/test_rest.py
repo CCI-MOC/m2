@@ -99,7 +99,7 @@ class TestProvision(TestCase):
                 constants.NODE_NAME_PARAMETER: NODE_NAME,
                 constants.IMAGE_NAME_PARAMETER: EXIST_IMG_NAME,
                 constants.NETWORK_PARAMETER: NETWORK,
-                constants.NIC_PARAMETER: NIC
+                constants.NIC_PARAMETER: NIC,
 		constants.HIL_OPTION_PARAMETER: True}
         res = requests.put(PICASSO_URL + "provision/", data=data,
                            auth=(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD))
@@ -134,7 +134,7 @@ class TestDeprovision(TestCase):
         data = {constants.PROJECT_PARAMETER: PROJECT,
                 constants.NODE_NAME_PARAMETER: NODE_NAME,
                 constants.NETWORK_PARAMETER: NETWORK,
-                constants.NIC_PARAMETER: NIC
+                constants.NIC_PARAMETER: NIC,
 		constants.HIL_OPTION_PARAMETER: True}
         res = requests.delete(PICASSO_URL + "deprovision/", data=data,
                               auth=(
