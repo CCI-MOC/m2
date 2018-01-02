@@ -146,7 +146,7 @@ class TestDeprovision(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
-
+	time.sleep(constants.HIL_CALL_TIMEOUT)
 
 class TestCreateSnapshot(TestCase):
     """
