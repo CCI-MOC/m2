@@ -100,7 +100,7 @@ class TestProvision(TestCase):
                 constants.IMAGE_NAME_PARAMETER: EXIST_IMG_NAME,
                 constants.NETWORK_PARAMETER: NETWORK,
                 constants.NIC_PARAMETER: NIC,
-		constants.HIL_OPTION_PARAMETER: True}
+                constants.HIL_OPTION_PARAMETER: True}
         res = requests.put(PICASSO_URL + "provision/", data=data,
                            auth=(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD))
         self.assertEqual(res.status_code, 200)
@@ -127,7 +127,8 @@ class TestDeprovision(TestCase):
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC, "True")
+        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC,
+                                "True")
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def runTest(self):
@@ -135,7 +136,7 @@ class TestDeprovision(TestCase):
                 constants.NODE_NAME_PARAMETER: NODE_NAME,
                 constants.NETWORK_PARAMETER: NETWORK,
                 constants.NIC_PARAMETER: NIC,
-		constants.HIL_OPTION_PARAMETER: True}
+                constants.HIL_OPTION_PARAMETER: True}
         res = requests.delete(PICASSO_URL + "deprovision/", data=data,
                               auth=(
                                   CORRECT_HIL_USERNAME,
@@ -148,7 +149,8 @@ class TestDeprovision(TestCase):
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
-	time.sleep(constants.HIL_CALL_TIMEOUT)
+        time.sleep(constants.HIL_CALL_TIMEOUT)
+
 
 class TestCreateSnapshot(TestCase):
     """
@@ -162,7 +164,8 @@ class TestCreateSnapshot(TestCase):
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC, "True")
+        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC,
+                                "True")
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def runTest(self):
@@ -208,7 +211,8 @@ class TestListSnapshots(TestCase):
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC, "True")
+        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC,
+                                "True")
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
         self.good_bmi.create_snapshot(NODE_NAME, NEW_SNAP_NAME)
