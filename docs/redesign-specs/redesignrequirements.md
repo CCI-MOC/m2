@@ -2,6 +2,11 @@
 
 #### Requirements
 
+NOTE: Every requirement mentioned below will not be implemented in v1.0. 
+The goal of v1.0 is to have a clean code that will ease implementing all the features in future.
+
+* Please refer to bmi-redesgin-usecases-slides.pdf for the list of use cases we want to support with the redesign.
+
 * Remove tight coupling with external services:
   - Hardware Isolation Layer (for network isolation and authentication).
   - Ceph (as image data store).
