@@ -1,0 +1,31 @@
+language: python
+python:
+  - "2.7"
+
+dist: trusty
+sudo: required
+
+cache:
+  - pip
+
+install:
+  - pip install --upgrade pip
+  - pip install -r requirements.txt
+
+
+services:
+  - docker
+
+before_script:
+  # Run syntax checks before spawning the test environment
+  - find . -name \*.py -exec python -m py_compile {} +
+
+script:
+  # Run pep8 on all .py files in all subfolders
+  # ignore E402: module level import not at top of file
+  - find . -name \*.py -exec pep8 --ignore=E402 {} +
+
+after_success:
+
+after_script:
+
