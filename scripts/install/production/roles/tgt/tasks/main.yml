@@ -13,8 +13,7 @@
 
 - name: Change SELinux to permissive for CentOS
   selinux:
-    policy: targeted
-    state: permissive
+    state: disabled
   become: true
   when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
 
@@ -96,10 +95,13 @@
 
 - name: Allow tcp via firewalld for CentOS
   firewalld:
-    port: 3260/tcp
+    port: "{{ item }}"
     permanent: true
     immediate: true
     state: enabled
+  with_items:
+   - 3260/tcp
+   - 67-68/udp
   become: true
   when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
 

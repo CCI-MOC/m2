@@ -1,13 +1,106 @@
 ---
 #This role installs and configures the DHCP server
 
-- name: Create pxelinux directory
+- name: Install dependencies
+  package: name={{ item }} state=latest
+  with_items:
+    - gcc
+    - binutils
+    - make
+    - perl
+    - mtools
+    - mkisofs
+    - syslinux
+  become: true
+
+- name: Install liblzma for Ubuntu
+  package: name={{ item }} state=latest
+  with_items:
+    - liblzma-dev
+    - pxelinux
+  become: true
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Install xz headers for CentOS
+  package: name={{ item }} state=latest
+  with_items:
+    - xz
+    - xz-devel
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Create pxelinux directory for CentOS
   file:
     path: /var/lib/tftpboot/pxelinux.cfg
     state: directory
     group: "{{ lookup('env', 'USER') }}"
     owner: "{{ lookup('env', 'USER') }}"
-  become: true 
+    mode: 0777
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Create pxelinux directory for Ubuntu
+  file:
+    path: /tftpboot/pxelinux.cfg
+    state: directory
+    group: "{{ lookup('env', 'USER') }}"
+    owner: "{{ lookup('env', 'USER') }}"
+    mode: 0777
+  become: true
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'  
+
+- name: Install iPXE
+  git:
+    repo: http://git.ipxe.org/ipxe.git
+    dest: "{{playbook_dir}}/ipxe"
+
+- name: Make iPXE
+  make:
+    chdir: "{{ playbook_dir }}/ipxe/src"
+
+- name: Copy ipxe.lkrn CentOS
+  copy:
+    src: "{{ playbook_dir }}/ipxe/src/bin/ipxe.lkrn"
+    dest: "/var/lib/tftpboot"
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Copy ipxe.lkrn for Ubuntu
+  copy:
+    src: "{{ playbook_dir }}/ipxe/src/bin/ipxe.lkrn"
+    dest: "/tftpboot"
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Copy files from syslinux for CentOS
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ lookup('env', 'USER') }}"
+    group: "{{ lookup('env', 'USER') }}"
+    mode: 0777
+  become: true
+  with_items:
+    - { src: '/usr/share/syslinux/chain.c32', dest: '/var/lib/tftpboot/chain.c32' }
+    - { src: '/usr/share/syslinux/mboot.c32', dest: '/var/lib/tftpboot/mboot.c32' }
+    - { src: '/usr/share/syslinux/memdisk', dest: '/var/lib/tftpboot/memdisk' }
+    - { src: '/usr/share/syslinux/menu.c32', dest: '/var/lib/tftpboot/menu.c32' }
+    - { src: '/usr/share/syslinux/pxelinux.0', dest: '/var/lib/tftpboot/pxelinux.0' }
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Copy files from syslinux for Ubuntu
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ lookup('env', 'USER') }}"
+    group: "{{ lookup('env', 'USER') }}"
+    mode: 0777
+  become: true
+  with_items:
+    - { src: '/usr/lib/syslinux/modules/bios/chain.c32', dest: '/tftpboot/chain.c32' }
+    - { src: '/usr/lib/syslinux/modules/bios/mboot.c32', dest: '/tftpboot/mboot.c32' }
+    - { src: '/usr/lib/syslinux/memdisk', dest: '/tftpboot/memdisk' }
+    - { src: '/usr/lib/syslinux/modules/bios/menu.c32', dest: '/tftpboot/menu.c32' }
+    - { src: '/usr/lib/PXELINUX/pxelinux.0', dest: '/tftpboot/pxelinux.0' }
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
 - name: Install dnsmasq
   package:
@@ -33,12 +126,12 @@
     line: "{{ item }}"
   become: true
   with_items:
-      - 'interface=eth1'
-      - 'dhcp-range=192.168.39.51,192.168.39.70,7d'
+      - 'interface=eth2'
+      - 'dhcp-range=10.10.10.50,10.10.10.100,7d'
+      - 'dhcp-boot=pxelinux.0'
       - 'enable-tftp'
       - 'tftp-root=/var/lib/tftpboot'
       - 'dhcp-userclass=set:ENH,iPXE'
-      - 'dhcp-boot=tag:!ENH,pxelinux.0,servername,192.168.39.2'
 
 - name: Systemctl commands for dnsmasq
   systemd:

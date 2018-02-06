@@ -1,7 +1,7 @@
 ---
 #This role performs the steps to install BMI
 
-- name: Create log and pxelinux directories
+- name: Create log, pxelinux and ceph directories
   file:
     state: directory
     group: "{{ lookup('env', 'USER') }}"
@@ -11,6 +11,7 @@
   with_items:
     - "/var/log/bmi/logs"
     - "/etc/bmi/pxelinux.cfg"
+    - "/etc/ceph"
 
 - name: Copy config, ipxe and mac templates to the correct directories
   copy:
@@ -24,6 +25,8 @@
     - { src: '../../../bmi_config.cfg', dest: '/etc/bmi/bmiconfig.cfg' }
     - { src: '../../../ims/ipxe.temp', dest: '/etc/bmi/ipxe_example.temp' }
     - { src: '../../../ims/mac.temp', dest: '/etc/bmi/pxelinux.cfg/mac_example.temp' }
+    - { src: 'ceph.conf', dest: '/etc/ceph/ceph.conf' }
+    - { src: 'client.bmi.key', dest: '/etc/ceph/client.bmi.key' }
 
 - name: Install setup.py
   command: "python setup.py install"
@@ -36,8 +39,22 @@
     name: python-cephlibs
   become: true
 
-- name: Install sqlite3
-  apt:
+- name: Install other dependencies for CentOS
+  pip: name={{ item }} state=latest
+  become: true
+  with_items:
+    - requests
+    - urllib3
+    - pyOpenSSL
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Install ceph-common
+  package:
+    name: ceph-common
+  become: true
+
+- name: Install sqlite3 for Ubuntu
+  package:
     name: sqlite3
   become: true
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
@@ -62,8 +79,20 @@
   command: "{{ item }}"
   environment:
     HIL_USERNAME: hil
-    HIL_PASSWORD: secret
+    HIL_PASSWORD: admin
   with_items:
     - bmi db ls
     - sqlite3 /etc/bmi/bmi.db "insert into project values (1, 'bmi_infra', 'bmi_network')"
   when: db.stat.size == 0
+
+- name: Add Ceph and HIL credentials to bashrc
+  lineinfile:
+    path: ~/.bashrc
+    line: "{{ item }}"
+  become: true
+  with_items:
+      - 'export CEPH_ARGS="--keyring /etc/ceph/client.bmi.key --id bmi --pool bmi"' 
+      - 'export HIL_USERNAME=hil'
+      - 'export HIL_PASSWORD=admin'
+      - export HIL_ENDPOINT='http://192.168.100.210:80'
+      - 'export BMI_CONFIG=/etc/bmi/bmiconfig.cfg'
