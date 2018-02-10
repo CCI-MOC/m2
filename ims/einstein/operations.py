@@ -560,35 +560,19 @@ class BMI:
 
     @log
     def copy_image(self, img1, dest_project, img2=None):
-        """
-        Create a deep copy of src image
-
-        :param img1: Name of src image
-        :param dest_project: Name of the project where des image will be
-        created
-        :param img2: Name of des image
-        :return: True on successful completion
-        """
         try:
             if not self.is_admin and (self.proj != dest_project):
                 raise AuthorizationFailedException()
             dest_pid = self.__does_project_exist(dest_project)
             self.db.image.copy_image(self.proj, img1, dest_pid, img2)
             if img2 is not None:
-                ceph_name = self.get_ceph_image_name_from_project(img2,
-                                                                  dest_project)
+                ceph_name = self.__get_ceph_image_name(img2, dest_project)
             else:
-                ceph_name = self.get_ceph_image_name_from_project(img1,
-                                                                  dest_project)
-            self.fs.clone(self.get_ceph_image_name_from_project(
-                img1, self.proj),
-                constants.DEFAULT_SNAPSHOT_NAME,
-                ceph_name)
-
-            self.fs.flatten(ceph_name)
+                ceph_name = self.__get_ceph_image_name(img1, dest_project)
+            self.fs.clone(self.__get_ceph_image_name(img1, self.proj),
+                          constants.DEFAULT_SNAPSHOT_NAME, ceph_name)
             self.fs.snap_image(ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
             self.fs.snap_protect(ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
-
             return self.__return_success(True)
         except (DBException, FileSystemException) as e:
             logger.exception('')
