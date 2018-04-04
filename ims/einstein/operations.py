@@ -212,7 +212,7 @@ class BMI:
 
     # Provisions from HIL and Boots the given node with given image
     @log
-    def provision(self, node_name, img_name, network, nic):
+    def provision(self, node_name, img_name, nic):
         try:
             mac_addr = "01-" + self.hil.get_node_mac_addr(node_name). \
                 replace(":", "-")
@@ -271,7 +271,7 @@ class BMI:
     # This is for detach a node and removing it from iscsi
     # and destroying its image
     @log
-    def deprovision(self, node_name, network, nic):
+    def deprovision(self, node_name, nic):
         ceph_img_name = None
         try:
             ceph_img_name = self.__get_ceph_image_name(node_name)
