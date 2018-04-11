@@ -50,4 +50,4 @@ sudo ceph fs new cephfs cephfsmeta cephfs
 clear
 sudo ceph -s
 sudo ceph df
-sudo ceph fs status
+sudo ceph fs ls
