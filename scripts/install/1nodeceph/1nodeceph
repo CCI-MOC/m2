@@ -26,9 +26,8 @@ mon_host = $ipaddr
 auth_cluster_required = cephx
 auth_service_required = cephx
 auth_client_required = cephx
-filestore_xattr_use_omap = true
 max_open_files = 131072
-mon_osd_allow_primary_affinity = true
+rbd_default_features = 5
 [mon]
 mon_compact_on_start = true
 mon_allow_pool_delete = true
