@@ -11,9 +11,8 @@ services:
   - docker
 
 before_script:
-  # Run pep8 on all .py files in all subfolders
-  # ignore E402: module level import not at top of file
-  - find . -name \*.py -exec pep8 --ignore=E402 {} +
+  # Run syntax checks before spawning the test environment
+  - find . -name \*.py -exec python -m py_compile {} +
 
   # Run Ceph Container and Wait for some time so that ceph runs
   - sudo docker run -d -v ceph:/etc/ceph -e MON_IP=172.17.0.2 -e CEPH_PUBLIC_NETWORK=172.17.0.0/24 --name ceph ceph/demo:tag-build-master-hammer-centos-7
@@ -34,6 +33,10 @@ before_script:
   - sudo docker exec bmi rbd create --image-format 2 --size 10 bmi_test
 
 script:
+  # Run pep8 on all .py files in all subfolders
+  # ignore E402: module level import not at top of file
+  - find . -name \*.py -exec pep8 --ignore=E402 {} +
+
   # Run Tests in BMI container
   - sudo docker exec bmi pytest -v --random-order-bucket=global --cov=ims tests/
 
