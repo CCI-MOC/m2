@@ -332,6 +332,7 @@ class BMI:
     @log
     def create_snapshot(self, node_name, snap_name):
         try:
+            error_flag = [0]
             self.hil.validate_project(self.proj)
 
             ceph_img_name = self.__get_ceph_image_name(node_name)
@@ -344,7 +345,7 @@ class BMI:
                                  is_snapshot=True)
             snap_ceph_name = self.__get_ceph_image_name(snap_name)
             self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
-                          snap_ceph_name)
+                          snap_ceph_name, flag=error_flag)
             self.fs.flatten(snap_ceph_name)
             self.fs.snap_image(snap_ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
             self.fs.snap_protect(snap_ceph_name,
@@ -355,8 +356,39 @@ class BMI:
                                     constants.DEFAULT_SNAPSHOT_NAME)
             return self.__return_success(True)
 
-        except (HILException, DBException, FileSystemException) as e:
+        except HILException as e:
+            # Nothing more to do, if HIL validation fails
             logger.exception('')
+            return self.__return_error(e)
+
+        except DBException as e:
+            # Failure has occured at db insert, unprotect and remove snapshot of ceph img
+            logger.exception('')
+            self.fs.snap_unprotect(ceph_img_name,
+                                   constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.remove_snapshot(ceph_img_name,
+                                    constants.DEFAULT_SNAPSHOT_NAME)
+            time.sleep(constants.HIL_CALL_TIMEOUT)
+            return self.__return_error(e)
+
+        except FileSystemException as e:
+            logger.exception('')
+            # If file system exception occurs:
+
+            # 1. During initial snap creation or snap protect of ceph, then nothing more to do.
+
+            # 2. During clone or beyond such as flattening, snap image or protect of snap ceph image,
+            #    then undo cloning, undo db insert for the given snap name, unprotect and remove
+            #    snapshot of ceph img.
+
+            if error_flag == constants.CLONE:
+                self.fs.remove(snap_ceph_name)
+                self.db.image.delete_with_name_from_project(snap_name, self.proj)
+                self.fs.snap_unprotect(ceph_img_name,
+                                       constants.DEFAULT_SNAPSHOT_NAME)
+                self.fs.remove_snapshot(ceph_img_name,
+                                        constants.DEFAULT_SNAPSHOT_NAME)
+            time.sleep(constants.HIL_CALL_TIMEOUT)
             return self.__return_error(e)
 
     # Lists snapshot for the given image img_name
@@ -388,7 +420,25 @@ class BMI:
             self.fs.remove(ceph_img_name)
             self.db.image.delete_with_name_from_project(img_name, self.proj)
             return self.__return_success(True)
-        except (HILException, DBException, FileSystemException) as e:
+
+        except HILException as e:
+            # Nothing more to do, if HIL validation fails
+            logger.exception('')
+            return self.__return_error(e)
+
+        except DBException as e:
+            # Failure has occured at db delete, undo unprotect and remove snapshot of ceph img
+            logger.exception('')
+            self.fs.clone(ceph_img_name)
+            self.fs.snap_image(ceph_img_name,
+                               constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.snap_protect(ceph_img_name,
+                                 constants.DEFAULT_SNAPSHOT_NAME)
+            time.sleep(constants.HIL_CALL_TIMEOUT)
+            return self.__return_error(e)
+
+        except FileSystemException as e:
+            # Nothing more to do, if file system exception occurs
             logger.exception('')
             return self.__return_error(e)
 
