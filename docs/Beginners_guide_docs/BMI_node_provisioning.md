@@ -22,14 +22,14 @@ The execution involves the following steps. Please note all the steps below are 
 	URI = PYRO:Pyro.NameServer@10.10.10.1:9893
 ```
 
-Note : Few errors one could face at this phase
- 		1. Address already in use : socket error -> This is a well known socket error, killing the process and restarting should resolve it.
+Note : Few errors one could face at this phase<br />
+ - Address already in use : socket error -> This is a well known socket error, killing the process and restarting should resolve it.
 
 ```
  		 ps aux | grep picasso/einstein
  		 kill -9 <process number>
 ```
- 2. Permission denied : Probably not executing it as root user.
+ - Permission denied : Probably not executing it as root user.
 
 
 3. bmi --help will list down all the bmi commands
