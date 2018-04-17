@@ -8,16 +8,16 @@
 1.    Get the latest Ansible playbook scripts repository from Git. The general repository is ~/ims/scripts/install/production/
 
  ``` 
-	git clone https://github.com/CCI-MOC/ims.git 
+	   git clone https://github.com/CCI-MOC/ims.git 
 	 
-	Eg: The latest scripts at the time of documentation was PR 153.
-	git fetch origin pull/153/head:pr-153
-	git checkout pr-153
+	   Eg: The latest scripts at the time of documentation was PR 153.
+	   git fetch origin pull/153/head:pr-153
+	   git checkout pr-153
 ```
 
 2.    Install Ansible 
 
-a. For Ubuntu:
+  a. For Ubuntu:
 ```
       	sudo apt-get update
       	sudo apt-get install software-properties-common
@@ -25,7 +25,7 @@ a. For Ubuntu:
       	sudo apt-get update
       	sudo apt-get install ansible
 ```
-b. For Centos/RHEL:
+  b. For Centos/RHEL:
 ```
       	sudo yum install ansible
 ```
@@ -44,7 +44,7 @@ b. For Centos/RHEL:
 
 4.    Modify the following sections in bmi_config.cfg under ~/ims   
 
-a.    To have a new UID as follows:
+  a.    To have a new UID as follows:
 ```	
 	[bmi]
 	uid = <unique number>
@@ -56,7 +56,7 @@ a.    To have a new UID as follows:
         service = true
 ```
 
-b.    To match your HIL setup as follows:
+  b.    To match your HIL setup as follows:
 
 ```
 	[fs]
@@ -73,7 +73,7 @@ b.    To match your HIL setup as follows:
 	(Note: Modify the id, pool name and paths accordingly.)
 ```
 
-c.    To match your Ceph setup as follows:
+  c.    To match your Ceph setup as follows:
 
 ```
 	# This section is for network isolator (HIL) related config
@@ -108,7 +108,7 @@ Note : Also configure the interface (eth2 in the above ex) to have a gateway IP 
 
 6.    In roles/bmi/tasks/main.yml:
 
-a.    Modify Ceph and HIL credentials in to the the correct username and password for your configuration. This includes the CEPH_ARGS and HIL_ENDPOINT (below is an example).
+  a.    Modify Ceph and HIL credentials in to the the correct username and password for your configuration. This includes the  CEPH_ARGS and HIL_ENDPOINT (below is an example).
 
 ```
 	- name: Add Ceph and HIL credentials to bashrc
@@ -125,7 +125,7 @@ a.    Modify Ceph and HIL credentials in to the the correct username and passwor
 
 ```
 
-b.    Modify the project project and network from 'bmi_infra' and 'bmi_network' to the project and network you created within HIL (below is an example).
+  b.    Modify the project project and network from 'bmi_infra' and 'bmi_network' to the project and network you created within HIL (below is an example).
 
 ```
 	- name: Bootstrap the database
@@ -153,9 +153,6 @@ b.    Modify the project project and network from 'bmi_infra' and 'bmi_network' 
 Possible errors one may face:
 ------------------------------
 
-
-1.    
-
 ```
 fatal: [localhost]: FAILED! => {"changed": false, "cmd": "/usr/bin/git clone --origin origin https://github.com/fujita/tgt /home/vj/ims/scripts/install/production/tgt", "msg": "fatal: could not create work tree dir '/home/vj/ims/scripts/install/production/tgt'.: Permission denied", "rc": 128, "stderr": "fatal: could not create work tree dir '/home/vj/ims/scripts/install/production/tgt'.: Permission denied\n", "stderr_lines": ["fatal: could not create work tree dir '/home/vj/ims/scripts/install/production/tgt'.: Permission denied"], "stdout": "", "stdout_lines": []}[WARNING]: Could not create retry file '/home/vj/ims/scripts/install/production/site.retry'.         [Errno 13] Permission denied: u'/home/vj/ims/scripts/install/production/site.retry'
 
@@ -163,9 +160,7 @@ fatal: [localhost]: FAILED! => {"changed": false, "cmd": "/usr/bin/git clone --o
 
 Possible reasons: Not executing as sudo.
 
-
-2.    
-
+   
 ```
 Error 4 \nwarning: failed to load external entity \"http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl\" 
 ```
