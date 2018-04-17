@@ -47,7 +47,7 @@ Modify ims/constants/common.py file so that the BMI_ADMIN_PROJECT is set to your
 
 4.    Modify the following sections in bmi_config.cfg under ~/ims   
 
-  a.    To have a new UID as follows:
+   -    To have a new UID as follows:
 ```	
 	[bmi]
 	uid = <unique number>
@@ -59,7 +59,7 @@ Modify ims/constants/common.py file so that the BMI_ADMIN_PROJECT is set to your
         service = true
 ```
 
-  b.    To match your HIL setup as follows:
+  -    To match your HIL setup as follows:
 
 ```
 	[fs]
@@ -76,7 +76,7 @@ Modify ims/constants/common.py file so that the BMI_ADMIN_PROJECT is set to your
 	(Note: Modify the id, pool name and paths accordingly.)
 ```
 
-  c.    To match your Ceph setup as follows:
+  -    To match your Ceph setup as follows:
 
 ```
 	# This section is for network isolator (HIL) related config
@@ -111,7 +111,7 @@ Note : Also configure the interface (eth2 in the above ex) to have a gateway IP 
 
 6.    In roles/bmi/tasks/main.yml:
 
-  a.    Modify Ceph and HIL credentials in to the the correct username and password for your configuration. This includes the  CEPH_ARGS and HIL_ENDPOINT (below is an example).
+  -   Modify Ceph and HIL credentials in to the the correct username and password for your configuration. This includes the  CEPH_ARGS and HIL_ENDPOINT (below is an example).
 
 ```
 	- name: Add Ceph and HIL credentials to bashrc
@@ -128,7 +128,7 @@ Note : Also configure the interface (eth2 in the above ex) to have a gateway IP 
 
 ```
 
-  b.    Modify the project project and network from 'bmi_infra' and 'bmi_network' to the project and network you created within HIL (below is an example).
+  -   Modify the project project and network from 'bmi_infra' and 'bmi_network' to the project and network you created within HIL (below is an example).
 
 ```
 	- name: Bootstrap the database
