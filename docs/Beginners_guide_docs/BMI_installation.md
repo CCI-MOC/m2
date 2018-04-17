@@ -8,16 +8,16 @@
 1.    Get the latest Ansible playbook scripts repository from Git. The general repository is ~/ims/scripts/install/production/
 
  ``` 
-		git clone https://github.com/CCI-MOC/ims.git 
+	git clone https://github.com/CCI-MOC/ims.git 
 	 
-		Eg: The latest scripts at the time of documentation was PR 153.
-		git fetch origin pull/153/head:pr-153
-		git checkout pr-153
+	Eg: The latest scripts at the time of documentation was PR 153.
+	git fetch origin pull/153/head:pr-153
+	git checkout pr-153
 ```
 
 2.    Install Ansible 
 
-	a. For Ubuntu:
+a. For Ubuntu:
 ```
       	sudo apt-get update
       	sudo apt-get install software-properties-common
@@ -25,7 +25,7 @@
       	sudo apt-get update
       	sudo apt-get install ansible
 ```
-        b. For Centos/RHEL:
+b. For Centos/RHEL:
 ```
       	sudo yum install ansible
 ```
@@ -33,74 +33,74 @@
 3.    Add your host to the ansible hosts file (/etc/ansible/hosts), i.e:
 
 ```
-	   	# Ex 1: Ungrouped hosts, specify before any group headers.   
-	   	192.168.122.76
+	# Ex 1: Ungrouped hosts, specify before any group headers.   
+	192.168.122.76
 	   
-		Since in this case, we are installing on the local machine itself, the following could be done:
+	Since in this case, we are installing on the local machine itself, the following could be done:
 
-		# Ex 1: Ungrouped hosts, specify before any group headers.   
-		localhost ansible_connection=local
+	# Ex 1: Ungrouped hosts, specify before any group headers.   
+	localhost ansible_connection=local
 ```
 
 4.    Modify the following sections in bmi_config.cfg under ~/ims   
 
 a.    To have a new UID as follows:
 ```	
-		[bmi]
-		uid = <unique number>
-		service = <true or false>
+	[bmi]
+	uid = <unique number>
+	service = <true or false>
 
-		EG:    
-		[bmi]
-        	uid = vj-test-
-        	service = true
+	EG:    
+	[bmi]
+        uid = vj-test-
+        service = true
 ```
 
 b.    To match your HIL setup as follows:
 
 ```
-		[fs]
-		id = <id in ceph>
-		pool = <the ceph pool to use>
-		conf_file = <location of ceph config file
-		keyring = <location of ceph key ring>
+	[fs]
+	id = <id in ceph>
+	pool = <the ceph pool to use>
+	conf_file = <location of ceph config file
+	keyring = <location of ceph key ring>
 
-		EG: 
-		id = bmi
-		pool = bmi
-		conf_file = /etc/ceph/ceph.conf
-		keyring = /etc/ceph/client.bmi.key
-		(Note: Modify the id, pool name and paths accordingly.)
+	EG: 
+	id = bmi
+	pool = bmi
+	conf_file = /etc/ceph/ceph.conf
+	keyring = /etc/ceph/client.bmi.key
+	(Note: Modify the id, pool name and paths accordingly.)
 ```
 
 c.    To match your Ceph setup as follows:
 
 ```
-		# This section is for network isolator (HIL) related config
-		[net_isolator]
-		url = <base url for hil>
+	# This section is for network isolator (HIL) related config
+	[net_isolator]
+	url = <base url for hil>
 
-		EG:
-		[net_isolator]
-		url = http://192.168.100.210:80/
-		(Note: Modify the url according to your HIL endpoint accordingly)
+	EG:
+	[net_isolator]
+	url = http://192.168.100.210:80/
+	(Note: Modify the url according to your HIL endpoint accordingly)
 ```
 
 5.    Modify dnsmasq.conf within roles/dhcp/tasks/main.yml. The DHCP range and interface needs to be changed accordingly to match your requirements (below is an example).
 
 ```
-		- name: Add DHCP configuration to dnsmasq.conf
-		  lineinfile:
-		    path: /etc/dnsmasq.conf
-		    line: "{{ item }}"
-		  become: true
-		  with_items:
-		      - 'interface=eth2'
-		      - 'dhcp-range=10.10.10.50,10.10.10.100,7d'
-		      - 'dhcp-boot=pxelinux.0'
-		      - 'enable-tftp'
-		      - 'tftp-root=/var/lib/tftpboot'
-		      - 'dhcp-userclass=set:ENH,iPXE'
+	- name: Add DHCP configuration to dnsmasq.conf
+		lineinfile:
+          path: /etc/dnsmasq.conf
+	  line: "{{ item }}"
+          become: true
+          with_items:
+	      - 'interface=eth2'
+	      - 'dhcp-range=10.10.10.50,10.10.10.100,7d'
+	      - 'dhcp-boot=pxelinux.0'
+	      - 'enable-tftp'
+	      - 'tftp-root=/var/lib/tftpboot'
+	      - 'dhcp-userclass=set:ENH,iPXE'
 ```
 
 Note : Also configure the interface (eth2 in the above ex) to have a gateway IP related to the range of IPs chosen above. Considering the above case, ifcfg-eth2 could have static IP of say 10.10.10.1.
@@ -111,32 +111,32 @@ Note : Also configure the interface (eth2 in the above ex) to have a gateway IP 
 a.    Modify Ceph and HIL credentials in to the the correct username and password for your configuration. This includes the CEPH_ARGS and HIL_ENDPOINT (below is an example).
 
 ```
-		- name: Add Ceph and HIL credentials to bashrc
-		  lineinfile:
-		    path: ~/.bashrc
-		    line: "{{ item }}"
-		  become: true
-		  with_items:
-		      - 'export CEPH_ARGS="--keyring /etc/ceph/client.bmi.key --id bmi --pool bmi"'
-		      - 'export HIL_USERNAME=vj'
-		      - 'export HIL_PASSWORD=redhat'
-		      - 'export HIL_ENDPOINT="http://192.168.100.210:80"'
-		      - 'export BMI_CONFIG=/etc/bmi/bmiconfig.cfg'
+	- name: Add Ceph and HIL credentials to bashrc
+		lineinfile:
+	  path: ~/.bashrc
+	  line: "{{ item }}"
+	  become: true
+	  with_items:
+	      - 'export CEPH_ARGS="--keyring /etc/ceph/client.bmi.key --id bmi --pool bmi"'
+	      - 'export HIL_USERNAME=vj'
+	      - 'export HIL_PASSWORD=redhat'
+	      - 'export HIL_ENDPOINT="http://192.168.100.210:80"'
+	      - 'export BMI_CONFIG=/etc/bmi/bmiconfig.cfg'
 
 ```
 
 b.    Modify the project project and network from 'bmi_infra' and 'bmi_network' to the project and network you created within HIL (below is an example).
 
 ```
-		- name: Bootstrap the database
-		  command: "{{ item }}"
-		  environment:
-		    HIL_USERNAME: vj
-		    HIL_PASSWORD: redhat
-		  with_items:
-		    - bmi db ls
-		    - sqlite3 /etc/bmi/bmi.db "insert into project values (1, 'vj', 'bmi-provision-vj')"
-	          when: db.stat.size == 0
+	- name: Bootstrap the database
+          command: "{{ item }}"
+	  environment:
+	      HIL_USERNAME: vj
+	      HIL_PASSWORD: redhat
+	   with_items:
+	       - bmi db ls
+	       - sqlite3 /etc/bmi/bmi.db "insert into project values (1, 'vj', 'bmi-provision-vj')"
+	         when: db.stat.size == 0
 ```
 
 7.    Comment out any of the roles that you don’t want to execute in site.yml.
