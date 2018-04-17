@@ -3,23 +3,23 @@ The execution involves the following steps. Please note all the steps below are 
 1. Start the Picasso (frontend) server as follows:
 
 ```
-		>> screen 
-		>> picasso_server
+	>> screen 
+	>> picasso_server
 
-		If successful it should show something like below
-		* Running on http://10.10.10.1:1513/ (Press CTRL+C to quit)
+	If successful it should show something like below
+	* Running on http://10.10.10.1:1513/ (Press CTRL+C to quit)
 
 ```
 2. Start the Einstein (backend) server as follows:
 ```
-		>> screen
-		>> einstein_server
+	>> screen
+	>> einstein_server
 
-		If successful it should show something like below
-		Broadcast server running on 0.0.0.0:9091
-		NS running on 10.10.10.1:9893 (10.10.10.1)
-		Warning: HMAC key not set. Anyone can connect to this server!
-		URI = PYRO:Pyro.NameServer@10.10.10.1:9893
+	If successful it should show something like below
+	Broadcast server running on 0.0.0.0:9091
+	NS running on 10.10.10.1:9893 (10.10.10.1)
+	Warning: HMAC key not set. Anyone can connect to this server!
+	URI = PYRO:Pyro.NameServer@10.10.10.1:9893
 ```
 
 Note : Few errors one could face at this phase
@@ -29,7 +29,7 @@ Note : Few errors one could face at this phase
  		 ps aux | grep picasso/einstein
  		 kill -9 <process number>
 ```
- 		2. Permission denied : Probably not executing it as root user.
+ 2. Permission denied : Probably not executing it as root user.
 
 
 3. bmi --help will list down all the bmi commands
