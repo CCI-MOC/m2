@@ -1,4 +1,6 @@
 # Config Flags
+CLONE = 1
+
 PICASSO_CONFIG_FLAG = 'picasso'
 EINSTEIN_CONFIG_FLAG = 'einstein'
 
