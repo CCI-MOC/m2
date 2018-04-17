@@ -1,11 +1,11 @@
  
-**Prerequisties**
+**Prerequisties**<br />
 Ceph (cephargs, ceph.conf, client.bmi.key) and HIL project and network information is already available.
 
-**Description** 
+**Description** <br />
 Installing BMI on a machine would mean to enable a machine to provide BMI services in conjunction with Ceph and HIL (these are already configued and available as mentioned in pre-requisites). To learn more about BMI architecture and services visit https://github.com/CCI-MOC/ims/blob/master/README.md. To install BMI on a machine ansible software/ansible-playbook script is used. The script installs all the necessary software’s (on the given machine only) to orchestrate the BMI services in conjunction with Ceph and HIL. The following modifications need to be taken care of before ansible script execution. To know more about Ansible scripting/template visit http://docs.ansible.com/. 
 
-**Pre-step**
+**Pre-step**<br />
 Modify ims/constants/common.py file so that the BMI_ADMIN_PROJECT is set to your project (HIL project) to when bootstrapping the database. Perform the following as sudo su.
 
 1.    Get the latest Ansible playbook scripts repository from Git. The general repository is ~/ims/scripts/install/production/
