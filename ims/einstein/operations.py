@@ -380,7 +380,6 @@ class BMI:
             # 2. During clone or beyond such as flattening, snap image or protect of snap ceph image,
             #    then undo cloning, undo db insert for the given snap name, unprotect and remove
             #    snapshot of ceph img.
-
             if error_flag == constants.CLONE:
                 self.fs.remove(snap_ceph_name)
                 self.db.image.delete_with_name_from_project(snap_name, self.proj)
