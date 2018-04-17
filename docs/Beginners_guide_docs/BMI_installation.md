@@ -1,16 +1,13 @@
  
-Prerequisties: Ceph (cephargs, ceph.conf, client.bmi.key) and HIl project and network information is already available.
+Prerequisties: Ceph (cephargs, ceph.conf, client.bmi.key) and HIL project and network information is already available.
 
-Description : Installing BMI on a machine would mean to enable a machine to provide BMI services in conjunction with Ceph and HIL (alreayd configued and available as mentioned in pre-requisites). To learn more about BMI architecture and services visit https://github.com/CCI-MOC/ims/blob/master/README.md. To install BMI on a machine ansible software/ansible-playbook script is used. The script installs all the necessary software’s (on the given machine only) to orchestrate the BMI services in conjunction with Ceph and HIL. The following modifications need to be taken care of before ansible script execution. To know more about Ansible scripting/template visit http://docs.ansible.com/. 
+Description : Installing BMI on a machine would mean to enable a machine to provide BMI services in conjunction with Ceph and HIL (these are already configued and available as mentioned in pre-requisites). To learn more about BMI architecture and services visit https://github.com/CCI-MOC/ims/blob/master/README.md. To install BMI on a machine ansible software/ansible-playbook script is used. The script installs all the necessary software’s (on the given machine only) to orchestrate the BMI services in conjunction with Ceph and HIL. The following modifications need to be taken care of before ansible script execution. To know more about Ansible scripting/template visit http://docs.ansible.com/. 
 
-Pre-step :  Modify ims/constants/common.py file so that the BMI_ADMIN_PROJECT is set to your project (HIL project) to when bootstrapping the database.
+Pre-step :  Modify ims/constants/common.py file so that the BMI_ADMIN_PROJECT is set to your project (HIL project) to when bootstrapping the database. Perform the following as sudo su.
 
-1.    Perform the following as sudo su.
-
-2.    Get the latest Ansible playbook scripts repository from Git. The general repository is ~/ims/scripts/install/production/
+1.    Get the latest Ansible playbook scripts repository from Git. The general repository is ~/ims/scripts/install/production/
 
  ``` 
-
 		git clone https://github.com/CCI-MOC/ims.git 
 	 
 		Eg: The latest scripts at the time of documentation was PR 153.
@@ -18,7 +15,7 @@ Pre-step :  Modify ims/constants/common.py file so that the BMI_ADMIN_PROJECT is
 		git checkout pr-153
 ```
 
-3.    Install Ansible 
+2.    Install Ansible 
 
 	a. For Ubuntu:
 ```
@@ -32,7 +29,7 @@ Pre-step :  Modify ims/constants/common.py file so that the BMI_ADMIN_PROJECT is
       	sudo yum install ansible
 ```
 
-4.    Add your host to the ansible hosts file (/etc/ansible/hosts), i.e:
+3.    Add your host to the ansible hosts file (/etc/ansible/hosts), i.e:
 
 ```
 	   	# Ex 1: Ungrouped hosts, specify before any group headers.   
@@ -44,7 +41,7 @@ Pre-step :  Modify ims/constants/common.py file so that the BMI_ADMIN_PROJECT is
 		localhost ansible_connection=local
 ```
 
-5.    Modify the following sections in bmi_config.cfg under ~/ims   
+4.    Modify the following sections in bmi_config.cfg under ~/ims   
 
 a.    To have a new UID as follows:
 ```	
@@ -54,8 +51,8 @@ a.    To have a new UID as follows:
 
 		EG:    
 		[bmi]
-        uid = vj-test-
-        service = true
+        	uid = vj-test-
+        	service = true
 ```
 
 b.    To match your HIL setup as follows:
@@ -88,7 +85,7 @@ c.    To match your Ceph setup as follows:
 		(Note: Modify the url according to your HIL endpoint accordingly)
 ```
 
-6.    Modify dnsmasq.conf within roles/dhcp/tasks/main.yml. The DHCP range and interface needs to be changed accordingly to match your requirements (below is an example).
+5.    Modify dnsmasq.conf within roles/dhcp/tasks/main.yml. The DHCP range and interface needs to be changed accordingly to match your requirements (below is an example).
 
 ```
 		- name: Add DHCP configuration to dnsmasq.conf
@@ -108,7 +105,7 @@ c.    To match your Ceph setup as follows:
 Note : Also configure the interface (eth2 in the above ex) to have a gateway IP related to the range of IPs chosen above. Considering the above case, ifcfg-eth2 could have static IP of say 10.10.10.1.
 
 
-7.    In roles/bmi/tasks/main.yml:
+6.    In roles/bmi/tasks/main.yml:
 
 a.    Modify Ceph and HIL credentials in to the the correct username and password for your configuration. This includes the CEPH_ARGS and HIL_ENDPOINT (below is an example).
 
@@ -141,15 +138,15 @@ b.    Modify the project project and network from 'bmi_infra' and 'bmi_network' 
 	          when: db.stat.size == 0
 ```
 
-8.    Comment out any of the roles that you don’t want to execute in site.yml.
+7.    Comment out any of the roles that you don’t want to execute in site.yml.
 
-9.    Run ansible-playbook site.yml.
+8.    Run ansible-playbook site.yml.
    
  ```    
        ansible-playbook site.yml
 ```
 
-10.   The install playbook modifies ~/.bashrc. Make sure to refresh your shell after it is run.
+9.   The install playbook modifies ~/.bashrc. Make sure to refresh your shell after it is run.
 
 
 Possible errors one may face:
