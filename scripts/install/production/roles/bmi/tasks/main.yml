@@ -1,0 +1,98 @@
+---
+#This role performs the steps to install BMI
+
+- name: Create log, pxelinux and ceph directories
+  file:
+    state: directory
+    group: "{{ lookup('env', 'USER') }}"
+    owner: "{{ lookup('env', 'USER') }}"
+    path: "{{ item }}"
+  become: true
+  with_items:
+    - "/var/log/bmi/logs"
+    - "/etc/bmi/pxelinux.cfg"
+    - "/etc/ceph"
+
+- name: Copy config, ipxe and mac templates to the correct directories
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ lookup('env', 'USER') }}" 
+    group: "{{ lookup('env', 'USER') }}" 
+    mode: 0664
+  become: true
+  with_items:
+    - { src: '../../../bmi_config.cfg', dest: '/etc/bmi/bmiconfig.cfg' }
+    - { src: '../../../ims/ipxe.temp', dest: '/etc/bmi/ipxe_example.temp' }
+    - { src: '../../../ims/mac.temp', dest: '/etc/bmi/pxelinux.cfg/mac_example.temp' }
+    - { src: 'ceph.conf', dest: '/etc/ceph/ceph.conf' }
+    - { src: 'client.bmi.key', dest: '/etc/ceph/client.bmi.key' }
+
+- name: Install setup.py
+  command: "python setup.py install"
+  args:
+    chdir: "{{playbook_dir}}/../../.."
+  become: true
+
+- name: Install cephlibs
+  pip:
+    name: python-cephlibs
+  become: true
+
+- name: Install other dependencies for CentOS
+  pip: name={{ item }} state=latest
+  become: true
+  with_items:
+    - requests
+    - urllib3
+    - pyOpenSSL
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Install ceph-common
+  package:
+    name: ceph-common
+  become: true
+
+- name: Install sqlite3 for Ubuntu
+  package:
+    name: sqlite3
+  become: true
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Create database file
+  copy:
+    content: ""
+    dest: "/etc/bmi/bmi.db"
+    force: no
+    group: "{{ lookup('env', 'USER') }}"
+    owner: "{{ lookup('env', 'USER') }}"
+    mode: 0664
+  become: true
+
+#register the db to use as a check later to make sure the database is only bootstrapped if empty
+
+- stat:
+    path: "/etc/bmi/bmi.db"
+  register: db
+
+- name: Bootstrap the database
+  command: "{{ item }}"
+  environment:
+    HIL_USERNAME: hil
+    HIL_PASSWORD: admin
+  with_items:
+    - bmi db ls
+    - sqlite3 /etc/bmi/bmi.db "insert into project values (1, 'bmi_infra', 'bmi_network')"
+  when: db.stat.size == 0
+
+- name: Add Ceph and HIL credentials to bashrc
+  lineinfile:
+    path: ~/.bashrc
+    line: "{{ item }}"
+  become: true
+  with_items:
+      - 'export CEPH_ARGS="--keyring /etc/ceph/client.bmi.key --id bmi --pool bmi"' 
+      - 'export HIL_USERNAME=hil'
+      - 'export HIL_PASSWORD=admin'
+      - export HIL_ENDPOINT='http://192.168.100.210:80'
+      - 'export BMI_CONFIG=/etc/bmi/bmiconfig.cfg'

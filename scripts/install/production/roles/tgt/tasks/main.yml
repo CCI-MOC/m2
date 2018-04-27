@@ -1,0 +1,115 @@
+---
+#Install tgt and its necessary dependencies
+
+- name: Install packages for tgt CentOS installation
+  package: name={{ item }} state=latest
+  with_items:
+   - gcc
+   - cpan
+   - make
+   - firewalld
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Change SELinux to permissive for CentOS
+  selinux:
+    state: disabled
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Install EPEL repo for CentOS
+  yum:
+    name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    state: present
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Install git
+  package:
+    name: git 
+    state: present
+  become: true
+
+- name: Install pip
+  package:
+    name: python-pip
+    state: present
+  become: true
+
+- name: Install TGT for Ubuntu
+  apt: name={{ item }} state=latest
+  with_items:
+   - tgt
+   - tgt-rbd
+  become: true
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Install Perl General config for CentOS
+  yum: 
+    name: perl-Config-General.noarch
+    state: present
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Install headers for tgt source compilation for CentOS
+  yum: name={{ item }} state=latest
+  with_items:
+   - librbd1-devel
+   - librados2-devel
+   - libvirt
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Install tgt from source for CentOS
+  git: 
+    repo: https://github.com/fujita/tgt
+    dest: "{{playbook_dir}}/tgt"
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Make tgt for CentOS
+  command: "{{ item }}"
+  args:
+    chdir: "{{ playbook_dir }}/tgt"
+  with_items:
+    - "/usr/bin/make CEPH_RBD=1 clean"
+    - "/usr/bin/make CEPH_RBD=1"
+    - "/usr/bin/make CEPH_RBD=1 install"
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Copy tgtd.service to system folder for CentOS
+  copy:
+    src: "{{playbook_dir}}/tgt/scripts/tgtd.service"
+    dest: /usr/lib/systemd/system/
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Systemctl commands for firewalld for CentOS
+  systemd:
+    name: firewalld.service
+    daemon-reload: yes
+    state: started
+    enabled: yes
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Allow tcp via firewalld for CentOS
+  firewalld:
+    port: "{{ item }}"
+    permanent: true
+    immediate: true
+    state: enabled
+  with_items:
+   - 3260/tcp
+   - 67-68/udp
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Systemctl commands for tgtd for CentOS
+  systemd:
+    name: tgtd.service
+    daemon-reload: yes
+    state: started
+    enabled: yes
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'

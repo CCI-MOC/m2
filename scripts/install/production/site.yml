@@ -1,0 +1,9 @@
+---
+# This playbook installs bmi and all of its necessary dependencies.
+
+- hosts:  all
+
+  roles:
+    - tgt
+    - dhcp
+    - bmi
