@@ -1,0 +1,172 @@
+\documentclass[letter, 11pt, twoside, openright, english]{memoir}
+
+\usepackage{mypreamble}
+
+% SVN info for this file
+\svnidlong
+{$HeadURL$}
+{$LastChangedDate$}
+{$LastChangedRevision$}
+{$LastChangedBy$}
+
+% Add Chapter here
+\includeonly{%
+  titlepage,
+  %abstract,
+  toc,
+  %introduction,
+  Chapter_1,
+  Chapter_2,
+  %chap2,
+  %chap3,
+  Chapter_3,
+  Appendix,
+  bibliography,
+}
+
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+\newcommand{\image}[3]{
+\begin{figure}[!h] % Example of including images
+\begin{center}
+%\includegraphics[width=0.5\linewidth]{#1}
+\includegraphics[scale=#1]{#2}
+\end{center}
+\caption{#3}
+%\label{fig:example_figure}
+\end{figure}
+%\pagebreak
+}
+
+
+\usepackage{algorithmic}
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage{listings}
+
+\newcommand{\algo}[4]{
+
+\begin{algorithm}[!h]
+\caption{#1}
+
+\DontPrintSemicolon
+
+\KwData{ \\
+#2 \\ \vspace{2mm} }
+
+\KwResult{ \\
+#3 \\ \vspace{2mm}}
+
+\Begin{#4}
+\end{algorithm}
+
+}
+
+
+%you need this so the algorithm is aligned
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\@algocf@start}{%
+  \begin{lrbox}{\algocf@algobox}%
+}{%
+  \rule{0.1\textwidth}{\z@}%
+  \begin{lrbox}{\algocf@algobox}%
+  \begin{minipage}{0.84\textwidth}%
+}{}{}
+\patchcmd{\@algocf@finish}{%
+  \end{lrbox}%
+}{%
+  \end{minipage}%
+  \end{lrbox}%
+}{}{}
+\makeatother
+
+
+\newcommand{\bib}[1]{\begingroup
+\let\clearpage\relax
+\begin{thebibliography}{|-wideness-|}
+#1 
+\end{thebibliography}
+\endgroup
+}
+
+
+%Ref: https://en.wikibooks.org/wiki/LaTeX/Page_Layout#Margins
+\usepackage[top=1in, bottom=1.25in, left=1.25in, right=1.25in]{geometry}
+
+
+\definecolor{myblue}{rgb}{0.089,0.433,0.75}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+
+\newcommand{\link}[1]{
+\hypersetup{colorlinks=true, urlcolor=blue}
+\underline{\color{blue} \smash{\url{#1}}}
+}
+
+
+\usepackage{amssymb}
+
+
+\usepackage[tikz]{bclogo}
+
+\definecolor{daffodil}{rgb}{1.0, 1.0, 0.65}
+\definecolor{bostonuniversityred}{rgb}{1.0, 0.85, 0.85}
+
+%%%%%%%%%%%%%%%%%%
+
+% Ref: https://tex.stackexchange.com/questions/94825/is-there-any-package-similar-to-verbatim-but-with-support-for-icons
+
+\usepackage[listings,skins]{tcolorbox}
+
+\makeatletter
+\tcbset{%
+  icon/.style 2 args={%
+   enlarge top by=4ex,
+   skin=freelance, 
+   frame code={%
+     \tcb@drawframe@standard % standard implementation
+     \node[at=(frame.north west),top color=#1, bottom color=#1!70!black, draw=#1!60!black, circle, font=\bfseries\huge]{#2};}
+  },
+  warning/.style={icon={red}{!}},
+  question/.style={icon={green}{?}},
+}
+\makeatother
+% to create and index select MakeIndex -> Run arrow, and then switch to pdfLaTeX and Run Arrow
+
+    \usepackage{imakeidx}
+    \indexsetup{othercode=\small}
+    \makeindex[program=makeindex,columns=2,intoc=true,options={-s index_style.ist}]
+
+\usepackage{mathtools}
+
+\begin{document}
+
+\frontmatter
+\include{titlepage}
+%\include{abstract}
+\include{toc}
+
+\mainmatter
+%\include{introduction}
+\part{HIL and BMI Ecosystem}
+\labelPart{HIL and BMI Ecosystem}
+\include{Chapter_1}
+\part{Getting Started With BMI}
+\labelPart{Using_BMI}
+\include{Chapter_2}
+%\include{chap2}
+%\include{chap3}
+\labelPart{BMI Internals}
+\include{Chapter_3}
+\appendix
+\part{Appendices}
+%\labelPart{appendices}
+\include{Appendix}
+\backmatter
+\include{bibliography}
+
+\printindex
+
+
+
+\end{document}

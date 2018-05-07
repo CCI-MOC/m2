@@ -1,0 +1,6 @@
+To ensure that the BMI debug output does not show up during the BMI
+workflow, please type the following commands:
+
+cat /etc/bmi/bmiconfig.cfg | sed -e 's/true/false/g' > bmiconfig.cfg
+mv bmiconfig.cfg /etc/bmi/bmiconfig.cfg
+

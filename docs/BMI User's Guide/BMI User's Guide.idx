@@ -1,0 +1,79 @@
+\indexentry{Open Cloud eXchange (OCX)}{3}
+\indexentry{Hardware Isolation Layer (HIL)}{3}
+\indexentry{network isolation}{3}
+\indexentry{Bare Metal Imaging (BMI)}{3}
+\indexentry{multi-tenancy}{3}
+\indexentry{Virtual LAN (VLAN)}{4}
+\indexentry{VLAN ID}{4}
+\indexentry{trunking}{4}
+\indexentry{HIL}{4}
+\indexentry{provision}{4}
+\indexentry{Preboot Execution Environment (PXE)}{4}
+\indexentry{DHCP}{4}
+\indexentry{power-cycle the nodes}{5}
+\indexentry{IPMI}{5}
+\indexentry{Intelligent Platform Management Interface (IPMI)}{5}
+\indexentry{out-of-band management (OOBM)}{5}
+\indexentry{PXE}{5}
+\indexentry{Preboot Execution Environment (PXE)}{5}
+\indexentry{DHCPDISCOVER}{5}
+\indexentry{Trivial FTP}{5}
+\indexentry{iPXE}{5}
+\indexentry{SCSI}{5}
+\indexentry{initiator}{5}
+\indexentry{targets}{5}
+\indexentry{Ceph}{6}
+\indexentry{RADOS Block Device (RBD)}{6}
+\indexentry{TGT}{6}
+\indexentry{IPMI network card}{7}
+\indexentry{REST service}{7}
+\indexentry{RPC calls}{8}
+\indexentry{Picasso}{9}
+\indexentry{Einstein}{9}
+\indexentry{bmi pro}{13}
+\indexentry{bmi dpro}{13}
+\indexentry{bmi snap}{13}
+\indexentry{bmi ls}{13}
+\indexentry{bmi ls}{13}
+\indexentry{bmi db}{13}
+\indexentry{Ceph}{16}
+\indexentry{Ceph}{16}
+\indexentry{ceph-deploy}{16}
+\indexentry{RBD}{16}
+\indexentry{rbd create}{18}
+\indexentry{import}{19}
+\indexentry{bmi import}{19}
+\indexentry{bmi db ls}{19}
+\indexentry{bmi ls}{19}
+\indexentry{provision}{20}
+\indexentry{bmi pro}{20}
+\indexentry{bmi db ls}{20}
+\indexentry{snapshot}{21}
+\indexentry{bmi snap create}{21}
+\indexentry{bmi db ls}{21}
+\indexentry{deprovision}{21}
+\indexentry{bmi dpro}{21}
+\indexentry{bmi db ls}{22}
+\indexentry{remove a snapshot}{22}
+\indexentry{bmi snap rm}{22}
+\indexentry{snapshot}{22}
+\indexentry{bmi db ls}{22}
+\indexentry{remove an image}{22}
+\indexentry{bmi rm}{23}
+\indexentry{bmi db ls}{23}
+\indexentry{rbd rm}{23}
+\indexentry{rbd ls}{23}
+\indexentry{virtualenv}{24}
+\indexentry{BMI methodology}{25}
+\indexentry{RADOS Block Device (RBD)}{25}
+\indexentry{Clone-Snapshot workflow}{25}
+\indexentry{clone}{25}
+\indexentry{snapshot}{25}
+\indexentry{flatten}{25}
+\indexentry{Golden Image}{26}
+\indexentry{clone-and-flatten}{26}
+\indexentry{Ceph image database name format}{27}
+\indexentry{User Acceptance Testing (UAT)}{31}
+\indexentry{Behavior-Driven Development (BDD)}{31}
+\indexentry{configuring User Acceptance Tests}{33}
+\indexentry{running User Acceptance Tests}{34}
