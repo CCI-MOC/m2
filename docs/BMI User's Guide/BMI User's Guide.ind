@@ -1,0 +1,115 @@
+\begin{theindex}
+
+  \item Bare Metal Imaging (BMI), 3
+  \item Behavior-Driven Development (BDD), 31
+  \item bmi db, 13
+  \item bmi db ls, 19--23
+  \item bmi dpro, 13, 21
+  \item bmi import, 19
+  \item bmi ls, 13, 19
+  \item BMI methodology, 25
+  \item bmi pro, 13, 20
+  \item bmi rm, 23
+  \item bmi snap, 13
+  \item bmi snap create, 21
+  \item bmi snap rm, 22
+
+  \indexspace
+
+  \item Ceph, 6, 16
+  \item Ceph image database name format, 27
+  \item ceph-deploy, 16
+  \item clone, 25
+  \item clone-and-flatten, 26
+  \item Clone-Snapshot workflow, 25
+  \item configuring User Acceptance Tests, 33
+
+  \indexspace
+
+  \item deprovision, 21
+  \item DHCP, 4
+  \item DHCPDISCOVER, 5
+
+  \indexspace
+
+  \item Einstein, 9
+
+  \indexspace
+
+  \item flatten, 25
+
+  \indexspace
+
+  \item Golden Image, 26
+
+  \indexspace
+
+  \item Hardware Isolation Layer (HIL), 3
+  \item HIL, 4
+
+  \indexspace
+
+  \item import, 19
+  \item initiator, 5
+  \item Intelligent Platform Management Interface (IPMI), 5
+  \item IPMI, 5
+  \item IPMI network card, 7
+  \item iPXE, 5
+
+  \indexspace
+
+  \item multi-tenancy, 3
+
+  \indexspace
+
+  \item network isolation, 3
+
+  \indexspace
+
+  \item Open Cloud eXchange (OCX), 3
+  \item out-of-band management (OOBM), 5
+
+  \indexspace
+
+  \item Picasso, 9
+  \item power-cycle the nodes, 5
+  \item Preboot Execution Environment (PXE), 4, 5
+  \item provision, 4, 20
+  \item PXE, 5
+
+  \indexspace
+
+  \item RADOS Block Device (RBD), 6, 25
+  \item RBD, 16
+  \item rbd create, 18
+  \item rbd ls, 23
+  \item rbd rm, 23
+  \item remove a snapshot, 22
+  \item remove an image, 22
+  \item REST service, 7
+  \item RPC calls, 8
+  \item running User Acceptance Tests, 34
+
+  \indexspace
+
+  \item SCSI, 5
+  \item snapshot, 21, 22, 25
+
+  \indexspace
+
+  \item targets, 5
+  \item TGT, 6
+  \item Trivial FTP, 5
+  \item trunking, 4
+
+  \indexspace
+
+  \item User Acceptance Testing (UAT), 31
+
+  \indexspace
+
+  \item Virtual LAN (VLAN), 4
+  \item virtualenv, 24
+  \item VLAN ID, 4
+
+\end{theindex}
