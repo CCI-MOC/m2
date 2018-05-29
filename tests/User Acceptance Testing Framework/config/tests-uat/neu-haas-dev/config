@@ -1,0 +1,15 @@
+
+export BMI_RELEASE_NAME=moc-0.5-release
+
+export BMI_PROJECT=bmi_infra
+export HIL_NODE=cisco-05
+export HIL_NIC=enp130s0f0
+export HIL_NETWORK=bmi-provision-dev
+export BMI_IMAGE_NAME=bmi-test-image
+export BMI_SNAPSHOT_NAME=bmi-test-image-snapshot
+
+export BMI_CONFIG=/etc/bmi/*********.cfg
+export HIL_ENDPOINT=*********
+export HIL_USERNAME=*********
+export HIL_PASSWORD=*********
+

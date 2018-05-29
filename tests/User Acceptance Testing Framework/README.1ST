@@ -1,0 +1,96 @@
+
+
+NOTE: This is a quick-start guide, and it is recommended that you read the complete BMI Administrator's Guide - User Acceptance Testing Framework.
+
+UAT Tests for BMI
+~~~~~~~~~~~~~~~~~
+
+1. To list the available BMI service configurations to test for, type the
+following:
+
+ ./bmi-uat.py ls
+
+You should see something like the following:
+
+  
+  The available configurations are:
+
+  neu-haas-dev
+
+2. To run the standard end-to-end configuration, type the following:
+
+  ./bmi-uat.py --run BMI_SERVICE_CONFIGURATION
+
+  Example:
+
+  ./bmi-uat.py --run neu-haas-dev
+
+3. To run with randomized the parameters, type the following where the number
+   indicates the number of times to run the test:
+
+  ./bmi-uat.py --run neu-haas-dev --randomize 3
+
+4. To check if the tests passed or failed, type the following:
+
+  ./bmi-uat.py check
+
+  You should see the following:
+ 
+    All tests passed!
+
+  This test check the 'test-results' directory for any FAIL in the directory
+  name.
+ 
+5. To cleanup all previous results, type the following:
+
+  ./bmi-uat.py clean
+
+
+Configuring a BMI Service to test
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Copy the 'acceptance-tests' directory to the new environment.
+
+2. Proceed to the 'config/tests-uat' directory and duplicate recursively one of
+   the configuration, as such:
+
+     cp -r neu-haas-dev NEW_BMI_SERVICE_TO_TEST
+
+   Example:
+
+     cp -r neu-haas-dev prb-bu-dev
+
+3. Enter the newly created directory and update the 'config' file accordingly.
+   Below is an example of one:
+
+     export BMI_RELEASE_NAME=moc-0.5-release
+
+     export BMI_PROJECT=bmi_infra
+     export HIL_NODE=bmi_node
+     export HIL_NIC=bmi_port
+     export HIL_NETWORK=bmi_network
+     export BMI_IMAGE_NAME=bmi-test-image
+     export BMI_SNAPSHOT_NAME=bmi-test-image-snapshot
+
+     export BMI_CONFIG=/etc/bmi/bmiconfig.cfg
+     export HIL_ENDPOINT=http://127.0.0.1:8000
+     export HIL_USERNAME=hil
+     export HIL_PASSWORD=secret
+
+4. Then update the 'bmi_config.sh' file, for just the following
+   variables:
+
+     export BMI_INSTANCE_DIR=${HOME}/pgrosu/ims-instance
+     export ACCEPTANCE_TESTS_SRC_DIR=${HOME}/pgrosu/acceptance-tests
+
+   The BMI_INSTANCE_DIR variable denotes where you would like the git-cloned
+   BMI instance to reside, on which the tests will be run.
+
+   The ACCEPTANCE_TESTS_SRC_DIR variable denotes the location of the acceptance
+   tests directory from which you will run the ./bmi-uat.py command.
+
+
+For any questions, please contact Paul Grosu (pgrosu@gmail.com) or any members
+of the BMI team.
+
+

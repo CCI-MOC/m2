@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Argument 1: BMI project name
+# Argument 2: Golden image name
+# Argument 3: Ceph image name
+# Example: ./cleanup-bmi bmi_infra bmi-test-image 5img7
+#
+#          Might need to remove the tgt advertisement as such:
+#
+#          tgt-admin --delete 5img8
+#
+
+PROJECT=$1
+GOLDEN_IMAGE=$2
+CLONE_NAME=$3
+
+# Delete $CLONE_NAME from ceph directly
+rbd snap unprotect ${CLONE_NAME}@snapshot
+rbd snap purge $CLONE_NAME
+rbd rm $CLONE_NAME
+
+# Delete $GOLDEN_IMAGE from ceph directly
+rbd snap unprotect ${GOLDEN_IMAGE}@snapshot
+rbd snap purge $GOLDEN_IMAGE
+rbd rm $GOLDEN_IMAGE
+
+# Delete db entry from BMI database - shouldn't fail because this is just db
+# operations.
+bmi db rm $PROJECT $GOLDEN_IMAGE
+
+# Extra Examples
+# ~~~~~~~~~~~~~~
+#
+#./cleanup-bmi bmi_infra bmi-test-image 5img8
+#./cleanup-bmi bmi_infra bmi-test-image 5img7
+#bmi dpro bmi_infra cisco-05 bmi-provision-dev enp130s0f0
+#bmi rm bmi_infra bmi-test-image
+#tgt-admin --delete 5img8
+#bmi pro bmi_infra cisco-05 bmi-test-image bmi-provision-dev enp130s0f0
+# . source_initiate-random-acceptance-tests.sh

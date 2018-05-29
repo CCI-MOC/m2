@@ -1,0 +1,19 @@
+\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
+\defcounter {refsection}{0}\relax 
+\select@language {english}
+\contentsline {chapter}{Contents}{ii}{section*.1}
+\contentsline {part}{\partnumberline {I}An Approach to Delivering Defect-Free Software Products}{1}{part.1}
+\contentsline {chapter}{\chapternumberline {1}Document-Driven Testing for Optimal Deployments}{3}{chapter.1}
+\contentsline {section}{\numberline {1.1}How to guarantee a defect-free software product}{3}{section.1.1}
+\contentsline {section}{\numberline {1.2}Testing Under Changing Environments Via System Testing}{4}{section.1.2}
+\contentsline {section}{\numberline {1.3}Behavior-Driven Development: A Scientific-Method Approach to Testing}{5}{section.1.3}
+\contentsline {part}{\partnumberline {II}Getting Started With The User Acceptance Testing Framework}{9}{part.2}
+\contentsline {chapter}{\chapternumberline {2}The User Acceptance Testing Framework}{11}{chapter.2}
+\contentsline {section}{\numberline {2.1}The User Acceptance Testing Architecture}{11}{section.2.1}
+\contentsline {subsection}{\numberline {2.1.1}Configuring a Testing Environment}{12}{subsection.2.1.1}
+\contentsline {subsection}{\numberline {2.1.2}Structure of Test Directory}{13}{subsection.2.1.2}
+\contentsline {subsection}{\numberline {2.1.3}The \texttt {config} file}{13}{subsection.2.1.3}
+\contentsline {section}{\numberline {2.2}Preparing The Environment \\}{14}{section.2.2}
+\contentsline {section}{\numberline {2.3}Performing the Acceptance Tests \\}{15}{section.2.3}
+\contentsline {subsection}{\numberline {2.3.1}Entering an Interactive Session}{17}{subsection.2.3.1}
+\contentsline {chapter}{Index}{19}{section*.4}

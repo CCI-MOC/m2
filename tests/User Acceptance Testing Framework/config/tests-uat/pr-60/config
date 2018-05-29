@@ -1,0 +1,14 @@
+
+export BMI_RELEASE_NAME=moc-0.5-release
+
+export BMI_PROJECT=bmi_infra
+export HIL_NODE=bmi_node
+export HIL_NIC=bmi_port
+export HIL_NETWORK=bmi_network
+export BMI_IMAGE_NAME=bmi-test-image
+export BMI_SNAPSHOT_NAME=bmi-test-image-snapshot
+
+export BMI_CONFIG=/etc/bmi/bmiconfig.cfg
+#export HIL_ENDPOINT=http://127.0.0.1:8000
+export HIL_USERNAME=hil
+export HIL_PASSWORD=secret

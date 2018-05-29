@@ -1,0 +1,1083 @@
+Running prb-bmi-dev-import-rm-test using the default configuration...
+
+--------------------------------------------------
+  Preparing the Acceptance Test environment...
+--------------------------------------------------
+
+Cloning into 'ims'...
+New python executable in ./bin/python
+Installing Setuptools..............................................................................................................................................................................................................................done.
+Installing Pip.....................................................................................................................................................................................................................................................................................................................................done.
+
+--------------------------------------------------
+  Preparing the BMI environment...
+--------------------------------------------------
+
+Obtaining file:///home/bmi/ims-instance/ims
+  Running setup.py egg_info for package from file:///home/bmi/ims-instance/ims
+    
+Downloading/unpacking pyro4==4.41 (from ims==0.3)
+  Running setup.py egg_info for package pyro4
+    Pyro version = 4.41
+    
+    warning: no previously-included files matching '*/.svn/*' found anywhere in distribution
+    warning: no previously-included files matching '*/.idea/*' found anywhere in distribution
+    warning: no previously-included files matching '*.class' found anywhere in distribution
+    warning: no previously-included files matching '*.pyc' found anywhere in distribution
+    warning: no previously-included files matching '*.pyo' found anywhere in distribution
+    warning: no previously-included files matching '*.coverage' found anywhere in distribution
+    warning: no previously-included files matching 'nosetests.xml' found anywhere in distribution
+    warning: no previously-included files matching '.git' found anywhere in distribution
+    warning: no previously-included files matching '.gitignore' found anywhere in distribution
+    warning: no previously-included files matching '.tox' found anywhere in distribution
+    warning: no previously-included files matching '__pycache__' found anywhere in distribution
+Downloading/unpacking requests (from ims==0.3)
+  Running setup.py egg_info for package requests
+    
+    warning: no files found matching 'NOTICE'
+Downloading/unpacking flask (from ims==0.3)
+  Running setup.py egg_info for package flask
+    
+    warning: no previously-included files matching '*.py[co]' found anywhere in distribution
+    no previously-included directories found matching 'docs/_build'
+    no previously-included directories found matching 'docs/_themes'
+Downloading/unpacking sqlalchemy>=1.0.13 (from ims==0.3)
+  Running setup.py egg_info for package sqlalchemy
+    
+    warning: no files found matching '*.jpg' under directory 'doc'
+    warning: no files found matching '*.mako' under directory 'doc'
+    warning: no files found matching 'distribute_setup.py'
+    warning: no files found matching 'sa2to3.py'
+    warning: no files found matching 'ez_setup.py'
+    no previously-included directories found matching 'doc/build/output'
+Downloading/unpacking click (from ims==0.3)
+  Running setup.py egg_info for package click
+    
+    warning: no previously-included files matching '*.pyc' found under directory 'docs'
+    warning: no previously-included files matching '*.pyo' found under directory 'docs'
+    warning: no previously-included files matching '*.pyc' found under directory 'tests'
+    warning: no previously-included files matching '*.pyo' found under directory 'tests'
+    warning: no previously-included files matching '*.pyc' found under directory 'examples'
+    warning: no previously-included files matching '*.pyo' found under directory 'examples'
+    no previously-included directories found matching 'docs/_build'
+Downloading/unpacking prettytable (from ims==0.3)
+  Downloading prettytable-0.7.2.zip
+  Running setup.py egg_info for package prettytable
+    
+Downloading/unpacking sh (from ims==0.3)
+  Running setup.py egg_info for package sh
+    
+    warning: no previously-included files matching '*.pyc' found anywhere in distribution
+Downloading/unpacking serpent>=1.11 (from pyro4==4.41->ims==0.3)
+  Downloading serpent-1.23.tar.gz
+  Running setup.py egg_info for package serpent
+    
+Downloading/unpacking chardet>=3.0.2,<3.1.0 (from requests->ims==0.3)
+  Running setup.py egg_info for package chardet
+    
+    warning: no files found matching 'requirements.txt'
+Downloading/unpacking idna>=2.5,<2.6 (from requests->ims==0.3)
+  Running setup.py egg_info for package idna
+    
+    warning: no previously-included files matching '*.pyc' found under directory 'tools'
+    warning: no previously-included files matching '*.pyc' found under directory 'tests'
+Downloading/unpacking urllib3>=1.21.1,<1.22 (from requests->ims==0.3)
+  Running setup.py egg_info for package urllib3
+    
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+Downloading/unpacking certifi>=2017.4.17 (from requests->ims==0.3)
+  Running setup.py egg_info for package certifi
+    
+Downloading/unpacking Werkzeug>=0.7 (from flask->ims==0.3)
+  Running setup.py egg_info for package Werkzeug
+    
+    no previously-included directories found matching 'docs/_build'
+    no previously-included directories found matching 'docs/_themes'
+    warning: no previously-included files matching '*.py[cdo]' found anywhere in distribution
+    warning: no previously-included files matching '__pycache__' found anywhere in distribution
+    warning: no previously-included files matching '*.so' found anywhere in distribution
+    warning: no previously-included files matching '*.pyd' found anywhere in distribution
+Downloading/unpacking Jinja2>=2.4 (from flask->ims==0.3)
+  Running setup.py egg_info for package Jinja2
+    
+    warning: no files found matching 'run-tests.py'
+    warning: no files found matching '*' under directory 'custom_fixers'
+    warning: no files found matching '*' under directory 'jinja2/testsuite/res'
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+    warning: no previously-included files matching '*.pyc' found under directory 'jinja2'
+    warning: no previously-included files matching '*.pyc' found under directory 'docs'
+    warning: no previously-included files matching '*.pyo' found under directory 'jinja2'
+    warning: no previously-included files matching '*.pyo' found under directory 'docs'
+Downloading/unpacking itsdangerous>=0.21 (from flask->ims==0.3)
+  Running setup.py egg_info for package itsdangerous
+    
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+Downloading/unpacking MarkupSafe>=0.23 (from Jinja2>=2.4->flask->ims==0.3)
+  Downloading MarkupSafe-1.0.tar.gz
+  Running setup.py egg_info for package MarkupSafe
+    
+Installing collected packages: pyro4, requests, flask, sqlalchemy, click, prettytable, sh, ims, serpent, chardet, idna, urllib3, certifi, Werkzeug, Jinja2, itsdangerous, MarkupSafe
+  Running setup.py install for pyro4
+    Pyro version = 4.41
+    
+    warning: no previously-included files matching '*/.svn/*' found anywhere in distribution
+    warning: no previously-included files matching '*/.idea/*' found anywhere in distribution
+    warning: no previously-included files matching '*.class' found anywhere in distribution
+    warning: no previously-included files matching '*.pyc' found anywhere in distribution
+    warning: no previously-included files matching '*.pyo' found anywhere in distribution
+    warning: no previously-included files matching '*.coverage' found anywhere in distribution
+    warning: no previously-included files matching 'nosetests.xml' found anywhere in distribution
+    warning: no previously-included files matching '.git' found anywhere in distribution
+    warning: no previously-included files matching '.gitignore' found anywhere in distribution
+    warning: no previously-included files matching '.tox' found anywhere in distribution
+    warning: no previously-included files matching '__pycache__' found anywhere in distribution
+    Installing pyro4-flameserver script to /home/bmi/ims-instance/ims/bin
+    Installing pyro4-ns script to /home/bmi/ims-instance/ims/bin
+    Installing pyro4-nsc script to /home/bmi/ims-instance/ims/bin
+    Installing pyro4-check-config script to /home/bmi/ims-instance/ims/bin
+    Installing pyro4-test-echoserver script to /home/bmi/ims-instance/ims/bin
+    Installing pyro4-httpgateway script to /home/bmi/ims-instance/ims/bin
+    
+    Only the Pyro library has been installed (version 4.41).
+    If you want to install the tests, the examples, and/or the manual,
+    you have to copy them manually to the desired location.
+  Running setup.py install for requests
+    
+    warning: no files found matching 'NOTICE'
+  Running setup.py install for flask
+    
+    warning: no previously-included files matching '*.py[co]' found anywhere in distribution
+    no previously-included directories found matching 'docs/_build'
+    no previously-included directories found matching 'docs/_themes'
+    Installing flask script to /home/bmi/ims-instance/ims/bin
+  Running setup.py install for sqlalchemy
+    building 'sqlalchemy.cprocessors' extension
+    gcc -pthread -fno-strict-aliasing -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -DNDEBUG -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -fPIC -I/usr/include/python2.7 -c lib/sqlalchemy/cextension/processors.c -o build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/processors.o
+    gcc -pthread -shared -Wl,-z,relro build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/processors.o -L/usr/lib64 -lpython2.7 -o build/lib.linux-x86_64-2.7/sqlalchemy/cprocessors.so
+    building 'sqlalchemy.cresultproxy' extension
+    gcc -pthread -fno-strict-aliasing -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -DNDEBUG -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -fPIC -I/usr/include/python2.7 -c lib/sqlalchemy/cextension/resultproxy.c -o build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/resultproxy.o
+    gcc -pthread -shared -Wl,-z,relro build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/resultproxy.o -L/usr/lib64 -lpython2.7 -o build/lib.linux-x86_64-2.7/sqlalchemy/cresultproxy.so
+    building 'sqlalchemy.cutils' extension
+    gcc -pthread -fno-strict-aliasing -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -DNDEBUG -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -fPIC -I/usr/include/python2.7 -c lib/sqlalchemy/cextension/utils.c -o build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/utils.o
+    gcc -pthread -shared -Wl,-z,relro build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/utils.o -L/usr/lib64 -lpython2.7 -o build/lib.linux-x86_64-2.7/sqlalchemy/cutils.so
+    
+    warning: no files found matching '*.jpg' under directory 'doc'
+    warning: no files found matching '*.mako' under directory 'doc'
+    warning: no files found matching 'distribute_setup.py'
+    warning: no files found matching 'sa2to3.py'
+    warning: no files found matching 'ez_setup.py'
+    no previously-included directories found matching 'doc/build/output'
+  Running setup.py install for click
+    
+    warning: no previously-included files matching '*.pyc' found under directory 'docs'
+    warning: no previously-included files matching '*.pyo' found under directory 'docs'
+    warning: no previously-included files matching '*.pyc' found under directory 'tests'
+    warning: no previously-included files matching '*.pyo' found under directory 'tests'
+    warning: no previously-included files matching '*.pyc' found under directory 'examples'
+    warning: no previously-included files matching '*.pyo' found under directory 'examples'
+    no previously-included directories found matching 'docs/_build'
+  Running setup.py install for prettytable
+    
+  Running setup.py install for sh
+    
+    warning: no previously-included files matching '*.pyc' found anywhere in distribution
+  Running setup.py develop for ims
+    
+    Creating /home/bmi/ims-instance/ims/lib/python2.7/site-packages/ims.egg-link (link to .)
+    Adding ims 0.3 to easy-install.pth file
+    Installing bmi script to /home/bmi/ims-instance/ims/bin
+    Installing einstein_server script to /home/bmi/ims-instance/ims/bin
+    Installing picasso_server script to /home/bmi/ims-instance/ims/bin
+    
+    Installed /home/bmi/ims-instance/ims
+  Running setup.py install for serpent
+    
+  Running setup.py install for chardet
+    
+    warning: no files found matching 'requirements.txt'
+    Installing chardetect script to /home/bmi/ims-instance/ims/bin
+  Running setup.py install for idna
+    
+    warning: no previously-included files matching '*.pyc' found under directory 'tools'
+    warning: no previously-included files matching '*.pyc' found under directory 'tests'
+  Running setup.py install for urllib3
+    
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+  Running setup.py install for certifi
+    
+  Running setup.py install for Werkzeug
+    
+    no previously-included directories found matching 'docs/_build'
+    no previously-included directories found matching 'docs/_themes'
+    warning: no previously-included files matching '*.py[cdo]' found anywhere in distribution
+    warning: no previously-included files matching '__pycache__' found anywhere in distribution
+    warning: no previously-included files matching '*.so' found anywhere in distribution
+    warning: no previously-included files matching '*.pyd' found anywhere in distribution
+  Running setup.py install for Jinja2
+    
+    warning: no files found matching 'run-tests.py'
+    warning: no files found matching '*' under directory 'custom_fixers'
+    warning: no files found matching '*' under directory 'jinja2/testsuite/res'
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+    warning: no previously-included files matching '*.pyc' found under directory 'jinja2'
+    warning: no previously-included files matching '*.pyc' found under directory 'docs'
+    warning: no previously-included files matching '*.pyo' found under directory 'jinja2'
+    warning: no previously-included files matching '*.pyo' found under directory 'docs'
+      File "/home/bmi/ims-instance/ims/lib/python2.7/site-packages/jinja2/asyncfilters.py", line 7
+        async def auto_to_seq(value):
+                ^
+    SyntaxError: invalid syntax
+    
+      File "/home/bmi/ims-instance/ims/lib/python2.7/site-packages/jinja2/asyncsupport.py", line 22
+        async def concat_async(async_gen):
+                ^
+    SyntaxError: invalid syntax
+    
+  Running setup.py install for itsdangerous
+    
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+  Running setup.py install for MarkupSafe
+    
+    building 'markupsafe._speedups' extension
+    gcc -pthread -fno-strict-aliasing -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -DNDEBUG -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -fPIC -I/usr/include/python2.7 -c markupsafe/_speedups.c -o build/temp.linux-x86_64-2.7/markupsafe/_speedups.o
+    gcc -pthread -shared -Wl,-z,relro build/temp.linux-x86_64-2.7/markupsafe/_speedups.o -L/usr/lib64 -lpython2.7 -o build/lib.linux-x86_64-2.7/markupsafe/_speedups.so
+Successfully installed pyro4 requests flask sqlalchemy click prettytable sh ims serpent chardet idna urllib3 certifi Werkzeug Jinja2 itsdangerous MarkupSafe
+Cleaning up...
+Downloading/unpacking python-cephlibs
+  Downloading python-cephlibs-0.94.5.post1.tar.gz
+  Running setup.py egg_info for package python-cephlibs
+    
+Installing collected packages: python-cephlibs
+  Running setup.py install for python-cephlibs
+    
+Successfully installed python-cephlibs
+Cleaning up...
+Downloading/unpacking behave
+  Running setup.py egg_info for package behave
+    
+    warning: no files found matching '*.zip' under directory 'bin'
+    warning: no files found matching '*.txt' under directory 'etc'
+    warning: no files found matching '*.txt' under directory 'more.features'
+    no previously-included directories found matching '.tox'
+Downloading/unpacking parse>=1.6.3 (from behave)
+  Downloading parse-1.8.2.tar.gz
+  Running setup.py egg_info for package parse
+    
+Downloading/unpacking parse-type>=0.3.4 (from behave)
+  Running setup.py egg_info for package parse-type
+    
+    warning: no files found matching '*.txt'
+    warning: no files found matching '*.rst' under directory 'docs'
+    warning: no files found matching '*.txt' under directory 'docs'
+    warning: no files found matching '*.py' under directory 'docs'
+    no previously-included directories found matching '.tox'
+Downloading/unpacking six (from behave)
+  Downloading six-1.10.0.tar.gz
+  Running setup.py egg_info for package six
+    
+    no previously-included directories found matching 'documentation/_build'
+Downloading/unpacking enum34 (from parse-type>=0.3.4->behave)
+  Running setup.py egg_info for package enum34
+    
+Installing collected packages: behave, parse, parse-type, six, enum34
+  Running setup.py install for behave
+    
+    warning: no files found matching '*.zip' under directory 'bin'
+    warning: no files found matching '*.txt' under directory 'etc'
+    warning: no files found matching '*.txt' under directory 'more.features'
+    no previously-included directories found matching '.tox'
+    Installing behave script to /home/bmi/ims-instance/ims/bin
+  Running setup.py install for parse
+    
+  Running setup.py install for parse-type
+    
+    warning: no files found matching '*.txt'
+    warning: no files found matching '*.rst' under directory 'docs'
+    warning: no files found matching '*.txt' under directory 'docs'
+    warning: no files found matching '*.py' under directory 'docs'
+    no previously-included directories found matching '.tox'
+  Running setup.py install for six
+    
+    no previously-included directories found matching 'documentation/_build'
+  Running setup.py install for enum34
+    
+Successfully installed behave parse parse-type six enum34
+Cleaning up...
+
+--------------------------------------------------
+  Starting the Acceptance Tests...
+--------------------------------------------------
+
+Feature: Running a round of create/import/remove between Ceph and BMI # tests/bdd/features/moc-0.5-release/end-to-end-acceptance-test.feature:1
+
+  Scenario: Importing/Removing Image, DB/Ceph consistency  # tests/bdd/features/moc-0.5-release/end-to-end-acceptance-test.feature:3
+    Given RBD will create an image                         # tests/bdd/steps/rbd_create.py:8
+      | image_name     |
+      | bmi-test-image |
+      -> Checking that no pre-existing bmi-test-image is present in Ceph, before creating it...
+         Running: rbd ls | grep bmi-test-image
+      -> Creating the bmi-test-image image in Ceph...
+         Running: rbd create bmi-test-image --size 1 --image-format 2
+      -> Checking that bmi-test-image exists in Ceph...
+         Running: rbd ls | grep bmi-test-image
+    When BMI will import an image                          # tests/bdd/steps/bmi_import.py:7
+      | image_name     | project_name |
+      | bmi-test-image | bmi_dev      |
+         Running: bmi import bmi_dev bmi-test-image
+      -> Checking that bmi-test-image exists in Ceph...
+         Running: bmi db ls | grep bmi-test-image
+      -> Checking that 2img3 exists in BMI's database...
+         Running: rbd ls | grep 2img3
+    And BMI will remove an image                           # tests/bdd/steps/bmi_rm.py:4
+      | image_name     | project_name |
+      | bmi-test-image | bmi_dev      |
+         Running: bmi rm bmi_dev bmi-test-image
+      -> Checking that 2img3 is removed from BMI's database...
+         Running: bmi db ls | grep 2img3
+      -> Checking that 2img3 is removed from Ceph...
+         Running: rbd ls | grep 2img3
+    Then RBD will confirm the removed image's clone        # tests/bdd/steps/rbd_rm.py:4
+      | image_name     | project_name |
+      | bmi-test-image | bmi_dev      |
+      -> Checking that 2img3 is removed from Ceph...
+         Running: rbd ls | grep 2img3
+    And RBD will remove the created image                  # tests/bdd/steps/rbd_rm.py:23
+      | image_name     |
+      | bmi-test-image |
+         Running: rbd rm bmi-test-image
+      -> Checking that bmi-test-image is removed from Ceph...
+         Running: rbd ls | grep image_name
+
+1 feature passed, 0 failed, 0 skipped
+1 scenario passed, 0 failed, 0 skipped
+5 steps passed, 0 failed, 0 skipped, 0 undefined
+Took 0m16.952s
+
+--------------------------------------------------
+  Completion of Acceptance Tests!
+--------------------------------------------------
+
+  === BMI passed the acceptance criteria! === 
+
+Running prb-bmi-dev-import-rm-test using the default configuration...
+
+--------------------------------------------------
+  Preparing the Acceptance Test environment...
+--------------------------------------------------
+
+Cloning into 'ims'...
+New python executable in ./bin/python
+Installing Setuptools..............................................................................................................................................................................................................................done.
+Installing Pip.....................................................................................................................................................................................................................................................................................................................................done.
+
+--------------------------------------------------
+  Preparing the BMI environment...
+--------------------------------------------------
+
+Obtaining file:///home/bmi/ims-instance/ims
+  Running setup.py egg_info for package from file:///home/bmi/ims-instance/ims
+    
+Downloading/unpacking pyro4==4.41 (from ims==0.3)
+  Running setup.py egg_info for package pyro4
+    Pyro version = 4.41
+    
+    warning: no previously-included files matching '*/.svn/*' found anywhere in distribution
+    warning: no previously-included files matching '*/.idea/*' found anywhere in distribution
+    warning: no previously-included files matching '*.class' found anywhere in distribution
+    warning: no previously-included files matching '*.pyc' found anywhere in distribution
+    warning: no previously-included files matching '*.pyo' found anywhere in distribution
+    warning: no previously-included files matching '*.coverage' found anywhere in distribution
+    warning: no previously-included files matching 'nosetests.xml' found anywhere in distribution
+    warning: no previously-included files matching '.git' found anywhere in distribution
+    warning: no previously-included files matching '.gitignore' found anywhere in distribution
+    warning: no previously-included files matching '.tox' found anywhere in distribution
+    warning: no previously-included files matching '__pycache__' found anywhere in distribution
+Downloading/unpacking requests (from ims==0.3)
+  Running setup.py egg_info for package requests
+    
+    warning: no files found matching 'NOTICE'
+Downloading/unpacking flask (from ims==0.3)
+  Running setup.py egg_info for package flask
+    
+    warning: no previously-included files matching '*.py[co]' found anywhere in distribution
+    no previously-included directories found matching 'docs/_build'
+    no previously-included directories found matching 'docs/_themes'
+Downloading/unpacking sqlalchemy>=1.0.13 (from ims==0.3)
+  Running setup.py egg_info for package sqlalchemy
+    
+    warning: no files found matching '*.jpg' under directory 'doc'
+    warning: no files found matching '*.mako' under directory 'doc'
+    warning: no files found matching 'distribute_setup.py'
+    warning: no files found matching 'sa2to3.py'
+    warning: no files found matching 'ez_setup.py'
+    no previously-included directories found matching 'doc/build/output'
+Downloading/unpacking click (from ims==0.3)
+  Running setup.py egg_info for package click
+    
+    warning: no previously-included files matching '*.pyc' found under directory 'docs'
+    warning: no previously-included files matching '*.pyo' found under directory 'docs'
+    warning: no previously-included files matching '*.pyc' found under directory 'tests'
+    warning: no previously-included files matching '*.pyo' found under directory 'tests'
+    warning: no previously-included files matching '*.pyc' found under directory 'examples'
+    warning: no previously-included files matching '*.pyo' found under directory 'examples'
+    no previously-included directories found matching 'docs/_build'
+Downloading/unpacking prettytable (from ims==0.3)
+  Downloading prettytable-0.7.2.zip
+  Running setup.py egg_info for package prettytable
+    
+Downloading/unpacking sh (from ims==0.3)
+  Running setup.py egg_info for package sh
+    
+    warning: no previously-included files matching '*.pyc' found anywhere in distribution
+Downloading/unpacking serpent>=1.11 (from pyro4==4.41->ims==0.3)
+  Downloading serpent-1.23.tar.gz
+  Running setup.py egg_info for package serpent
+    
+Downloading/unpacking chardet>=3.0.2,<3.1.0 (from requests->ims==0.3)
+  Running setup.py egg_info for package chardet
+    
+    warning: no files found matching 'requirements.txt'
+Downloading/unpacking idna>=2.5,<2.6 (from requests->ims==0.3)
+  Running setup.py egg_info for package idna
+    
+    warning: no previously-included files matching '*.pyc' found under directory 'tools'
+    warning: no previously-included files matching '*.pyc' found under directory 'tests'
+Downloading/unpacking urllib3>=1.21.1,<1.22 (from requests->ims==0.3)
+  Running setup.py egg_info for package urllib3
+    
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+Downloading/unpacking certifi>=2017.4.17 (from requests->ims==0.3)
+  Running setup.py egg_info for package certifi
+    
+Downloading/unpacking Werkzeug>=0.7 (from flask->ims==0.3)
+  Running setup.py egg_info for package Werkzeug
+    
+    no previously-included directories found matching 'docs/_build'
+    no previously-included directories found matching 'docs/_themes'
+    warning: no previously-included files matching '*.py[cdo]' found anywhere in distribution
+    warning: no previously-included files matching '__pycache__' found anywhere in distribution
+    warning: no previously-included files matching '*.so' found anywhere in distribution
+    warning: no previously-included files matching '*.pyd' found anywhere in distribution
+Downloading/unpacking Jinja2>=2.4 (from flask->ims==0.3)
+  Running setup.py egg_info for package Jinja2
+    
+    warning: no files found matching 'run-tests.py'
+    warning: no files found matching '*' under directory 'custom_fixers'
+    warning: no files found matching '*' under directory 'jinja2/testsuite/res'
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+    warning: no previously-included files matching '*.pyc' found under directory 'jinja2'
+    warning: no previously-included files matching '*.pyc' found under directory 'docs'
+    warning: no previously-included files matching '*.pyo' found under directory 'jinja2'
+    warning: no previously-included files matching '*.pyo' found under directory 'docs'
+Downloading/unpacking itsdangerous>=0.21 (from flask->ims==0.3)
+  Running setup.py egg_info for package itsdangerous
+    
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+Downloading/unpacking MarkupSafe>=0.23 (from Jinja2>=2.4->flask->ims==0.3)
+  Downloading MarkupSafe-1.0.tar.gz
+  Running setup.py egg_info for package MarkupSafe
+    
+Installing collected packages: pyro4, requests, flask, sqlalchemy, click, prettytable, sh, ims, serpent, chardet, idna, urllib3, certifi, Werkzeug, Jinja2, itsdangerous, MarkupSafe
+  Running setup.py install for pyro4
+    Pyro version = 4.41
+    
+    warning: no previously-included files matching '*/.svn/*' found anywhere in distribution
+    warning: no previously-included files matching '*/.idea/*' found anywhere in distribution
+    warning: no previously-included files matching '*.class' found anywhere in distribution
+    warning: no previously-included files matching '*.pyc' found anywhere in distribution
+    warning: no previously-included files matching '*.pyo' found anywhere in distribution
+    warning: no previously-included files matching '*.coverage' found anywhere in distribution
+    warning: no previously-included files matching 'nosetests.xml' found anywhere in distribution
+    warning: no previously-included files matching '.git' found anywhere in distribution
+    warning: no previously-included files matching '.gitignore' found anywhere in distribution
+    warning: no previously-included files matching '.tox' found anywhere in distribution
+    warning: no previously-included files matching '__pycache__' found anywhere in distribution
+    Installing pyro4-flameserver script to /home/bmi/ims-instance/ims/bin
+    Installing pyro4-ns script to /home/bmi/ims-instance/ims/bin
+    Installing pyro4-nsc script to /home/bmi/ims-instance/ims/bin
+    Installing pyro4-check-config script to /home/bmi/ims-instance/ims/bin
+    Installing pyro4-test-echoserver script to /home/bmi/ims-instance/ims/bin
+    Installing pyro4-httpgateway script to /home/bmi/ims-instance/ims/bin
+    
+    Only the Pyro library has been installed (version 4.41).
+    If you want to install the tests, the examples, and/or the manual,
+    you have to copy them manually to the desired location.
+  Running setup.py install for requests
+    
+    warning: no files found matching 'NOTICE'
+  Running setup.py install for flask
+    
+    warning: no previously-included files matching '*.py[co]' found anywhere in distribution
+    no previously-included directories found matching 'docs/_build'
+    no previously-included directories found matching 'docs/_themes'
+    Installing flask script to /home/bmi/ims-instance/ims/bin
+  Running setup.py install for sqlalchemy
+    building 'sqlalchemy.cprocessors' extension
+    gcc -pthread -fno-strict-aliasing -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -DNDEBUG -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -fPIC -I/usr/include/python2.7 -c lib/sqlalchemy/cextension/processors.c -o build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/processors.o
+    gcc -pthread -shared -Wl,-z,relro build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/processors.o -L/usr/lib64 -lpython2.7 -o build/lib.linux-x86_64-2.7/sqlalchemy/cprocessors.so
+    building 'sqlalchemy.cresultproxy' extension
+    gcc -pthread -fno-strict-aliasing -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -DNDEBUG -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -fPIC -I/usr/include/python2.7 -c lib/sqlalchemy/cextension/resultproxy.c -o build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/resultproxy.o
+    gcc -pthread -shared -Wl,-z,relro build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/resultproxy.o -L/usr/lib64 -lpython2.7 -o build/lib.linux-x86_64-2.7/sqlalchemy/cresultproxy.so
+    building 'sqlalchemy.cutils' extension
+    gcc -pthread -fno-strict-aliasing -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -DNDEBUG -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -fPIC -I/usr/include/python2.7 -c lib/sqlalchemy/cextension/utils.c -o build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/utils.o
+    gcc -pthread -shared -Wl,-z,relro build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/utils.o -L/usr/lib64 -lpython2.7 -o build/lib.linux-x86_64-2.7/sqlalchemy/cutils.so
+    
+    warning: no files found matching '*.jpg' under directory 'doc'
+    warning: no files found matching '*.mako' under directory 'doc'
+    warning: no files found matching 'distribute_setup.py'
+    warning: no files found matching 'sa2to3.py'
+    warning: no files found matching 'ez_setup.py'
+    no previously-included directories found matching 'doc/build/output'
+  Running setup.py install for click
+    
+    warning: no previously-included files matching '*.pyc' found under directory 'docs'
+    warning: no previously-included files matching '*.pyo' found under directory 'docs'
+    warning: no previously-included files matching '*.pyc' found under directory 'tests'
+    warning: no previously-included files matching '*.pyo' found under directory 'tests'
+    warning: no previously-included files matching '*.pyc' found under directory 'examples'
+    warning: no previously-included files matching '*.pyo' found under directory 'examples'
+    no previously-included directories found matching 'docs/_build'
+  Running setup.py install for prettytable
+    
+  Running setup.py install for sh
+    
+    warning: no previously-included files matching '*.pyc' found anywhere in distribution
+  Running setup.py develop for ims
+    
+    Creating /home/bmi/ims-instance/ims/lib/python2.7/site-packages/ims.egg-link (link to .)
+    Adding ims 0.3 to easy-install.pth file
+    Installing bmi script to /home/bmi/ims-instance/ims/bin
+    Installing einstein_server script to /home/bmi/ims-instance/ims/bin
+    Installing picasso_server script to /home/bmi/ims-instance/ims/bin
+    
+    Installed /home/bmi/ims-instance/ims
+  Running setup.py install for serpent
+    
+  Running setup.py install for chardet
+    
+    warning: no files found matching 'requirements.txt'
+    Installing chardetect script to /home/bmi/ims-instance/ims/bin
+  Running setup.py install for idna
+    
+    warning: no previously-included files matching '*.pyc' found under directory 'tools'
+    warning: no previously-included files matching '*.pyc' found under directory 'tests'
+  Running setup.py install for urllib3
+    
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+  Running setup.py install for certifi
+    
+  Running setup.py install for Werkzeug
+    
+    no previously-included directories found matching 'docs/_build'
+    no previously-included directories found matching 'docs/_themes'
+    warning: no previously-included files matching '*.py[cdo]' found anywhere in distribution
+    warning: no previously-included files matching '__pycache__' found anywhere in distribution
+    warning: no previously-included files matching '*.so' found anywhere in distribution
+    warning: no previously-included files matching '*.pyd' found anywhere in distribution
+  Running setup.py install for Jinja2
+    
+    warning: no files found matching 'run-tests.py'
+    warning: no files found matching '*' under directory 'custom_fixers'
+    warning: no files found matching '*' under directory 'jinja2/testsuite/res'
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+    warning: no previously-included files matching '*.pyc' found under directory 'jinja2'
+    warning: no previously-included files matching '*.pyc' found under directory 'docs'
+    warning: no previously-included files matching '*.pyo' found under directory 'jinja2'
+    warning: no previously-included files matching '*.pyo' found under directory 'docs'
+      File "/home/bmi/ims-instance/ims/lib/python2.7/site-packages/jinja2/asyncfilters.py", line 7
+        async def auto_to_seq(value):
+                ^
+    SyntaxError: invalid syntax
+    
+      File "/home/bmi/ims-instance/ims/lib/python2.7/site-packages/jinja2/asyncsupport.py", line 22
+        async def concat_async(async_gen):
+                ^
+    SyntaxError: invalid syntax
+    
+  Running setup.py install for itsdangerous
+    
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+  Running setup.py install for MarkupSafe
+    
+    building 'markupsafe._speedups' extension
+    gcc -pthread -fno-strict-aliasing -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -DNDEBUG -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -fPIC -I/usr/include/python2.7 -c markupsafe/_speedups.c -o build/temp.linux-x86_64-2.7/markupsafe/_speedups.o
+    gcc -pthread -shared -Wl,-z,relro build/temp.linux-x86_64-2.7/markupsafe/_speedups.o -L/usr/lib64 -lpython2.7 -o build/lib.linux-x86_64-2.7/markupsafe/_speedups.so
+Successfully installed pyro4 requests flask sqlalchemy click prettytable sh ims serpent chardet idna urllib3 certifi Werkzeug Jinja2 itsdangerous MarkupSafe
+Cleaning up...
+Downloading/unpacking python-cephlibs
+  Downloading python-cephlibs-0.94.5.post1.tar.gz
+  Running setup.py egg_info for package python-cephlibs
+    
+Installing collected packages: python-cephlibs
+  Running setup.py install for python-cephlibs
+    
+Successfully installed python-cephlibs
+Cleaning up...
+Downloading/unpacking behave
+  Running setup.py egg_info for package behave
+    
+    warning: no files found matching '*.zip' under directory 'bin'
+    warning: no files found matching '*.txt' under directory 'etc'
+    warning: no files found matching '*.txt' under directory 'more.features'
+    no previously-included directories found matching '.tox'
+Downloading/unpacking parse>=1.6.3 (from behave)
+  Downloading parse-1.8.2.tar.gz
+  Running setup.py egg_info for package parse
+    
+Downloading/unpacking parse-type>=0.3.4 (from behave)
+  Running setup.py egg_info for package parse-type
+    
+    warning: no files found matching '*.txt'
+    warning: no files found matching '*.rst' under directory 'docs'
+    warning: no files found matching '*.txt' under directory 'docs'
+    warning: no files found matching '*.py' under directory 'docs'
+    no previously-included directories found matching '.tox'
+Downloading/unpacking six (from behave)
+  Downloading six-1.10.0.tar.gz
+  Running setup.py egg_info for package six
+    
+    no previously-included directories found matching 'documentation/_build'
+Downloading/unpacking enum34 (from parse-type>=0.3.4->behave)
+  Running setup.py egg_info for package enum34
+    
+Installing collected packages: behave, parse, parse-type, six, enum34
+  Running setup.py install for behave
+    
+    warning: no files found matching '*.zip' under directory 'bin'
+    warning: no files found matching '*.txt' under directory 'etc'
+    warning: no files found matching '*.txt' under directory 'more.features'
+    no previously-included directories found matching '.tox'
+    Installing behave script to /home/bmi/ims-instance/ims/bin
+  Running setup.py install for parse
+    
+  Running setup.py install for parse-type
+    
+    warning: no files found matching '*.txt'
+    warning: no files found matching '*.rst' under directory 'docs'
+    warning: no files found matching '*.txt' under directory 'docs'
+    warning: no files found matching '*.py' under directory 'docs'
+    no previously-included directories found matching '.tox'
+  Running setup.py install for six
+    
+    no previously-included directories found matching 'documentation/_build'
+  Running setup.py install for enum34
+    
+Successfully installed behave parse parse-type six enum34
+Cleaning up...
+
+--------------------------------------------------
+  Starting the Acceptance Tests...
+--------------------------------------------------
+
+Feature: Running a round of create/import/remove between Ceph and BMI # tests/bdd/features/moc-0.5-release/end-to-end-acceptance-test.feature:1
+
+  Scenario: Importing/Removing Image, DB/Ceph consistency  # tests/bdd/features/moc-0.5-release/end-to-end-acceptance-test.feature:3
+    Given RBD will create an image                         # tests/bdd/steps/rbd_create.py:8
+      | image_name     |
+      | bmi-test-image |
+      -> Checking that no pre-existing bmi-test-image is present in Ceph, before creating it...
+         Running: rbd ls | grep bmi-test-image
+      -> Creating the bmi-test-image image in Ceph...
+         Running: rbd create bmi-test-image --size 1 --image-format 2
+      -> Checking that bmi-test-image exists in Ceph...
+         Running: rbd ls | grep bmi-test-image
+    When BMI will import an image                          # tests/bdd/steps/bmi_import.py:7
+      | image_name     | project_name |
+      | bmi-test-image | bmi_dev      |
+         Running: bmi import bmi_dev bmi-test-image
+      -> Checking that bmi-test-image exists in Ceph...
+         Running: bmi db ls | grep bmi-test-image
+      -> Checking that 2img3 exists in BMI's database...
+         Running: rbd ls | grep 2img3
+    And BMI will remove an image                           # tests/bdd/steps/bmi_rm.py:4
+      | image_name     | project_name |
+      | bmi-test-image | bmi_dev      |
+         Running: bmi rm bmi_dev bmi-test-image
+      -> Checking that 2img3 is removed from BMI's database...
+         Running: bmi db ls | grep 2img3
+      -> Checking that 2img3 is removed from Ceph...
+         Running: rbd ls | grep 2img3
+    Then RBD will confirm the removed image's clone        # tests/bdd/steps/rbd_rm.py:4
+      | image_name     | project_name |
+      | bmi-test-image | bmi_dev      |
+      -> Checking that 2img3 is removed from Ceph...
+         Running: rbd ls | grep 2img3
+    And RBD will remove the created image                  # tests/bdd/steps/rbd_rm.py:23
+      | image_name     |
+      | bmi-test-image |
+         Running: rbd rm bmi-test-image
+      -> Checking that bmi-test-image is removed from Ceph...
+         Running: rbd ls | grep image_name
+
+1 feature passed, 0 failed, 0 skipped
+1 scenario passed, 0 failed, 0 skipped
+5 steps passed, 0 failed, 0 skipped, 0 undefined
+Took 0m15.825s
+
+--------------------------------------------------
+  Completion of Acceptance Tests!
+--------------------------------------------------
+
+  === BMI passed the acceptance criteria! === 
+
+Running prb-bmi-dev-import-rm-test using the default configuration...
+
+--------------------------------------------------
+  Preparing the Acceptance Test environment...
+--------------------------------------------------
+
+Cloning into 'ims'...
+New python executable in ./bin/python
+Installing Setuptools..............................................................................................................................................................................................................................done.
+Installing Pip.....................................................................................................................................................................................................................................................................................................................................done.
+
+--------------------------------------------------
+  Preparing the BMI environment...
+--------------------------------------------------
+
+Obtaining file:///home/bmi/ims-instance/ims
+  Running setup.py egg_info for package from file:///home/bmi/ims-instance/ims
+    
+Downloading/unpacking pyro4==4.41 (from ims==0.3)
+  Running setup.py egg_info for package pyro4
+    Pyro version = 4.41
+    
+    warning: no previously-included files matching '*/.svn/*' found anywhere in distribution
+    warning: no previously-included files matching '*/.idea/*' found anywhere in distribution
+    warning: no previously-included files matching '*.class' found anywhere in distribution
+    warning: no previously-included files matching '*.pyc' found anywhere in distribution
+    warning: no previously-included files matching '*.pyo' found anywhere in distribution
+    warning: no previously-included files matching '*.coverage' found anywhere in distribution
+    warning: no previously-included files matching 'nosetests.xml' found anywhere in distribution
+    warning: no previously-included files matching '.git' found anywhere in distribution
+    warning: no previously-included files matching '.gitignore' found anywhere in distribution
+    warning: no previously-included files matching '.tox' found anywhere in distribution
+    warning: no previously-included files matching '__pycache__' found anywhere in distribution
+Downloading/unpacking requests (from ims==0.3)
+  Running setup.py egg_info for package requests
+    
+    warning: no files found matching 'NOTICE'
+Downloading/unpacking flask (from ims==0.3)
+  Running setup.py egg_info for package flask
+    
+    warning: no previously-included files matching '*.py[co]' found anywhere in distribution
+    no previously-included directories found matching 'docs/_build'
+    no previously-included directories found matching 'docs/_themes'
+Downloading/unpacking sqlalchemy>=1.0.13 (from ims==0.3)
+  Running setup.py egg_info for package sqlalchemy
+    
+    warning: no files found matching '*.jpg' under directory 'doc'
+    warning: no files found matching '*.mako' under directory 'doc'
+    warning: no files found matching 'distribute_setup.py'
+    warning: no files found matching 'sa2to3.py'
+    warning: no files found matching 'ez_setup.py'
+    no previously-included directories found matching 'doc/build/output'
+Downloading/unpacking click (from ims==0.3)
+  Running setup.py egg_info for package click
+    
+    warning: no previously-included files matching '*.pyc' found under directory 'docs'
+    warning: no previously-included files matching '*.pyo' found under directory 'docs'
+    warning: no previously-included files matching '*.pyc' found under directory 'tests'
+    warning: no previously-included files matching '*.pyo' found under directory 'tests'
+    warning: no previously-included files matching '*.pyc' found under directory 'examples'
+    warning: no previously-included files matching '*.pyo' found under directory 'examples'
+    no previously-included directories found matching 'docs/_build'
+Downloading/unpacking prettytable (from ims==0.3)
+  Downloading prettytable-0.7.2.zip
+  Running setup.py egg_info for package prettytable
+    
+Downloading/unpacking sh (from ims==0.3)
+  Running setup.py egg_info for package sh
+    
+    warning: no previously-included files matching '*.pyc' found anywhere in distribution
+Downloading/unpacking serpent>=1.11 (from pyro4==4.41->ims==0.3)
+  Downloading serpent-1.23.tar.gz
+  Running setup.py egg_info for package serpent
+    
+Downloading/unpacking chardet>=3.0.2,<3.1.0 (from requests->ims==0.3)
+  Running setup.py egg_info for package chardet
+    
+    warning: no files found matching 'requirements.txt'
+Downloading/unpacking idna>=2.5,<2.6 (from requests->ims==0.3)
+  Running setup.py egg_info for package idna
+    
+    warning: no previously-included files matching '*.pyc' found under directory 'tools'
+    warning: no previously-included files matching '*.pyc' found under directory 'tests'
+Downloading/unpacking urllib3>=1.21.1,<1.22 (from requests->ims==0.3)
+  Running setup.py egg_info for package urllib3
+    
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+Downloading/unpacking certifi>=2017.4.17 (from requests->ims==0.3)
+  Running setup.py egg_info for package certifi
+    
+Downloading/unpacking Werkzeug>=0.7 (from flask->ims==0.3)
+  Running setup.py egg_info for package Werkzeug
+    
+    no previously-included directories found matching 'docs/_build'
+    no previously-included directories found matching 'docs/_themes'
+    warning: no previously-included files matching '*.py[cdo]' found anywhere in distribution
+    warning: no previously-included files matching '__pycache__' found anywhere in distribution
+    warning: no previously-included files matching '*.so' found anywhere in distribution
+    warning: no previously-included files matching '*.pyd' found anywhere in distribution
+Downloading/unpacking Jinja2>=2.4 (from flask->ims==0.3)
+  Running setup.py egg_info for package Jinja2
+    
+    warning: no files found matching 'run-tests.py'
+    warning: no files found matching '*' under directory 'custom_fixers'
+    warning: no files found matching '*' under directory 'jinja2/testsuite/res'
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+    warning: no previously-included files matching '*.pyc' found under directory 'jinja2'
+    warning: no previously-included files matching '*.pyc' found under directory 'docs'
+    warning: no previously-included files matching '*.pyo' found under directory 'jinja2'
+    warning: no previously-included files matching '*.pyo' found under directory 'docs'
+Downloading/unpacking itsdangerous>=0.21 (from flask->ims==0.3)
+  Running setup.py egg_info for package itsdangerous
+    
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+Downloading/unpacking MarkupSafe>=0.23 (from Jinja2>=2.4->flask->ims==0.3)
+  Downloading MarkupSafe-1.0.tar.gz
+  Running setup.py egg_info for package MarkupSafe
+    
+Installing collected packages: pyro4, requests, flask, sqlalchemy, click, prettytable, sh, ims, serpent, chardet, idna, urllib3, certifi, Werkzeug, Jinja2, itsdangerous, MarkupSafe
+  Running setup.py install for pyro4
+    Pyro version = 4.41
+    
+    warning: no previously-included files matching '*/.svn/*' found anywhere in distribution
+    warning: no previously-included files matching '*/.idea/*' found anywhere in distribution
+    warning: no previously-included files matching '*.class' found anywhere in distribution
+    warning: no previously-included files matching '*.pyc' found anywhere in distribution
+    warning: no previously-included files matching '*.pyo' found anywhere in distribution
+    warning: no previously-included files matching '*.coverage' found anywhere in distribution
+    warning: no previously-included files matching 'nosetests.xml' found anywhere in distribution
+    warning: no previously-included files matching '.git' found anywhere in distribution
+    warning: no previously-included files matching '.gitignore' found anywhere in distribution
+    warning: no previously-included files matching '.tox' found anywhere in distribution
+    warning: no previously-included files matching '__pycache__' found anywhere in distribution
+    Installing pyro4-flameserver script to /home/bmi/ims-instance/ims/bin
+    Installing pyro4-ns script to /home/bmi/ims-instance/ims/bin
+    Installing pyro4-nsc script to /home/bmi/ims-instance/ims/bin
+    Installing pyro4-check-config script to /home/bmi/ims-instance/ims/bin
+    Installing pyro4-test-echoserver script to /home/bmi/ims-instance/ims/bin
+    Installing pyro4-httpgateway script to /home/bmi/ims-instance/ims/bin
+    
+    Only the Pyro library has been installed (version 4.41).
+    If you want to install the tests, the examples, and/or the manual,
+    you have to copy them manually to the desired location.
+  Running setup.py install for requests
+    
+    warning: no files found matching 'NOTICE'
+  Running setup.py install for flask
+    
+    warning: no previously-included files matching '*.py[co]' found anywhere in distribution
+    no previously-included directories found matching 'docs/_build'
+    no previously-included directories found matching 'docs/_themes'
+    Installing flask script to /home/bmi/ims-instance/ims/bin
+  Running setup.py install for sqlalchemy
+    building 'sqlalchemy.cprocessors' extension
+    gcc -pthread -fno-strict-aliasing -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -DNDEBUG -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -fPIC -I/usr/include/python2.7 -c lib/sqlalchemy/cextension/processors.c -o build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/processors.o
+    gcc -pthread -shared -Wl,-z,relro build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/processors.o -L/usr/lib64 -lpython2.7 -o build/lib.linux-x86_64-2.7/sqlalchemy/cprocessors.so
+    building 'sqlalchemy.cresultproxy' extension
+    gcc -pthread -fno-strict-aliasing -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -DNDEBUG -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -fPIC -I/usr/include/python2.7 -c lib/sqlalchemy/cextension/resultproxy.c -o build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/resultproxy.o
+    gcc -pthread -shared -Wl,-z,relro build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/resultproxy.o -L/usr/lib64 -lpython2.7 -o build/lib.linux-x86_64-2.7/sqlalchemy/cresultproxy.so
+    building 'sqlalchemy.cutils' extension
+    gcc -pthread -fno-strict-aliasing -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -DNDEBUG -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -fPIC -I/usr/include/python2.7 -c lib/sqlalchemy/cextension/utils.c -o build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/utils.o
+    gcc -pthread -shared -Wl,-z,relro build/temp.linux-x86_64-2.7/lib/sqlalchemy/cextension/utils.o -L/usr/lib64 -lpython2.7 -o build/lib.linux-x86_64-2.7/sqlalchemy/cutils.so
+    
+    warning: no files found matching '*.jpg' under directory 'doc'
+    warning: no files found matching '*.mako' under directory 'doc'
+    warning: no files found matching 'distribute_setup.py'
+    warning: no files found matching 'sa2to3.py'
+    warning: no files found matching 'ez_setup.py'
+    no previously-included directories found matching 'doc/build/output'
+  Running setup.py install for click
+    
+    warning: no previously-included files matching '*.pyc' found under directory 'docs'
+    warning: no previously-included files matching '*.pyo' found under directory 'docs'
+    warning: no previously-included files matching '*.pyc' found under directory 'tests'
+    warning: no previously-included files matching '*.pyo' found under directory 'tests'
+    warning: no previously-included files matching '*.pyc' found under directory 'examples'
+    warning: no previously-included files matching '*.pyo' found under directory 'examples'
+    no previously-included directories found matching 'docs/_build'
+  Running setup.py install for prettytable
+    
+  Running setup.py install for sh
+    
+    warning: no previously-included files matching '*.pyc' found anywhere in distribution
+  Running setup.py develop for ims
+    
+    Creating /home/bmi/ims-instance/ims/lib/python2.7/site-packages/ims.egg-link (link to .)
+    Adding ims 0.3 to easy-install.pth file
+    Installing bmi script to /home/bmi/ims-instance/ims/bin
+    Installing einstein_server script to /home/bmi/ims-instance/ims/bin
+    Installing picasso_server script to /home/bmi/ims-instance/ims/bin
+    
+    Installed /home/bmi/ims-instance/ims
+  Running setup.py install for serpent
+    
+  Running setup.py install for chardet
+    
+    warning: no files found matching 'requirements.txt'
+    Installing chardetect script to /home/bmi/ims-instance/ims/bin
+  Running setup.py install for idna
+    
+    warning: no previously-included files matching '*.pyc' found under directory 'tools'
+    warning: no previously-included files matching '*.pyc' found under directory 'tests'
+  Running setup.py install for urllib3
+    
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+  Running setup.py install for certifi
+    
+  Running setup.py install for Werkzeug
+    
+    no previously-included directories found matching 'docs/_build'
+    no previously-included directories found matching 'docs/_themes'
+    warning: no previously-included files matching '*.py[cdo]' found anywhere in distribution
+    warning: no previously-included files matching '__pycache__' found anywhere in distribution
+    warning: no previously-included files matching '*.so' found anywhere in distribution
+    warning: no previously-included files matching '*.pyd' found anywhere in distribution
+  Running setup.py install for Jinja2
+    
+    warning: no files found matching 'run-tests.py'
+    warning: no files found matching '*' under directory 'custom_fixers'
+    warning: no files found matching '*' under directory 'jinja2/testsuite/res'
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+    warning: no previously-included files matching '*.pyc' found under directory 'jinja2'
+    warning: no previously-included files matching '*.pyc' found under directory 'docs'
+    warning: no previously-included files matching '*.pyo' found under directory 'jinja2'
+    warning: no previously-included files matching '*.pyo' found under directory 'docs'
+      File "/home/bmi/ims-instance/ims/lib/python2.7/site-packages/jinja2/asyncfilters.py", line 7
+        async def auto_to_seq(value):
+                ^
+    SyntaxError: invalid syntax
+    
+      File "/home/bmi/ims-instance/ims/lib/python2.7/site-packages/jinja2/asyncsupport.py", line 22
+        async def concat_async(async_gen):
+                ^
+    SyntaxError: invalid syntax
+    
+  Running setup.py install for itsdangerous
+    
+    warning: no previously-included files matching '*' found under directory 'docs/_build'
+  Running setup.py install for MarkupSafe
+    
+    building 'markupsafe._speedups' extension
+    gcc -pthread -fno-strict-aliasing -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -DNDEBUG -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -fPIC -I/usr/include/python2.7 -c markupsafe/_speedups.c -o build/temp.linux-x86_64-2.7/markupsafe/_speedups.o
+    gcc -pthread -shared -Wl,-z,relro build/temp.linux-x86_64-2.7/markupsafe/_speedups.o -L/usr/lib64 -lpython2.7 -o build/lib.linux-x86_64-2.7/markupsafe/_speedups.so
+Successfully installed pyro4 requests flask sqlalchemy click prettytable sh ims serpent chardet idna urllib3 certifi Werkzeug Jinja2 itsdangerous MarkupSafe
+Cleaning up...
+Downloading/unpacking python-cephlibs
+  Downloading python-cephlibs-0.94.5.post1.tar.gz
+  Running setup.py egg_info for package python-cephlibs
+    
+Installing collected packages: python-cephlibs
+  Running setup.py install for python-cephlibs
+    
+Successfully installed python-cephlibs
+Cleaning up...
+Downloading/unpacking behave
+  Running setup.py egg_info for package behave
+    
+    warning: no files found matching '*.zip' under directory 'bin'
+    warning: no files found matching '*.txt' under directory 'etc'
+    warning: no files found matching '*.txt' under directory 'more.features'
+    no previously-included directories found matching '.tox'
+Downloading/unpacking parse>=1.6.3 (from behave)
+  Downloading parse-1.8.2.tar.gz
+  Running setup.py egg_info for package parse
+    
+Downloading/unpacking parse-type>=0.3.4 (from behave)
+  Running setup.py egg_info for package parse-type
+    
+    warning: no files found matching '*.txt'
+    warning: no files found matching '*.rst' under directory 'docs'
+    warning: no files found matching '*.txt' under directory 'docs'
+    warning: no files found matching '*.py' under directory 'docs'
+    no previously-included directories found matching '.tox'
+Downloading/unpacking six (from behave)
+  Downloading six-1.10.0.tar.gz
+  Running setup.py egg_info for package six
+    
+    no previously-included directories found matching 'documentation/_build'
+Downloading/unpacking enum34 (from parse-type>=0.3.4->behave)
+  Running setup.py egg_info for package enum34
+    
+Installing collected packages: behave, parse, parse-type, six, enum34
+  Running setup.py install for behave
+    
+    warning: no files found matching '*.zip' under directory 'bin'
+    warning: no files found matching '*.txt' under directory 'etc'
+    warning: no files found matching '*.txt' under directory 'more.features'
+    no previously-included directories found matching '.tox'
+    Installing behave script to /home/bmi/ims-instance/ims/bin
+  Running setup.py install for parse
+    
+  Running setup.py install for parse-type
+    
+    warning: no files found matching '*.txt'
+    warning: no files found matching '*.rst' under directory 'docs'
+    warning: no files found matching '*.txt' under directory 'docs'
+    warning: no files found matching '*.py' under directory 'docs'
+    no previously-included directories found matching '.tox'
+  Running setup.py install for six
+    
+    no previously-included directories found matching 'documentation/_build'
+  Running setup.py install for enum34
+    
+Successfully installed behave parse parse-type six enum34
+Cleaning up...
+
+--------------------------------------------------
+  Starting the Acceptance Tests...
+--------------------------------------------------
+
+Feature: Running a round of create/import/remove between Ceph and BMI # tests/bdd/features/moc-0.5-release/end-to-end-acceptance-test.feature:1
+
+  Scenario: Importing/Removing Image, DB/Ceph consistency  # tests/bdd/features/moc-0.5-release/end-to-end-acceptance-test.feature:3
+    Given RBD will create an image                         # tests/bdd/steps/rbd_create.py:8
+      | image_name     |
+      | bmi-test-image |
+      -> Checking that no pre-existing bmi-test-image is present in Ceph, before creating it...
+         Running: rbd ls | grep bmi-test-image
+      -> Creating the bmi-test-image image in Ceph...
+         Running: rbd create bmi-test-image --size 1 --image-format 2
+      -> Checking that bmi-test-image exists in Ceph...
+         Running: rbd ls | grep bmi-test-image
+    When BMI will import an image                          # tests/bdd/steps/bmi_import.py:7
+      | image_name     | project_name |
+      | bmi-test-image | bmi_dev      |
+         Running: bmi import bmi_dev bmi-test-image
+      -> Checking that bmi-test-image exists in Ceph...
+         Running: bmi db ls | grep bmi-test-image
+      -> Checking that 2img3 exists in BMI's database...
+         Running: rbd ls | grep 2img3
+    And BMI will remove an image                           # tests/bdd/steps/bmi_rm.py:4
+      | image_name     | project_name |
+      | bmi-test-image | bmi_dev      |
+         Running: bmi rm bmi_dev bmi-test-image
+      -> Checking that 2img3 is removed from BMI's database...
+         Running: bmi db ls | grep 2img3
+      -> Checking that 2img3 is removed from Ceph...
+         Running: rbd ls | grep 2img3
+    Then RBD will confirm the removed image's clone        # tests/bdd/steps/rbd_rm.py:4
+      | image_name     | project_name |
+      | bmi-test-image | bmi_dev      |
+      -> Checking that 2img3 is removed from Ceph...
+         Running: rbd ls | grep 2img3
+    And RBD will remove the created image                  # tests/bdd/steps/rbd_rm.py:23
+      | image_name     |
+      | bmi-test-image |
+         Running: rbd rm bmi-test-image
+      -> Checking that bmi-test-image is removed from Ceph...
+         Running: rbd ls | grep image_name
+
+1 feature passed, 0 failed, 0 skipped
+1 scenario passed, 0 failed, 0 skipped
+5 steps passed, 0 failed, 0 skipped, 0 undefined
+Took 0m17.691s
+
+--------------------------------------------------
+  Completion of Acceptance Tests!
+--------------------------------------------------
+
+  === BMI passed the acceptance criteria! === 
+

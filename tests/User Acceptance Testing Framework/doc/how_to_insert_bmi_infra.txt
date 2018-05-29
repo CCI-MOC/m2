@@ -1,0 +1,24 @@
+[naved001@rhel-tgt-base ~]$ ls
+append-logs  consistent-state  from-master  init_bmi_test.sh  logs  naved.cfg
+naved.db  naved-test.db  sample_bmi_test.db
+[naved001@rhel-tgt-base ~]$ exit
+exit
+[root@rhel-tgt-base ims-dan-securecloud]# ls
+bmi_config.cfg  docs  hil_setup  ims  ims.egg-info  README.md  scripts
+Selection_003.png  setup.py  tests
+[root@rhel-tgt-base ims-dan-securecloud]# cd /home/naved001/
+[root@rhel-tgt-base naved001]# ls
+append-logs  consistent-state  from-master  init_bmi_test.sh  logs  naved.cfg
+naved.db  naved-test.db  sample_bmi_test.db
+[root@rhel-tgt-base naved001]# sqlite3 sample_bmi_test.db
+SQLite version 3.7.17 2013-05-20 00:56:22
+Enter ".help" for instructions
+Enter SQL statements terminated with a ";"
+sqlite> select * from project;
+sqlite> insert into project values(1, "bmi_infra", "bmi-provision-dev");
+sqlite> select * from project;
+1|bmi_infra|bmi-provision-dev
+sqlite> .quit
+[root@rhel-tgt-base naved001]# cd
+[root@rhel-tgt-base ~]# ls
+

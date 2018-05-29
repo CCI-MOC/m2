@@ -1,0 +1,26 @@
+Feature: Running a round of create/import/remove between Ceph and BMI
+
+  Scenario: Importing/Removing Image, DB/Ceph consistency
+  
+     Given RBD will create an image
+        | image_name     |
+        | bmi-test-image |
+        
+     When BMI will import an image
+        | image_name     | project_name  | 
+        | bmi-test-image | bmi_infra     |
+                                    
+     And BMI will remove an image
+        | image_name     | project_name  | 
+        | bmi-test-image | bmi_infra     |
+                
+     Then RBD will confirm the removed image's clone
+        | image_name     | project_name  | 
+        | bmi-test-image | bmi_infra     |
+
+     And RBD will remove the created image
+        | image_name     |
+        | bmi-test-image |
+     
+     
+        

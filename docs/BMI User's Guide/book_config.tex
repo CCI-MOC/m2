@@ -1,0 +1,156 @@
+\usepackage{code-style-v2}
+\BeforeBeginEnvironment{lstlisting}{%
+    \begin{mdframed}[
+            skipabove=4mm,
+            skipbelow=0mm,
+            %remove borders
+            rightline=false,
+            topline=false,
+            bottomline=false,
+            linewidth=1mm,
+            %margins
+            innertopmargin=2mm,
+            innerleftmargin=0mm,
+            innerbottommargin=0mm,
+            innerrightmargin=10pt,
+            backgroundcolor=light-gray,
+            linecolor=Gray
+        ]
+        \codeTitleContent
+        \vspace*{-2mm}
+    }
+\AfterEndEnvironment{lstlisting}{%
+    \end{mdframed}
+}
+
+
+
+\usepackage[ 
+  backref=page,
+  pdfpagelabels=true,
+  plainpages=false,
+  colorlinks=true,
+  bookmarks=true,
+  pdfview=FitB]{hyperref} % Required for the hyperlinks within the PDF
+  
+\usepackage{booktabs} % Required for the top and bottom rules in the table
+\usepackage{float} % Required for specifying the exact location of a figure or table
+\usepackage{graphicx} % Required for including images
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Command to make the lines in the title page
+\setlength\parindent{0pt} % Removes all indentation from paragraphs
+
+
+\usepackage{ragged2e}
+\usepackage{tcolorbox}
+
+\newcommand{\qed}{\hfill \ensuremath{\Box}}
+\newcommand{\tcj}[2]{\begin{center}\begin{tcolorbox}[width=124mm,colback=green!5,colframe=green!40!black,title=#1]{\justifying #2}\end{tcolorbox}\end{center}}
+
+\newcommand{\tc}[2]{\begin{center}\begin{tcolorbox}[width=124mm,colback=green!5,colframe=green!40!black,title=#1]{#2}\end{tcolorbox}\end{center}}
+
+\newcommand{\bn}[2]{\begin{center}\begin{tcolorbox}[width=124mm,colback=blue!5,colframe=blue!100!black,title=#1]{#2}\end{tcolorbox}\end{center}}
+
+
+\newcommand{\gn}[2]{\begin{center}\begin{tcolorbox}[width=124mm,colback=green!5,colframe=green!69!black,title=#1]{#2}\end{tcolorbox}\end{center}}
+
+\newcommand{\on}[2]{\begin{center}\begin{tcolorbox}[width=124mm,colback=orange!5,colframe=orange!40!black,title=#1]{#2}\end{tcolorbox}\end{center}}
+
+\newcommand{\pn}[2]{\begin{center}\begin{tcolorbox}[width=124mm,colback=purple!5,colframe=purple!40!black,title=#1]{#2}\end{tcolorbox}\end{center}}
+
+\newcommand{\rn}[2]{\begin{bclogo}[logo=\bcinterdit, couleurBarre=orange, noborder=true, couleur=bostonuniversityred]{\hspace{3mm}#1}#2\end{bclogo}
+}
+
+\newcommand{\yn}[2]{\begin{bclogo}[logo=\bctakecare, couleurBarre=orange, noborder=true, couleur=daffodil]{\hspace{3mm}#1}#2\end{bclogo}
+}
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+\newcommand{\image}[3]{
+\begin{figure}[!h] % Example of including images
+\begin{center}
+%\includegraphics[width=0.5\linewidth]{#1}
+\includegraphics[scale=#1]{#2}
+\end{center}
+\caption{#3}
+%\label{fig:example_figure}
+\end{figure}
+\pagebreak
+}
+
+
+\usepackage{algorithmic}
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage{listings}
+
+\newcommand{\algo}[4]{
+
+\begin{algorithm}[!h]
+\caption{#1}
+
+\DontPrintSemicolon
+
+\KwData{ \\
+#2 \\ \vspace{2mm} }
+
+\KwResult{ \\
+#3 \\ \vspace{2mm}}
+
+\Begin{#4}
+\end{algorithm}
+
+}
+
+
+%you need this so the algorithm is aligned
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\@algocf@start}{%
+  \begin{lrbox}{\algocf@algobox}%
+}{%
+  \rule{0.1\textwidth}{\z@}%
+  \begin{lrbox}{\algocf@algobox}%
+  \begin{minipage}{0.84\textwidth}%
+}{}{}
+\patchcmd{\@algocf@finish}{%
+  \end{lrbox}%
+}{%
+  \end{minipage}%
+  \end{lrbox}%
+}{}{}
+\makeatother
+
+
+\newcommand{\bib}[1]{\begingroup
+\let\clearpage\relax
+\begin{thebibliography}{|-wideness-|}
+#1 
+\end{thebibliography}
+\endgroup
+}
+
+
+%Ref: https://en.wikibooks.org/wiki/LaTeX/Page_Layout#Margins
+\usepackage[top=1in, bottom=1.25in, left=1.25in, right=1.25in]{geometry}
+
+
+%\definecolor{myblue}{rgb}{23,111,192}
+\definecolor{myblue}{rgb}{0.089,0.433,0.75}
+%\definecolor{mygray}{rgb}{0.777,0.777,0.777}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+
+\usepackage{hyperref}
+\newcommand{\link}[1]{
+\hypersetup{colorlinks=true, urlcolor=blue}
+\underline{\color{blue} \smash{\url{#1}}}
+}
+
+
+\usepackage{amssymb}
+
+
+\usepackage[tikz]{bclogo}
+
+\definecolor{daffodil}{rgb}{1.0, 1.0, 0.65}
+\definecolor{bostonuniversityred}{rgb}{1.0, 0.85, 0.85}
