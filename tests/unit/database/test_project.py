@@ -15,7 +15,7 @@ class TestInsert(TestCase):
         self.db = Database()
 
     def runTest(self):
-        self.db.project.insert('project 1', 'network 1')
+        self.db.project.insert('project 1')
 
         projects = self.db.project.fetch_projects()
 
@@ -32,7 +32,7 @@ class TestDelete(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert('project 1', 'network 1')
+        self.db.project.insert('project 1')
 
     def runTest(self):
         self.db.project.delete_with_name('project 1')
@@ -48,7 +48,7 @@ class TestFetch(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert('project 1', 'network 1')
+        self.db.project.insert('project 1')
 
     def runTest(self):
         projects = self.db.project.fetch_projects()

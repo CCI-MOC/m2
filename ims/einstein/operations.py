@@ -593,11 +593,11 @@ class BMI:
             return self.__return_error(e)
 
     @log
-    def add_project(self, project, network, id):
+    def add_project(self, project, id):
         try:
             if not self.is_admin:
                 raise AuthorizationFailedException()
-            self.db.project.insert(project, network, id)
+            self.db.project.insert(project, id)
             return self.__return_success(True)
         except (DBException, AuthorizationFailedException) as e:
             logger.exception('')

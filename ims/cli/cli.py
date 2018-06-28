@@ -280,10 +280,9 @@ def list_projects():
 
 @project_grp.command(name='create', help='Create Project')
 @click.argument(constants.PROJECT_PARAMETER)
-@click.argument(constants.NETWORK_PARAMETER)
 @click.option('--id', default=None, help='Specify what id to use for project')
 @bmi_exception_wrapper
-def add_project(project, network, id):
+def add_project(project, id):
     """
     Create Project in DB
 
@@ -293,10 +292,9 @@ def add_project(project, network, id):
     \b
     Arguments:
     PROJECT = The Name of Project (A HIL Project must exist)
-    NETWORK = The Name of the Provisioning Network
     """
     with BMI(_username, _password, constants.BMI_ADMIN_PROJECT) as bmi:
-        ret = bmi.add_project(project, network, id)
+        ret = bmi.add_project(project, id)
         if ret[constants.STATUS_CODE_KEY] == 200:
             click.echo("Success")
         else:

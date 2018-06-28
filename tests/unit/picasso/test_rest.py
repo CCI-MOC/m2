@@ -32,7 +32,6 @@ NODE_NAME = _cfg.tests.node_name
 NIC = _cfg.tests.nic
 
 PROJECT = _cfg.tests.project
-NETWORK = _cfg.tests.network
 
 EXIST_IMG_NAME = _cfg.tests.exist_img_name
 NEW_SNAP_NAME = _cfg.tests.new_snap_name
@@ -89,7 +88,7 @@ class TestProvision(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert(PROJECT, NETWORK)
+        self.db.project.insert(PROJECT)
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
@@ -121,7 +120,7 @@ class TestDeprovision(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert(PROJECT, NETWORK)
+        self.db.project.insert(PROJECT)
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
@@ -154,7 +153,7 @@ class TestCreateSnapshot(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert(PROJECT, NETWORK)
+        self.db.project.insert(PROJECT)
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
@@ -200,7 +199,7 @@ class TestListSnapshots(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert(PROJECT, NETWORK)
+        self.db.project.insert(PROJECT)
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
@@ -253,7 +252,7 @@ class TestListImages(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert(PROJECT, NETWORK)
+        self.db.project.insert(PROJECT)
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
@@ -282,7 +281,7 @@ class TestRemoveImage(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert(PROJECT, NETWORK)
+        self.db.project.insert(PROJECT)
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
