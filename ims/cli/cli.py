@@ -75,8 +75,7 @@ def provision(project, node, img, nic):
     PROJECT = The HIL Project attached to your credentials
     NODE    = The Node to Provision
     IMG     = The Name of the Image to Provision
-    CHANNEL = The Channel to Provision On (For HIL It is 'vlan/native')
-    NIC     = The NIC to use for Network Boot (For HIL IT is 'enp130s0f0')
+    NIC     = The NIC to use for Network Boot
     """
     data = {constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
