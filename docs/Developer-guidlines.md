@@ -20,6 +20,15 @@ If you're looking to code, there are a few ways to help:
 * Reviewing [Pull Requests](https://github.com/CCI-MOC/ims/pulls)
 * Discussions on open github issues. 
 
+
+## Settin up a dev environment
+
+* You can setup HIL and Ceph by using the scripts here https://github.com/cci-moc/admin-tools
+These are maintained and used internally by the MOC team. Raise an issue on the github repo if
+something is broken.
+
+* Once you have setup HIL and Ceph, use the production install script to deploy BMI.
+
 ## Communicating
 
 * IRC: The MOC team hangs out on #moc on [freenode](https://www.freenode.net/)
