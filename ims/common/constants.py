@@ -120,7 +120,6 @@ IET_LUN_STARTING = "Lun"
 DNSMASQ_LEASES_LOC = '/var/lib/misc/dnsmasq.leases'
 
 HIL_CALL_TIMEOUT = 10
-DEFAULT_SNAPSHOT_NAME = "bmi-created-snapshot"
 
 BMI_ADMIN_PROJECT = "bmi_infra"
 
