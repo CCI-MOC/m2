@@ -82,8 +82,7 @@ def list_images():
 
 
 @rest_call("/provision/", 'PUT', constants.PROVISION_COMMAND,
-           [constants.NODE_NAME_PARAMETER, constants.IMAGE_NAME_PARAMETER,
-            constants.NIC_PARAMETER])
+           [constants.NODE_NAME_PARAMETER, constants.NIC_PARAMETER])
 def provision():
     pass
 
@@ -108,4 +107,16 @@ def list_snapshots():
 @rest_call("/remove_image/", "DELETE", constants.REMOVE_IMAGE_COMMAND,
            [constants.IMAGE_NAME_PARAMETER])
 def remove_image():
+    pass
+
+
+@rest_call("/create_disk", "PUT", constants.CREATE_DISK_COMMAND,
+           [constants.IMAGE_NAME_PARAMETER])
+def create_disk():
+    pass
+
+
+@rest_call("/delete_disk", "DELETE", constants.DELETE_DISK_COMMAND,
+           [constants.IMAGE_NAME_PARAMETER])
+def create_disk():
     pass

@@ -89,10 +89,6 @@ class BMI:
     def __get_ceph_image_name(self, name):
         img_id = self.db.image.fetch_id_with_name_from_project(name,
                                                                self.proj)
-        if img_id is None:
-            logger.info("Raising Image Not Found Exception for %s", name)
-            raise db_exceptions.ImageNotFoundException(name)
-
         return str(self.cfg.bmi.uid) + "img" + str(img_id)
 
     def get_ceph_image_name_from_project(self, name, project_name):
@@ -211,24 +207,91 @@ class BMI:
         self.db.close()
 
     # Provisions from HIL and Boots the given node with given image
+
+    @log
+    def create_disk(self, disk_name, img_name):
+        """
+        Creates a new image from img_name, and then creates an iscsi
+        endpoint.
+        Returns the disk image name and iscsi_endpoint pointing to it.
+        """
+
+        # Database Operations
+        try:
+            # Find the image id by using the image name, and then create a new
+            # entry for the new disk image.
+            parent_id = self.db.image.fetch_id_with_name_from_project(img_name,
+                                                                      self.proj
+                                                                      )
+            self.db.image.insert(disk_name, self.pid, parent_id)
+
+            # This generates the name that BMI *must* have used when it created
+            # the copy in ceph of img_name
+            ceph_img_name = self.__get_ceph_image_name(img_name)
+
+            # Prepare the ceph image name to be used.
+            clone_ceph_name = self.__get_ceph_image_name(disk_name)
+        except DBException as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+        # Storage Operations
+        try:
+            self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
+                          clone_ceph_name)
+        except FileSystemException as e:
+            logger.exception('')
+            self.db.image.delete_with_name_from_project(node_name, self.proj)
+
+        # iSCSI Operations
+        try:
+            self.iscsi.add_target(clone_ceph_name)
+        except ISCSIException as e:
+            logger.exception('')
+            self.fs.remove(clone_ceph_name)
+            self.db.image.delete_with_name_from_project(node_name, self.proj)
+
+        logger.info("The create_disk command was executed successfully")
+        return self.__return_success(clone_ceph_name)
+
+    @log
+    def delete_disk(self, disk_name):
+        """
+        Deletes the disk image <disk_name>. Also deletes the iSCSI target
+        pointing to that image.
+        """
+        try:
+            # Get the ceph image name.
+            ceph_img_name = self.__get_ceph_image_name(disk_name)
+        except DBException as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+        try:
+            self.iscsi.remove_target(ceph_img_name)
+        except ISCSIException as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+        try:
+            ret = self.fs.remove(str(ceph_img_name).encode("utf-8"))
+        except FileSystemException as e:
+            # what if this fails? Also, we should check if it doesnt exists
+            # in ceph then continue, otherwise raise an error.
+            self.isci.add_target(ceph_img_name)
+            return self.__return_error(e)
+
+        # If __get_ceph_image_name(disk_name) passes, then it confirms that
+        # existence of disk_name, and then it should succeed. Will think
+        # more if I need to wrap this up in a try except block.
+        self.db.image.delete_with_name_from_project(disk_name, self.proj)
+        return self.__return_success(ret)
+
     @log
     def provision(self, node_name, img_name, nic):
         try:
             mac_addr = "01-" + self.hil.get_node_mac_addr(node_name). \
                 replace(":", "-")
-
-            parent_id = self.db.image.fetch_id_with_name_from_project(img_name,
-                                                                      self.proj
-                                                                      )
-            self.db.image.insert(node_name, self.pid, parent_id)
-            clone_ceph_name = self.__get_ceph_image_name(node_name)
-            ceph_img_name = self.__get_ceph_image_name(img_name)
-            self.fs.clone(ceph_img_name, self.cfg.bmi.snapshot,
-                          clone_ceph_name)
-            ceph_config = self.cfg.fs
-            logger.debug("Contents of ceph_config = %s", str(ceph_config))
-            self.iscsi.add_target(clone_ceph_name)
-            logger.info("The create command was executed successfully")
             self.__register(node_name, img_name, clone_ceph_name, mac_addr)
             return self.__return_success(True)
 
@@ -275,7 +338,7 @@ class BMI:
         ceph_img_name = None
         try:
             ceph_img_name = self.__get_ceph_image_name(node_name)
-            self.db.image.delete_with_name_from_project(node_name, self.proj)
+
             ceph_config = self.cfg.fs
             logger.debug("Contents of ceph+config = %s", str(ceph_config))
             self.iscsi.remove_target(ceph_img_name)

@@ -84,6 +84,8 @@ MESSAGE_KEY = 'msg'
 # Commands
 LIST_IMAGES_COMMAND = "list_images"
 CREATE_SNAPSHOT_COMMAND = "create_snapshot"
+CREATE_DISK_COMMAND = "create_disk"
+DELETE_DISK_COMMAND = "delete_disk"
 PROVISION_COMMAND = "provision"
 DEPROVISION_COMMAND = "deprovision"
 LIST_SNAPSHOTS_COMMAND = "list_snapshots"
