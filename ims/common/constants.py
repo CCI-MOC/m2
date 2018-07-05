@@ -87,11 +87,11 @@ CREATE_SNAPSHOT_COMMAND = "create_snapshot"
 CREATE_DISK_COMMAND = "create_disk"
 DELETE_DISK_COMMAND = "delete_disk"
 PROVISION_COMMAND = "provision"
-DEPROVISION_COMMAND = "deprovision"
 LIST_SNAPSHOTS_COMMAND = "list_snapshots"
 REMOVE_IMAGE_COMMAND = "remove_image"
 
 # Parameters
+DISK_NAME_PARAMETER = 'disk_name'
 NODE_NAME_PARAMETER = 'node'
 IMAGE_NAME_PARAMETER = "img"
 SNAP_NAME_PARAMETER = "snap_name"

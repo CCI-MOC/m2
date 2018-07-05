@@ -211,9 +211,12 @@ class BMI:
     @log
     def create_disk(self, disk_name, img_name):
         """
-        Creates a new image from img_name, and then creates an iscsi
-        endpoint.
-        Returns the disk image name and iscsi_endpoint pointing to it.
+        Creates a new image named <disk_name> from <img_name>,
+        and then creates an iscsi endpoint for <disk_name>.
+        Returns the disk image name (which also happens to be the iscsi target
+        name)
+
+        Note: The name of the iscsi target and the name of disk in ceph is same
         """
 
         # Database Operations
@@ -252,6 +255,9 @@ class BMI:
             self.db.image.delete_with_name_from_project(node_name, self.proj)
 
         logger.info("The create_disk command was executed successfully")
+
+        # This will be changed to return a list of all targets, with each
+        # target including the endpoint, port and target name.
         return self.__return_success(clone_ceph_name)
 
     @log
@@ -282,97 +288,27 @@ class BMI:
             return self.__return_error(e)
 
         # If __get_ceph_image_name(disk_name) passes, then it confirms that
-        # existence of disk_name, and then it should succeed. Will think
-        # more if I need to wrap this up in a try except block.
+        # existence of disk_name, and then this delete from db command should
+        # succeed. Will think more if I need to wrap this up in a try except
+        # block.
         self.db.image.delete_with_name_from_project(disk_name, self.proj)
         return self.__return_success(ret)
 
     @log
-    def provision(self, node_name, img_name, nic):
+    def provision(self, node_name, disk_name, nic):
+        """
+        This takes in the name of the disk, and then creates the ipxe
+        and macaddress file for <node> with <nic>
+        """
         try:
             mac_addr = "01-" + self.hil.get_node_mac_addr(node_name). \
                 replace(":", "-")
+            clone_ceph_name = self.__get_ceph_image_name(disk_name)
             self.__register(node_name, img_name, clone_ceph_name, mac_addr)
             return self.__return_success(True)
 
-        except RegistrationFailedException as e:
+        except (RegistrationFailedException, DBException, HILException) as e:
             # Message is being handled by custom formatter
-            # TODO: add a deployment and a unit test for this case.
-            logger.exception('')
-            clone_ceph_name = self.__get_ceph_image_name(node_name)
-            self.iscsi.remove_target(clone_ceph_name)
-            self.fs.remove(clone_ceph_name)
-            self.db.image.delete_with_name_from_project(node_name, self.proj)
-            time.sleep(constants.HIL_CALL_TIMEOUT)
-            return self.__return_error(e)
-
-        except ISCSIException as e:
-            # Message is being handled by custom formatter
-            logger.exception('')
-            clone_ceph_name = self.__get_ceph_image_name(node_name)
-            self.fs.remove(clone_ceph_name)
-            self.db.image.delete_with_name_from_project(node_name, self.proj)
-            time.sleep(constants.HIL_CALL_TIMEOUT)
-            return self.__return_error(e)
-
-        except FileSystemException as e:
-            # Message is being handled by custom formatter
-            logger.exception('')
-            self.db.image.delete_with_name_from_project(node_name, self.proj)
-            time.sleep(constants.HIL_CALL_TIMEOUT)
-            return self.__return_error(e)
-        except DBException as e:
-            # Message is being handled by custom formatter
-            logger.exception('')
-            time.sleep(constants.HIL_CALL_TIMEOUT)
-            return self.__return_error(e)
-        except HILException as e:
-            # Message is being handled by custom formatter
-            logger.exception('')
-            return self.__return_error(e)
-
-    # This is for detach a node and removing it from iscsi
-    # and destroying its image
-    @log
-    def deprovision(self, node_name, nic):
-        ceph_img_name = None
-        try:
-            ceph_img_name = self.__get_ceph_image_name(node_name)
-
-            ceph_config = self.cfg.fs
-            logger.debug("Contents of ceph+config = %s", str(ceph_config))
-            self.iscsi.remove_target(ceph_img_name)
-            logger.info("The delete command was executed successfully")
-            ret = self.fs.remove(str(ceph_img_name).encode("utf-8"))
-            return self.__return_success(ret)
-
-        except FileSystemException as e:
-            logger.exception('')
-            self.iscsi.add_target(ceph_img_name)
-            parent_name = self.fs.get_parent_info(ceph_img_name)[1]
-
-            parent_id = self.db.image.fetch_id_with_name_from_project(
-                parent_name,
-                self.proj)
-            self.db.image.insert(node_name, self.pid, parent_id,
-                                 id=self.__extract_id(ceph_img_name))
-            time.sleep(constants.HIL_CALL_TIMEOUT)
-            return self.__return_error(e)
-        except ISCSIException as e:
-            logger.exception('')
-            parent_name = self.fs.get_parent_info(ceph_img_name)[1]
-            parent_id = self.db.image.fetch_id_with_name_from_project(
-                parent_name,
-                self.proj)
-            self.db.image.insert(node_name, self.pid, parent_id,
-                                 id=self.__extract_id(ceph_img_name))
-            time.sleep(constants.HIL_CALL_TIMEOUT)
-            return self.__return_error(e)
-        except DBException as e:
-            logger.exception('')
-            time.sleep(constants.HIL_CALL_TIMEOUT)
-            return self.__return_error(e)
-        except HILException as e:
             logger.exception('')
             return self.__return_error(e)
 
@@ -484,8 +420,8 @@ class BMI:
 
         Clone an image in ceph to be used by BMI.
 
-        :param img: Name of image in ceph
-        :return: True on successful completion
+        : param img: Name of image in ceph
+        : return: True on successful completion
         """
 
         try:
@@ -538,8 +474,8 @@ class BMI:
         import_ceph_image except we can directly start the cloning process
         because it is already a snapshot.
 
-        :param img: Name of snapshot in ceph
-        :return: True on successful completion
+        : param img: Name of snapshot in ceph
+        : return: True on successful completion
         """
         try:
             ceph_img_name = str(img)
@@ -612,11 +548,11 @@ class BMI:
         """
         Create a deep copy of src image
 
-        :param img1: Name of src image
-        :param dest_project: Name of the project where des image will be
+        : param img1: Name of src image
+        : param dest_project: Name of the project where des image will be
         created
-        :param img2: Name of des image
-        :return: True on successful completion
+        : param img2: Name of des image
+        : return: True on successful completion
         """
         try:
             if not self.is_admin and (self.proj != dest_project):
