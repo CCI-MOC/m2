@@ -21,7 +21,7 @@ If you're looking to code, there are a few ways to help:
 * Discussions on open github issues. 
 
 
-## Settin up a dev environment
+## Setting up a dev environment
 
 * You can setup HIL and Ceph by using the scripts here https://github.com/cci-moc/admin-tools
 These are maintained and used internally by the MOC team. Raise an issue on the github repo if
