@@ -61,6 +61,28 @@ def cli():
     pass
 
 
+@cli.command(name='create_disk', short_help="Create a Disk")
+@click.argument(constants.PROJECT_PARAMETER)
+@click.argument(constants.DISK_NAME_PARAMETER)
+@click.argument(constants.IMAGE_NAME_PARAMETER)
+def create_disk(project, disk_name, img):
+    """
+    Create a disk
+
+    \b
+    Arguments:
+    PROJECT 	= The HIL Project attached to your credentials
+    DISK_NAME   = The Name of the Disk to create
+    IMG     	= The Name of the Image to use
+    """
+    data = {constants.PROJECT_PARAMETER: project,
+	    constants.DISK_NAME_PARAMETER: disk_name,
+            constants.IMAGE_NAME_PARAMETER: img}
+    res = requests.put(_url + "create_disk", data=data,
+                       auth=(_username, _password))
+    # We should probably make a PrettyTable here
+    click.echo(res.content)
+
 @cli.command(name='pro', short_help="Provision a Node")
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NODE_NAME_PARAMETER)
