@@ -106,7 +106,7 @@ def remove_image():
 
 
 @rest_call("/create_disk", "PUT", constants.CREATE_DISK_COMMAND,
-           [constants.DISK_NAME_PARAMETER])
+           [constants.DISK_NAME_PARAMETER, constants.IMAGE_NAME_PARAMETER])
 def create_disk():
     pass
 
