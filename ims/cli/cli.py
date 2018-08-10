@@ -65,9 +65,8 @@ def cli():
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NODE_NAME_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
-@click.argument(constants.NETWORK_PARAMETER)
 @click.argument(constants.NIC_PARAMETER)
-def provision(project, node, img, network, nic):
+def provision(project, node, img, nic):
     """
     Provision a Node
 
@@ -76,14 +75,11 @@ def provision(project, node, img, network, nic):
     PROJECT = The HIL Project attached to your credentials
     NODE    = The Node to Provision
     IMG     = The Name of the Image to Provision
-    NETWORK = The Name of the Provisioning Network
-    CHANNEL = The Channel to Provision On (For HIL It is 'vlan/native')
-    NIC     = The NIC to use for Network Boot (For HIL IT is 'enp130s0f0')
+    NIC     = The NIC to use for Network Boot
     """
     data = {constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
             constants.IMAGE_NAME_PARAMETER: img,
-            constants.NETWORK_PARAMETER: network,
             constants.NIC_PARAMETER: nic}
     res = requests.put(_url + "provision/", data=data,
                        auth=(_username, _password))
@@ -93,9 +89,8 @@ def provision(project, node, img, network, nic):
 @cli.command(name='dpro', short_help='Deprovision a node')
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NODE_NAME_PARAMETER)
-@click.argument(constants.NETWORK_PARAMETER)
 @click.argument(constants.NIC_PARAMETER)
-def deprovision(project, node, network, nic):
+def deprovision(project, node, nic):
     """
     Deprovision a Node
 
@@ -103,12 +98,10 @@ def deprovision(project, node, network, nic):
     Arguments:
     PROJECT = The HIL Project attached to your credentials
     NODE    = The Node to Provision
-    NETWORK = The Name of the Provisioning Network
     NIC     = The NIC that was used for Network Boot
     """
     data = {constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
-            constants.NETWORK_PARAMETER: network,
             constants.NIC_PARAMETER: nic}
     res = requests.delete(_url + "deprovision/", data=data, auth=(
         _username, _password))
@@ -287,10 +280,9 @@ def list_projects():
 
 @project_grp.command(name='create', help='Create Project')
 @click.argument(constants.PROJECT_PARAMETER)
-@click.argument(constants.NETWORK_PARAMETER)
 @click.option('--id', default=None, help='Specify what id to use for project')
 @bmi_exception_wrapper
-def add_project(project, network, id):
+def add_project(project, id):
     """
     Create Project in DB
 
@@ -300,10 +292,9 @@ def add_project(project, network, id):
     \b
     Arguments:
     PROJECT = The Name of Project (A HIL Project must exist)
-    NETWORK = The Name of the Provisioning Network
     """
     with BMI(_username, _password, constants.BMI_ADMIN_PROJECT) as bmi:
-        ret = bmi.add_project(project, network, id)
+        ret = bmi.add_project(project, id)
         if ret[constants.STATUS_CODE_KEY] == 200:
             click.echo("Success")
         else:

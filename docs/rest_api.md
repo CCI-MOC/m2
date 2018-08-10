@@ -2,19 +2,18 @@
 
 We have a basic set of API as of now. All of the services as of now are taking the arguments as parameters and return response.
 
-BMI API assumes that you know the image which you are interested in. BMI has an driver which can communicate with Ceph(the file storage system that we are using for storing our images). Please make sure that you understand Ceph concepts before you play with the API. 
+BMI API assumes that you know the image which you are interested in. BMI has an driver which can communicate with Ceph(the file storage system that we are using for storing our images). Please make sure that you understand Ceph concepts before you play with the API.
 
 To have a clear understanding of the API, we wish to provide the following terminology:
 * project - A project is the HIL project that has been allocated to tenant.
 * node - A node that is allocated to project by HIL. This node should be present in HIL.
 * img - The name of image which will be used for provisioning.
 * snap_name - The snapshot of the image from which you want to provision a node.
-* network - The provisioning network created in HIL.
-* nic - The nic which should be used to connect the node to provisioning network
-* channel - The vlan that should be used to connect the node to provisioning network
+* nic - The nic used for provisioning. BMI uses this name to get the macaddress from HIL.
+ This is required for generating the boot configuration file.
 
 The convention that we are following for requests is:
-* PUT - for resource creation like node creation 
+* PUT - for resource creation like node creation
 * DELETE - for resource deletion for node deletion
 * POST - for rest of operations
 
@@ -42,10 +41,9 @@ PUT
 ```json
 {
  "project" : "<project_name>",
- "node" : "<node_name>" , 
+ "node" : "<node_name>" ,
  "img" : "<image_name>" ,
- "network" : "<network_name>" ,
- "nic" : "<nic to connect on>"
+ "nic" : "<nic to generate the boot configuration file for>"
 }
 ```
 
@@ -57,16 +55,15 @@ PUT
 * 405. You used a wrong request method like PUT instead of POST etc.
 * 400. If Request is a bad one.
 * 500. Internal BMI Error
- 
+
 ####Example:
 Send a PUT Request with following body to http://<BMI_SERVER>:<PORT>/provision/
 
 ```json
 {
  "project" : "bmi_infra",
- "node" : "cisco-2016" , 
- "img" : "hadoopMaster.img" ,  
- "network" : "provision-net" ,
+ "node" : "cisco-2016" ,
+ "img" : "hadoopMaster.img" ,
  "nic" : "nic01"
 }
 ```
@@ -90,7 +87,6 @@ DELETE
 {
  "project" : "<project_name>",
  "node" : "<node_name>" ,
- "network" : "<network_name>" ,
  "nic" : "<nic to connect on>"
 }
 ```
@@ -110,7 +106,6 @@ Send a DELETE Request with following body to http://<BMI_SERVER>:<PORT>/deprovis
 {
  "project" : "bmi_infra",
  "node" : "cisco-2016" ,
- "network" : "provision-net" ,
  "nic" : "nic01"
 }
 ```
@@ -133,7 +128,7 @@ POST
 ####Request Body:
 ```json
 {
- "project" : "<project_name>" 
+ "project" : "<project_name>"
 }
 ```
 
@@ -145,7 +140,7 @@ POST
 * 400. If Request is a bad one.
 * 500. Internal BMI Error
 
-This returns either a list of images in response body along with 200 response or other exceptions. 
+This returns either a list of images in response body along with 200 response or other exceptions.
 
 ####Example:
 Send a POST Request with following body to http://BMI_SERVER:PORT/list_images/
@@ -178,7 +173,7 @@ PUT
 {
  "project" : "<project_name>",
  "node" : "<node_name>" ,
- "snap_name" : "<snapshot_name>" 
+ "snap_name" : "<snapshot_name>"
 }
 ```
 
@@ -195,9 +190,9 @@ PUT
 Send a PUT Request with following body to http://BMI_SERVER:PORT/create_snapshot/
 ```json
 {
-"project":"bmi_infra", 
-"node": "cisco-2016", 
-"snap_name":"test_snap2016" 
+"project":"bmi_infra",
+"node": "cisco-2016",
+"snap_name":"test_snap2016"
 }
 ```
 

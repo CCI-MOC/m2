@@ -98,22 +98,9 @@ class HIL:
         return self.__call_rest_api_with_body(api=api, body=body)
 
     @log
-    def attach_node_to_project_network(self, node, network, nic):
-        api = '/node/' + node + '/nic/' + nic + '/connect_network'
-        body = {"network": network, "channel": constants.HIL_BMI_CHANNEL}
-        return self.__call_rest_api_with_body(api=api, body=body)
-
-    @log
     def attach_node_hil_project(self, project, node):
         api = 'project/' + project + '/connect_node'
         body = {"node": node}
-        return self.__call_rest_api_with_body(api=api, body=body)
-
-    @log
-    def detach_node_from_project_network(self, node,
-                                         network, nic):
-        api = '/node/' + node + '/nic/' + nic + '/detach_network'
-        body = {"network": network}
         return self.__call_rest_api_with_body(api=api, body=body)
 
     @log

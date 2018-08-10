@@ -212,11 +212,10 @@ class BMI:
 
     # Provisions from HIL and Boots the given node with given image
     @log
-    def provision(self, node_name, img_name, network, nic):
+    def provision(self, node_name, img_name, nic):
         try:
             mac_addr = "01-" + self.hil.get_node_mac_addr(node_name). \
                 replace(":", "-")
-            self.hil.attach_node_to_project_network(node_name, network, nic)
 
             parent_id = self.db.image.fetch_id_with_name_from_project(img_name,
                                                                       self.proj
@@ -242,8 +241,6 @@ class BMI:
             self.fs.remove(clone_ceph_name)
             self.db.image.delete_with_name_from_project(node_name, self.proj)
             time.sleep(constants.HIL_CALL_TIMEOUT)
-            self.hil.detach_node_from_project_network(node_name, network,
-                                                      nic)
             return self.__return_error(e)
 
         except ISCSIException as e:
@@ -253,8 +250,6 @@ class BMI:
             self.fs.remove(clone_ceph_name)
             self.db.image.delete_with_name_from_project(node_name, self.proj)
             time.sleep(constants.HIL_CALL_TIMEOUT)
-            self.hil.detach_node_from_project_network(node_name, network,
-                                                      nic)
             return self.__return_error(e)
 
         except FileSystemException as e:
@@ -262,15 +257,11 @@ class BMI:
             logger.exception('')
             self.db.image.delete_with_name_from_project(node_name, self.proj)
             time.sleep(constants.HIL_CALL_TIMEOUT)
-            self.hil.detach_node_from_project_network(node_name, network,
-                                                      nic)
             return self.__return_error(e)
         except DBException as e:
             # Message is being handled by custom formatter
             logger.exception('')
             time.sleep(constants.HIL_CALL_TIMEOUT)
-            self.hil.detach_node_from_project_network(node_name, network,
-                                                      nic)
             return self.__return_error(e)
         except HILException as e:
             # Message is being handled by custom formatter
@@ -280,11 +271,9 @@ class BMI:
     # This is for detach a node and removing it from iscsi
     # and destroying its image
     @log
-    def deprovision(self, node_name, network, nic):
+    def deprovision(self, node_name, nic):
         ceph_img_name = None
         try:
-            self.hil.detach_node_from_project_network(node_name,
-                                                      network, nic)
             ceph_img_name = self.__get_ceph_image_name(node_name)
             self.db.image.delete_with_name_from_project(node_name, self.proj)
             ceph_config = self.cfg.fs
@@ -305,7 +294,6 @@ class BMI:
             self.db.image.insert(node_name, self.pid, parent_id,
                                  id=self.__extract_id(ceph_img_name))
             time.sleep(constants.HIL_CALL_TIMEOUT)
-            self.hil.attach_node_to_project_network(node_name, network, nic)
             return self.__return_error(e)
         except ISCSIException as e:
             logger.exception('')
@@ -316,12 +304,10 @@ class BMI:
             self.db.image.insert(node_name, self.pid, parent_id,
                                  id=self.__extract_id(ceph_img_name))
             time.sleep(constants.HIL_CALL_TIMEOUT)
-            self.hil.attach_node_to_project_network(node_name, network, nic)
             return self.__return_error(e)
         except DBException as e:
             logger.exception('')
             time.sleep(constants.HIL_CALL_TIMEOUT)
-            self.hil.attach_node_to_project_network(node_name, network, nic)
             return self.__return_error(e)
         except HILException as e:
             logger.exception('')
@@ -607,11 +593,11 @@ class BMI:
             return self.__return_error(e)
 
     @log
-    def add_project(self, project, network, id):
+    def add_project(self, project, id):
         try:
             if not self.is_admin:
                 raise AuthorizationFailedException()
-            self.db.project.insert(project, network, id)
+            self.db.project.insert(project, id)
             return self.__return_success(True)
         except (DBException, AuthorizationFailedException) as e:
             logger.exception('')

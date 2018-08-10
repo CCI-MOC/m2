@@ -17,6 +17,7 @@ COPY setup.py /home/bmi/setup.py
 # Install
 USER root
 WORKDIR /home/bmi
+RUN pip install --upgrade setuptools
 RUN python setup.py develop
 
 # Create DB

@@ -32,7 +32,6 @@ NODE_NAME = _cfg.tests.node_name
 NIC = _cfg.tests.nic
 
 PROJECT = _cfg.tests.project
-NETWORK = _cfg.tests.network
 
 EXIST_IMG_NAME = _cfg.tests.exist_img_name
 NEW_SNAP_NAME = _cfg.tests.new_snap_name
@@ -89,7 +88,7 @@ class TestProvision(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert(PROJECT, NETWORK)
+        self.db.project.insert(PROJECT)
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
@@ -98,7 +97,6 @@ class TestProvision(TestCase):
         data = {constants.PROJECT_PARAMETER: PROJECT,
                 constants.NODE_NAME_PARAMETER: NODE_NAME,
                 constants.IMAGE_NAME_PARAMETER: EXIST_IMG_NAME,
-                constants.NETWORK_PARAMETER: NETWORK,
                 constants.NIC_PARAMETER: NIC}
         res = requests.put(PICASSO_URL + "provision/", data=data,
                            auth=(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD))
@@ -106,7 +104,7 @@ class TestProvision(TestCase):
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def tearDown(self):
-        self.good_bmi.deprovision(NODE_NAME, NETWORK, NIC)
+        self.good_bmi.deprovision(NODE_NAME, NIC)
         self.good_bmi.remove_image(EXIST_IMG_NAME)
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
@@ -122,17 +120,16 @@ class TestDeprovision(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert(PROJECT, NETWORK)
+        self.db.project.insert(PROJECT)
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
+        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NIC)
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def runTest(self):
         data = {constants.PROJECT_PARAMETER: PROJECT,
                 constants.NODE_NAME_PARAMETER: NODE_NAME,
-                constants.NETWORK_PARAMETER: NETWORK,
                 constants.NIC_PARAMETER: NIC}
         res = requests.delete(PICASSO_URL + "deprovision/", data=data,
                               auth=(
@@ -156,11 +153,11 @@ class TestCreateSnapshot(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert(PROJECT, NETWORK)
+        self.db.project.insert(PROJECT)
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
+        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NIC)
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def runTest(self):
@@ -185,7 +182,7 @@ class TestCreateSnapshot(TestCase):
             fs.get_image(img_id)
 
     def tearDown(self):
-        self.good_bmi.deprovision(NODE_NAME, NETWORK, NIC)
+        self.good_bmi.deprovision(NODE_NAME, NIC)
         self.good_bmi.remove_image(NEW_SNAP_NAME)
         self.good_bmi.remove_image(EXIST_IMG_NAME)
         self.db.project.delete_with_name(PROJECT)
@@ -202,11 +199,11 @@ class TestListSnapshots(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert(PROJECT, NETWORK)
+        self.db.project.insert(PROJECT)
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NETWORK, NIC)
+        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NIC)
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
         self.good_bmi.create_snapshot(NODE_NAME, NEW_SNAP_NAME)
@@ -222,7 +219,7 @@ class TestListSnapshots(TestCase):
         self.assertEqual(js[0][0], NEW_SNAP_NAME)
 
     def tearDown(self):
-        self.good_bmi.deprovision(NODE_NAME, NETWORK, NIC)
+        self.good_bmi.deprovision(NODE_NAME, NIC)
         self.good_bmi.remove_image(NEW_SNAP_NAME)
         self.good_bmi.remove_image(EXIST_IMG_NAME)
         self.db.project.delete_with_name(PROJECT)
@@ -255,7 +252,7 @@ class TestListImages(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert(PROJECT, NETWORK)
+        self.db.project.insert(PROJECT)
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
@@ -284,7 +281,7 @@ class TestRemoveImage(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert(PROJECT, NETWORK)
+        self.db.project.insert(PROJECT)
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)

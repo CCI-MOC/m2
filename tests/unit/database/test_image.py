@@ -14,7 +14,7 @@ class TestInsert(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert('project 1', 'network 1')
+        self.db.project.insert('project 1')
 
     def runTest(self):
         self.db.image.insert('image 1', 1)
@@ -45,7 +45,7 @@ class TestDelete(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert('project 1', 'network 1')
+        self.db.project.insert('project 1')
         self.db.image.insert('image 1', 1)
 
     def runTest(self):
@@ -64,7 +64,7 @@ class TestFetch(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert('project 1', 'network 1')
+        self.db.project.insert('project 1')
         self.db.image.insert('image 1', 1)
         self.db.image.insert('image 2', 1, is_public=True)
         self.db.image.insert('image 3', 1, parent_id=1)
@@ -116,8 +116,8 @@ class TestCopy(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert('project 1', 'network 1')
-        self.db.project.insert('project 2', 'network 2')
+        self.db.project.insert('project 1')
+        self.db.project.insert('project 2')
         self.db.image.insert('image 1', 1)
         self.db.image.insert('image 2', 1, is_snapshot=True, parent_id=1)
 
@@ -150,8 +150,8 @@ class TestMove(TestCase):
     @trace
     def setUp(self):
         self.db = Database()
-        self.db.project.insert('project 1', 'network 1')
-        self.db.project.insert('project 2', 'network 2')
+        self.db.project.insert('project 1')
+        self.db.project.insert('project 2')
         self.db.image.insert('image 1', 1)
         self.db.image.insert('image 2', 1, is_snapshot=True, parent_id=1)
 

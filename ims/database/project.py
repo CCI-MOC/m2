@@ -21,11 +21,10 @@ class ProjectRepository:
     # commits after insertion otherwise rollback occurs after which exception
     # is bubbled up
     @log
-    def insert(self, name, provision_network, id=None):
+    def insert(self, name, id=None):
         try:
             p = Project()
             p.name = name
-            p.provision_network = provision_network
             if id is not None:
                 p.id = id
             self.connection.session.add(p)
@@ -65,7 +64,7 @@ class ProjectRepository:
     def fetch_projects(self):
         try:
             projects = self.connection.session.query(Project)
-            return [[project.id, project.name, project.provision_network] for
+            return [[project.id, project.name] for
                     project in projects]
         except SQLAlchemyError as e:
             raise db_exceptions.ORMException(e.message)
@@ -82,7 +81,6 @@ class Project(DatabaseConnection.Base):
     # Columns in the table
     id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     name = Column(String, nullable=False, unique=True)
-    provision_network = Column(String, nullable=False)
 
     # Relationships in the table, this one back populates to project in Image
     # Class, eagerly loaded and cascade on delete is enabled
