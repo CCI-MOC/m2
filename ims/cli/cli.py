@@ -269,7 +269,7 @@ def list_projects():
         ret = bmi.list_projects()
         if ret[constants.STATUS_CODE_KEY] == 200:
             table = PrettyTable(
-                field_names=["Id", "Name", "Provision Network"])
+                field_names=["Id", "Name"])
             projects = ret[constants.RETURN_VALUE_KEY]
             for project in projects:
                 table.add_row(project)
