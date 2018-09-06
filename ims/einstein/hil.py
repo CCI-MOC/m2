@@ -105,11 +105,14 @@ class HIL:
         return self.__call_rest_api_with_body(api=api, body=body)
 
     @log
-    def get_node_mac_addr(self, node):
+    def get_node_mac_addr(self, node, nic_to_boot_from):
         api = "node/" + node
         node_info = self.__call_rest_api(api)
         logger.debug("The Node Info = %s", node_info)
-        return node_info[constants.RETURN_VALUE_KEY]['nics'][0]['macaddr']
+        for nic in node_info[constants.RETURN_VALUE_KEY]['nics']:
+            if nic['label'] == nic_to_boot_from:
+                return nic['macaddr']
+        raise hil_exceptions.UnknownException(404, 'Nic does not exist')
 
     @log
     def validate_project(self, project):
