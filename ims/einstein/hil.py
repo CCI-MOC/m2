@@ -71,13 +71,13 @@ class HIL:
 
     @trace
     def __call_rest_api(self, api):
-        link = urlparse.urljoin(self.base_url, api)
+        link = self.base_url + api
         request = HIL.Request('get', None, auth=(self.usr, self.passwd))
         return HIL.Communicator(link, request).send_request()
 
     @trace
     def __call_rest_api_with_body(self, api, body):
-        link = urlparse.urljoin(self.base_url, api)
+        link = self.base_url + api
         request = HIL.Request('post', body, auth=(self.usr, self.passwd))
         return HIL.Communicator(link, request).send_request()
 
