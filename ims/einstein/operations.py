@@ -234,6 +234,11 @@ class BMI:
 
             # Prepare the ceph image name to be used.
             clone_ceph_name = self.__get_ceph_image_name(disk_name)
+	except db_exceptions.ORMException as e:
+	    # Quick solution for returning the name
+	    # XXX Will also get triggered on same name + project id!
+            clone_ceph_name = self.__get_ceph_image_name(disk_name)
+            return self.__return_success(clone_ceph_name)
         except DBException as e:
             logger.exception('')
             return self.__return_error(e)
@@ -244,7 +249,7 @@ class BMI:
                           clone_ceph_name)
         except FileSystemException as e:
             logger.exception('')
-            self.db.image.delete_with_name_from_project(node_name, self.proj)
+            self.db.image.delete_with_name_from_project(disk_name, self.proj)
 
         # iSCSI Operations
         try:
@@ -252,7 +257,7 @@ class BMI:
         except ISCSIException as e:
             logger.exception('')
             self.fs.remove(clone_ceph_name)
-            self.db.image.delete_with_name_from_project(node_name, self.proj)
+            self.db.image.delete_with_name_from_project(disk_name, self.proj)
 
         logger.info("The create_disk command was executed successfully")
 

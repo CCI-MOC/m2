@@ -83,6 +83,24 @@ def create_disk(project, disk_name, img):
     # We should probably make a PrettyTable here
     click.echo(res.content)
 
+@cli.command(name='delete_disk', short_help="Delete a Disk")
+@click.argument(constants.PROJECT_PARAMETER)
+@click.argument(constants.DISK_NAME_PARAMETER)
+def delete_disk(project, disk_name):
+    """
+    Delete a disk
+    \b
+    Arguments:
+    PROJECT     = The HIL Project attached to your credentials
+    DISK_NAME   = The Name of the Disk to delete
+    """
+    data = {constants.PROJECT_PARAMETER: project,
+            constants.DISK_NAME_PARAMETER: disk_name}
+    res = requests.delete(_url + "delete_disk", data=data,
+                       auth=(_username, _password))
+    # We should probably make a PrettyTable here
+    click.echo(res.content)
+
 @cli.command(name='pro', short_help="Provision a Node")
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NODE_NAME_PARAMETER)
