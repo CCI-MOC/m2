@@ -76,12 +76,13 @@ def create_disk(project, disk_name, img):
     IMG     	= The Name of the Image to use
     """
     data = {constants.PROJECT_PARAMETER: project,
-	    constants.DISK_NAME_PARAMETER: disk_name,
+            constants.DISK_NAME_PARAMETER: disk_name,
             constants.IMAGE_NAME_PARAMETER: img}
     res = requests.put(_url + "create_disk", data=data,
                        auth=(_username, _password))
     # We should probably make a PrettyTable here
     click.echo(res.content)
+
 
 @cli.command(name='delete_disk', short_help="Delete a Disk")
 @click.argument(constants.PROJECT_PARAMETER)
@@ -97,9 +98,10 @@ def delete_disk(project, disk_name):
     data = {constants.PROJECT_PARAMETER: project,
             constants.DISK_NAME_PARAMETER: disk_name}
     res = requests.delete(_url + "delete_disk", data=data,
-                       auth=(_username, _password))
+                          auth=(_username, _password))
     # We should probably make a PrettyTable here
     click.echo(res.content)
+
 
 @cli.command(name='pro', short_help="Provision a Node")
 @click.argument(constants.PROJECT_PARAMETER)
