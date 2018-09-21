@@ -106,9 +106,9 @@ def delete_disk(project, disk_name):
 @cli.command(name='pro', short_help="Provision a Node")
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NODE_NAME_PARAMETER)
-@click.argument(constants.IMAGE_NAME_PARAMETER)
+@click.argument(constants.DISK_NAME_PARAMETER)
 @click.argument(constants.NIC_PARAMETER)
-def provision(project, node, img, nic):
+def provision(project, node, disk_name, nic):
     """
     Provision a Node
 
@@ -121,7 +121,7 @@ def provision(project, node, img, nic):
     """
     data = {constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
-            constants.IMAGE_NAME_PARAMETER: img,
+            constants.DISK_NAME_PARAMETER: disk_name,
             constants.NIC_PARAMETER: nic}
     res = requests.put(_url + "provision/", data=data,
                        auth=(_username, _password))

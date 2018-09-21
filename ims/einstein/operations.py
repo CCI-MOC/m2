@@ -124,6 +124,33 @@ class BMI:
         self.__generate_mac_addr_file(img_name, node_name, mac_addr)
 
     @log
+    def __unregister(self, node_name, mac_addr):
+        logger.debug("The Mac Addr File name is %s", mac_addr)
+        self.__delete_ipxe_file(node_name)
+        self.__delete_mac_addr_file(mac_addr)
+
+    @log
+    def __delete_ipxe_file(self, node_name):
+        """Delete the ipxe file"""
+        ipxe_file = self.cfg.tftp.ipxe_path + node_name + ".ipxe"
+        try:
+            os.remove(ipxe_file)
+        except OSError as e:
+            logger.info("Could not delete the ipxe file")
+            raise RegistrationFailedException(node_name, e.mssage)
+
+    @log
+    def __delete_mac_addr_file(self, mac_addr):
+        """Delete the mac_addr file"""
+        mac_addr_file = self.cfg.tftp.pxelinux_path + mac_addr
+        try:
+            os.remove(mac_addr_file)
+        except OSError as e:
+            logger.info("Could not delete the mac_addr file")
+            raise RegistrationFailedException(node_name, e.mssage)
+
+
+    @log
     def __generate_ipxe_file(self, node_name, target_name):
         template_loc = os.path.abspath(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
@@ -218,7 +245,6 @@ class BMI:
 
         Note: The name of the iscsi target and the name of disk in ceph is same
         """
-
         # Database Operations
         try:
             # Find the image id by using the image name, and then create a new
@@ -306,13 +332,30 @@ class BMI:
         and macaddress file for <node> with <nic>
         """
         try:
-            mac_addr = "01-" + self.hil.get_node_mac_addr(node_name). \
+            mac_addr = "01-" + self.hil.get_node_mac_addr(node_name, nic). \
                 replace(":", "-")
             clone_ceph_name = self.__get_ceph_image_name(disk_name)
-            self.__register(node_name, img_name, clone_ceph_name, mac_addr)
+            self.__register(node_name, disk_name, clone_ceph_name, mac_addr)
             return self.__return_success(True)
 
         except (RegistrationFailedException, DBException, HILException) as e:
+            # Message is being handled by custom formatter
+            logger.exception('')
+            return self.__return_error(e)
+
+    @log
+    def deprovision(self, node_name, nic):
+        """
+        This takes in the name of the node and nic to deprovision.
+        This method deletes the ipxe file and the bootfile.
+        """
+        try:
+            mac_addr = "01-" + self.hil.get_node_mac_addr(node_name, nic). \
+                replace(":", "-")
+            self.__unregister(node_name, mac_addr)
+            return self.__return_success(True)
+
+        except (RegistrationFailedException, HILException) as e:
             # Message is being handled by custom formatter
             logger.exception('')
             return self.__return_error(e)
