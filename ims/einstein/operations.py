@@ -273,7 +273,8 @@ class BMI:
             # Quick solution for returning the name
             # XXX Will also get triggered on same name + project id!
             clone_ceph_name = self.__get_ceph_image_name(disk_name)
-            return self.__return_success(clone_ceph_name)
+            return {constants.STATUS_CODE_KEY: 409,
+                    constants.MESSAGE_KEY: "Disk exists. Endpoint:" + clone_ceph_name}
         except DBException as e:
             logger.exception('')
             return self.__return_error(e)
