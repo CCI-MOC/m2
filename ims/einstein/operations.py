@@ -3,6 +3,7 @@ import base64
 import time
 
 import os
+import errno
 
 import ims.common.config as config
 import ims.common.constants as constants
@@ -133,21 +134,29 @@ class BMI:
     def __delete_ipxe_file(self, node_name):
         """Delete the ipxe file"""
         ipxe_file = self.cfg.tftp.ipxe_path + node_name + ".ipxe"
-        try:
-            os.remove(ipxe_file)
-        except OSError as e:
-            logger.info("Could not delete the ipxe file")
-            raise RegistrationFailedException(node_name, e.mssage)
+        self.__delete_file(ipxe_file)
 
     @log
     def __delete_mac_addr_file(self, mac_addr):
         """Delete the mac_addr file"""
         mac_addr_file = self.cfg.tftp.pxelinux_path + mac_addr
+        self.__delete_file(mac_addr_file)
+
+    @log
+    def __delete_file(self, file_path):
+        """Helper function to delete a file.
+        If the file does not exist, consider it a success.
+        """
+        # FIXME: This method doesn't need to be on the class at all.
+        # Moving it out of the class breaks logging for this function,
+        # which is weird.
         try:
-            os.remove(mac_addr_file)
+            os.remove(file_path)
         except OSError as e:
-            logger.info("Could not delete the mac_addr file")
-            raise RegistrationFailedException(node_name, e.mssage)
+            if e.errno == errno.ENOENT:
+                logger.info("mac_addr file does not exist")
+                return
+            raise RegistrationFailedException(node_name, e.strerror)
 
 
     @log
