@@ -60,31 +60,36 @@ def cli():
     """
     pass
 
+@cli.group(short_help='Disk related commands')
+def disk():
+    """
+    subcommands for manipulating disks.
+    """
+    pass
 
-@cli.command(name='create_disk', short_help="Create a Disk")
+@disk.command(name='create', short_help="Create a Disk")
 @click.argument(constants.PROJECT_PARAMETER)
-@click.argument(constants.DISK_NAME_PARAMETER)
 @click.argument(constants.IMAGE_NAME_PARAMETER)
-def create_disk(project, disk_name, img):
+@click.argument(constants.DISK_NAME_PARAMETER)
+def create_disk(project, img, disk_name):
     """
     Create a disk
 
     \b
     Arguments:
     PROJECT 	= The HIL Project attached to your credentials
-    DISK_NAME   = The Name of the Disk to create
     IMG     	= The Name of the Image to use
+    DISK_NAME   = The Name of the Disk to create
     """
     data = {constants.PROJECT_PARAMETER: project,
             constants.DISK_NAME_PARAMETER: disk_name,
             constants.IMAGE_NAME_PARAMETER: img}
     res = requests.put(_url + "create_disk", data=data,
                        auth=(_username, _password))
-    # We should probably make a PrettyTable here
     click.echo(res.content)
 
 
-@cli.command(name='delete_disk', short_help="Delete a Disk")
+@disk.command(name='delete', short_help="Delete a Disk")
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.DISK_NAME_PARAMETER)
 def delete_disk(project, disk_name):
@@ -99,7 +104,6 @@ def delete_disk(project, disk_name):
             constants.DISK_NAME_PARAMETER: disk_name}
     res = requests.delete(_url + "delete_disk", data=data,
                           auth=(_username, _password))
-    # We should probably make a PrettyTable here
     click.echo(res.content)
 
 
@@ -114,10 +118,10 @@ def provision(project, node, disk_name, nic):
 
     \b
     Arguments:
-    PROJECT = The HIL Project attached to your credentials
-    NODE    = The Node to Provision
-    IMG     = The Name of the Image to Provision
-    NIC     = The NIC to use for Network Boot
+    PROJECT       = The HIL Project attached to your credentials
+    NODE          = The Node to Provision
+    DISK_NAME     = The Name of the Disk to provision with
+    NIC           = The NIC to use for Network Boot
     """
     data = {constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
