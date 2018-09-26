@@ -74,6 +74,7 @@ IPXE_PATH_OPT = 'ipxe_path'
 # BMI
 UID_OPT = 'uid'
 SERVICE_OPT = 'service'
+SNAPSHOT_OPT = 'snapshot'
 
 # Response Related Keys
 STATUS_CODE_KEY = 'status_code'
