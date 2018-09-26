@@ -102,8 +102,9 @@ class RBD:
             raise file_system_exceptions.FunctionNotSupportedException()
 
     @log
-    def clone(self, parent_img_name, parent_snap_name, clone_img_name):
+    def clone(self, parent_img_name, parent_snap_name, clone_img_name, flag=None):
         try:
+            flag[0] = constants.CLONE
             parent_context = child_context = self.context
             self.rbd.clone(parent_context, parent_img_name, parent_snap_name,
                            child_context, clone_img_name, features=1)
