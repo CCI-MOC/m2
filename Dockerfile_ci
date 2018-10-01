@@ -13,6 +13,7 @@ COPY ims/ /home/bmi/ims/
 COPY tests/ /home/bmi/tests/
 COPY scripts/ /home/bmi/scripts/
 COPY setup.py /home/bmi/setup.py
+COPY ci/bmiconfig.cfg.ci /etc/bmi/bmiconfig.cfg
 
 # Install
 USER root
