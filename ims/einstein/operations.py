@@ -158,7 +158,6 @@ class BMI:
                 return
             raise RegistrationFailedException(node_name, e.strerror)
 
-
     @log
     def __generate_ipxe_file(self, node_name, target_name):
         template_loc = os.path.abspath(
@@ -274,7 +273,8 @@ class BMI:
             # XXX Will also get triggered on same name + project id!
             clone_ceph_name = self.__get_ceph_image_name(disk_name)
             return {constants.STATUS_CODE_KEY: 409,
-                    constants.MESSAGE_KEY: "Disk exists. Endpoint:" + clone_ceph_name}
+                    constants.MESSAGE_KEY:
+                    "Disk exists. Endpoint:" + clone_ceph_name}
         except DBException as e:
             logger.exception('')
             return self.__return_error(e)

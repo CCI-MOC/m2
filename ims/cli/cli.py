@@ -60,12 +60,14 @@ def cli():
     """
     pass
 
+
 @cli.group(short_help='Disk related commands')
 def disk():
     """
     subcommands for manipulating disks.
     """
     pass
+
 
 @disk.command(name='create', short_help="Create a Disk")
 @click.argument(constants.PROJECT_PARAMETER)

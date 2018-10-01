@@ -87,10 +87,12 @@ def list_images():
 def provision():
     pass
 
+
 @rest_call("/deprovision/", 'DELETE', constants.DEPROVISION_COMMAND,
            [constants.NODE_NAME_PARAMETER, constants.NIC_PARAMETER])
 def deprovision():
     pass
+
 
 @rest_call("/create_snapshot/", "PUT", constants.CREATE_SNAPSHOT_COMMAND,
            [constants.NODE_NAME_PARAMETER, constants.SNAP_NAME_PARAMETER])

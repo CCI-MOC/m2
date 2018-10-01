@@ -103,6 +103,7 @@ class HIL:
         api = 'project/' + project + '/connect_node'
         body = {"node": node}
         return self.__call_rest_api_with_body(api=api, body=body)
+
     @log
     def get_node_mac_addr(self, node, nic_to_boot_from):
         api = "node/" + node
