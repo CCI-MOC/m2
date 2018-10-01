@@ -22,7 +22,7 @@ fs = <driver to load>
 
 # This section is for network isolator (HIL) related config
 [net_isolator]
-url = http://172.17.0.3:7000/v0/
+url = http://172.17.0.3:7000
 
 # This section is for iscsi related config
 [iscsi]
