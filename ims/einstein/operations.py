@@ -223,7 +223,7 @@ class BMI:
             self.db.image.insert(node_name, self.pid, parent_id)
             clone_ceph_name = self.__get_ceph_image_name(node_name)
             ceph_img_name = self.__get_ceph_image_name(img_name)
-            self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
+            self.fs.clone(ceph_img_name, self.cfg.bmi.snapshot,
                           clone_ceph_name)
             ceph_config = self.cfg.fs
             logger.debug("Contents of ceph_config = %s", str(ceph_config))
@@ -322,23 +322,23 @@ class BMI:
 
             ceph_img_name = self.__get_ceph_image_name(node_name)
 
-            self.fs.snap_image(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.snap_image(ceph_img_name, self.cfg.bmi.snapshot)
             self.fs.snap_protect(ceph_img_name,
-                                 constants.DEFAULT_SNAPSHOT_NAME)
+                                 self.cfg.bmi.snapshot)
             parent_id = self.db.image.fetch_parent_id(self.proj, node_name)
             self.db.image.insert(snap_name, self.pid, parent_id,
                                  is_snapshot=True)
             snap_ceph_name = self.__get_ceph_image_name(snap_name)
-            self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
+            self.fs.clone(ceph_img_name, self.cfg.bmi.snapshot,
                           snap_ceph_name)
             self.fs.flatten(snap_ceph_name)
-            self.fs.snap_image(snap_ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.snap_image(snap_ceph_name, self.cfg.bmi.snapshot)
             self.fs.snap_protect(snap_ceph_name,
-                                 constants.DEFAULT_SNAPSHOT_NAME)
+                                 self.cfg.bmi.snapshot)
             self.fs.snap_unprotect(ceph_img_name,
-                                   constants.DEFAULT_SNAPSHOT_NAME)
+                                   self.cfg.bmi.snapshot)
             self.fs.remove_snapshot(ceph_img_name,
-                                    constants.DEFAULT_SNAPSHOT_NAME)
+                                    self.cfg.bmi.snapshot)
             return self.__return_success(True)
 
         except (HILException, DBException, FileSystemException) as e:
@@ -368,9 +368,9 @@ class BMI:
             ceph_img_name = self.__get_ceph_image_name(img_name)
 
             self.fs.snap_unprotect(ceph_img_name,
-                                   constants.DEFAULT_SNAPSHOT_NAME)
+                                   self.cfg.bmi.snapshot)
             self.fs.remove_snapshot(ceph_img_name,
-                                    constants.DEFAULT_SNAPSHOT_NAME)
+                                    self.cfg.bmi.snapshot)
             self.fs.remove(ceph_img_name)
             self.db.image.delete_with_name_from_project(img_name, self.proj)
             return self.__return_success(True)
@@ -431,9 +431,9 @@ class BMI:
             # create a snapshot of the golden image and protect it
             # this is needed because, in ceph, you can only create clones from
             # snapshots.
-            self.fs.snap_image(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.snap_image(ceph_img_name, self.cfg.bmi.snapshot)
             self.fs.snap_protect(ceph_img_name,
-                                 constants.DEFAULT_SNAPSHOT_NAME)
+                                 self.cfg.bmi.snapshot)
 
             # insert golden image name into bmi db
             self.db.image.insert(ceph_img_name, self.pid)
@@ -444,23 +444,23 @@ class BMI:
             snap_ceph_name = self.__get_ceph_image_name(ceph_img_name)
 
             # clone the snapshot of the golden image and then flatten it
-            self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
+            self.fs.clone(ceph_img_name, self.cfg.bmi.snapshot,
                           snap_ceph_name)
             self.fs.flatten(snap_ceph_name)
 
             # create a snapshot of our newly created golden image so that when
             # we provision, we can easily make clones from this readily
             # available snapshot.
-            self.fs.snap_image(snap_ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.snap_image(snap_ceph_name, self.cfg.bmi.snapshot)
             self.fs.snap_protect(snap_ceph_name,
-                                 constants.DEFAULT_SNAPSHOT_NAME)
+                                 self.cfg.bmi.snapshot)
 
             # unprotect and delete the snapshot of the original golden because
             # we no longer need it.
             self.fs.snap_unprotect(ceph_img_name,
-                                   constants.DEFAULT_SNAPSHOT_NAME)
+                                   self.cfg.bmi.snapshot)
             self.fs.remove_snapshot(ceph_img_name,
-                                    constants.DEFAULT_SNAPSHOT_NAME)
+                                    self.cfg.bmi.snapshot)
             return self.__return_success(True)
         except (DBException, FileSystemException) as e:
             logger.exception('')
@@ -488,9 +488,9 @@ class BMI:
             self.fs.clone(ceph_img_name, snap_name,
                           snap_ceph_name)
             self.fs.flatten(snap_ceph_name)
-            self.fs.snap_image(snap_ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.snap_image(snap_ceph_name, self.cfg.bmi.snapshot)
             self.fs.snap_protect(snap_ceph_name,
-                                 constants.DEFAULT_SNAPSHOT_NAME)
+                                 self.cfg.bmi.snapshot)
             return self.__return_success(True)
         except (DBException, FileSystemException) as e:
             logger.exception('')
@@ -500,7 +500,7 @@ class BMI:
     def export_ceph_image(self, img, name):
         try:
             ceph_img_name = self.__get_ceph_image_name(img)
-            self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME, name)
+            self.fs.clone(ceph_img_name, self.cfg.bmi.snapshot, name)
             self.fs.flatten(name)
             return self.__return_success(True)
         except FileSystemException as e:
@@ -568,12 +568,12 @@ class BMI:
                                                                   dest_project)
             self.fs.clone(self.get_ceph_image_name_from_project(
                 img1, self.proj),
-                constants.DEFAULT_SNAPSHOT_NAME,
+                self.cfg.bmi.snapshot,
                 ceph_name)
 
             self.fs.flatten(ceph_name)
-            self.fs.snap_image(ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
-            self.fs.snap_protect(ceph_name, constants.DEFAULT_SNAPSHOT_NAME)
+            self.fs.snap_image(ceph_name, self.cfg.bmi.snapshot)
+            self.fs.snap_protect(ceph_name, self.cfg.bmi.snapshot)
 
             return self.__return_success(True)
         except (DBException, FileSystemException) as e:
