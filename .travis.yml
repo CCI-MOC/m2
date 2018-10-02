@@ -19,7 +19,7 @@ before_script:
   - sleep 30
 
   # Run HIL Container
-  - sudo docker run -d --name hil massopencloud/hil
+  - sudo docker run -d --name hil massopencloud/hil-v03
 
   # Build BMI Container From Environment Image
   - sudo docker pull massopencloud/bmi-ci
