@@ -281,7 +281,7 @@ class BMI:
 
         # Storage Operations
         try:
-            self.fs.clone(ceph_img_name, constants.DEFAULT_SNAPSHOT_NAME,
+            self.fs.clone(ceph_img_name, self.cfg.bmi.snapshot,
                           clone_ceph_name)
         except FileSystemException as e:
             logger.exception('')
