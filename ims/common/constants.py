@@ -74,6 +74,7 @@ IPXE_PATH_OPT = 'ipxe_path'
 # BMI
 UID_OPT = 'uid'
 SERVICE_OPT = 'service'
+SNAPSHOT_OPT = 'snapshot'
 
 # Response Related Keys
 STATUS_CODE_KEY = 'status_code'
@@ -119,7 +120,6 @@ IET_LUN_STARTING = "Lun"
 DNSMASQ_LEASES_LOC = '/var/lib/misc/dnsmasq.leases'
 
 HIL_CALL_TIMEOUT = 10
-DEFAULT_SNAPSHOT_NAME = "snapshot"
 
 BMI_ADMIN_PROJECT = "bmi_infra"
 
