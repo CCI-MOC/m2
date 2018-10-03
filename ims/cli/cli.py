@@ -156,21 +156,21 @@ def deprovision(project, node, nic):
     click.echo(res.content)
 
 
-@cli.command(name='showpro',
-             short_help='Lists Provisioned Nodes')
+@cli.command(name='showdisks',
+             short_help='Show disks that belong to project')
 @click.argument(constants.PROJECT_PARAMETER)
 @bmi_exception_wrapper
-def list_provisioned_nodes(project):
+def list_disks(project):
     """
-    Lists Provisioned Nodes under a Project.
+    Show all disks that belong to <project>.
 
     \b
     Arguments:
     PROJECT = The HIL Project attached to your credentials
     """
     with BMI(_username, _password, project) as bmi:
-        table = PrettyTable(field_names=["Node", "Provisioned Image"])
-        ret = bmi.list_provisioned_nodes()
+        table = PrettyTable(field_names=["Disk", "Source Image"])
+        ret = bmi.list_disks()
         if ret[constants.STATUS_CODE_KEY] == 200:
             for clone in ret[constants.RETURN_VALUE_KEY]:
                 table.add_row(clone)

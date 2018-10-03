@@ -448,7 +448,9 @@ class BMI:
             return self.__return_error(e)
 
     @log
-    def list_provisioned_nodes(self):
+    def list_disks(self):
+        """Show all disks that belong to <project>."""
+
         try:
             clones = self.db.image.fetch_clones_from_project(self.proj)
             return self.__return_success(clones)
