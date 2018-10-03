@@ -23,8 +23,8 @@ before_script:
 
   # Build BMI Container From Environment Image
   - sudo docker pull massopencloud/bmi-ci
-  - sudo docker build -t bmi-test -f Dockerfile_ci .
-  - sudo docker run -d -e TRAVIS=$TRAVIS -e TRAVIS_JOB_ID=$TRAVIS_JOB_ID -e TRAVIS_BRANCH=$TRAVIS_BRANCH -v ceph:/etc/ceph --name bmi bmi-test
+  - sudo docker build -t bmi-test -f ci/Dockerfile_ci .
+  - sudo docker run -d -v ceph:/etc/ceph --name bmi bmi-test
 
   # Just for debugging purposes to check if all containers run
   - sudo docker ps
