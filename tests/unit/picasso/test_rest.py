@@ -37,6 +37,7 @@ EXIST_IMG_NAME = _cfg.tests.exist_img_name
 NEW_SNAP_NAME = _cfg.tests.new_snap_name
 NOT_EXIST_IMG_NAME = _cfg.tests.not_exist_img_name
 NOT_EXIST_SNAP_NAME = _cfg.tests.not_exist_snap_name
+NEW_DISK = 'test-disk'
 
 # The Coverage Issue for these tests was that no coverage data was
 # being generated for the server processes.
@@ -92,11 +93,12 @@ class TestProvision(TestCase):
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
+        self.good_bmi.create_disk(NEW_DISK, EXIST_IMG_NAME)
 
     def runTest(self):
         data = {constants.PROJECT_PARAMETER: PROJECT,
                 constants.NODE_NAME_PARAMETER: NODE_NAME,
-                constants.IMAGE_NAME_PARAMETER: EXIST_IMG_NAME,
+                constants.DISK_NAME_PARAMETER: NEW_DISK,
                 constants.NIC_PARAMETER: NIC}
         res = requests.put(PICASSO_URL + "provision/", data=data,
                            auth=(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD))
@@ -104,6 +106,7 @@ class TestProvision(TestCase):
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def tearDown(self):
+        self.good_bmi.delete_disk(NEW_DISK)
         self.good_bmi.deprovision(NODE_NAME, NIC)
         self.good_bmi.remove_image(EXIST_IMG_NAME)
         self.db.project.delete_with_name(PROJECT)
@@ -124,7 +127,8 @@ class TestDeprovision(TestCase):
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NIC)
+        self.good_bmi.create_disk(NEW_DISK, EXIST_IMG_NAME)
+        self.good_bmi.provision(NODE_NAME, NEW_DISK, NIC)
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def runTest(self):
@@ -139,6 +143,7 @@ class TestDeprovision(TestCase):
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def tearDown(self):
+        self.good_bmi.delete_disk(NEW_DISK)
         self.good_bmi.remove_image(EXIST_IMG_NAME)
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
@@ -157,12 +162,12 @@ class TestCreateSnapshot(TestCase):
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NIC)
+        self.good_bmi.create_disk(NEW_DISK, EXIST_IMG_NAME)
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def runTest(self):
         data = {constants.PROJECT_PARAMETER: PROJECT,
-                constants.NODE_NAME_PARAMETER: NODE_NAME,
+                constants.DISK_NAME_PARAMETER: NEW_DISK,
                 constants.SNAP_NAME_PARAMETER: NEW_SNAP_NAME}
         res = requests.put(PICASSO_URL + "create_snapshot/", data=data,
                            auth=(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD))
@@ -182,7 +187,7 @@ class TestCreateSnapshot(TestCase):
             fs.get_image(img_id)
 
     def tearDown(self):
-        self.good_bmi.deprovision(NODE_NAME, NIC)
+        self.good_bmi.delete_disk(NEW_DISK)
         self.good_bmi.remove_image(NEW_SNAP_NAME)
         self.good_bmi.remove_image(EXIST_IMG_NAME)
         self.db.project.delete_with_name(PROJECT)
@@ -203,10 +208,11 @@ class TestListSnapshots(TestCase):
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NIC)
+        self.good_bmi.create_disk(NEW_DISK, EXIST_IMG_NAME)
+        self.good_bmi.provision(NODE_NAME, NEW_DISK, NIC)
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
-        self.good_bmi.create_snapshot(NODE_NAME, NEW_SNAP_NAME)
+        self.good_bmi.create_snapshot(NEW_DISK, NEW_SNAP_NAME)
 
     def runTest(self):
         data = {constants.PROJECT_PARAMETER: PROJECT}
@@ -219,6 +225,7 @@ class TestListSnapshots(TestCase):
         self.assertEqual(js[0][0], NEW_SNAP_NAME)
 
     def tearDown(self):
+        self.good_bmi.delete_disk(NEW_DISK)
         self.good_bmi.deprovision(NODE_NAME, NIC)
         self.good_bmi.remove_image(NEW_SNAP_NAME)
         self.good_bmi.remove_image(EXIST_IMG_NAME)

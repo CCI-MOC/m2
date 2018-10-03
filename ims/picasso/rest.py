@@ -95,7 +95,7 @@ def deprovision():
 
 
 @rest_call("/create_snapshot/", "PUT", constants.CREATE_SNAPSHOT_COMMAND,
-           [constants.NODE_NAME_PARAMETER, constants.SNAP_NAME_PARAMETER])
+           [constants.DISK_NAME_PARAMETER, constants.SNAP_NAME_PARAMETER])
 def create_snapshot():
     pass
 

@@ -373,16 +373,16 @@ class BMI:
     # Creates snapshot for the given image with snap_name as given name
     # fs_obj will be populated by decorator
     @log
-    def create_snapshot(self, node_name, snap_name):
+    def create_snapshot(self, disk_name, snap_name):
         try:
             self.hil.validate_project(self.proj)
 
-            ceph_img_name = self.__get_ceph_image_name(node_name)
+            ceph_img_name = self.__get_ceph_image_name(disk_name)
 
             self.fs.snap_image(ceph_img_name, self.cfg.bmi.snapshot)
             self.fs.snap_protect(ceph_img_name,
                                  self.cfg.bmi.snapshot)
-            parent_id = self.db.image.fetch_parent_id(self.proj, node_name)
+            parent_id = self.db.image.fetch_parent_id(self.proj, disk_name)
             self.db.image.insert(snap_name, self.pid, parent_id,
                                  is_snapshot=True)
             snap_ceph_name = self.__get_ceph_image_name(snap_name)

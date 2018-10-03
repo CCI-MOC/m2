@@ -231,9 +231,9 @@ def snap():
 
 @snap.command(name='create', short_help='Create Snapshot')
 @click.argument(constants.PROJECT_PARAMETER)
-@click.argument(constants.NODE_NAME_PARAMETER)
+@click.argument(constants.DISK_NAME_PARAMETER)
 @click.argument(constants.SNAP_NAME_PARAMETER)
-def create_snapshot(project, node, snap_name):
+def create_snapshot(project, disk_name, snap_name):
     """
     Create a Snapshot of a Node's state to preserve it
 
@@ -247,7 +247,7 @@ def create_snapshot(project, node, snap_name):
     SNAP_NAME = The Name which needs to be used for saving snapshot
     """
     data = {constants.PROJECT_PARAMETER: project,
-            constants.NODE_NAME_PARAMETER: node,
+            constants.DISK_NAME_PARAMETER: disk_name,
             constants.SNAP_NAME_PARAMETER: snap_name}
     res = requests.put(_url + "create_snapshot/", data=data,
                        auth=(_username, _password))
