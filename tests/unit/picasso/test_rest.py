@@ -209,8 +209,6 @@ class TestListSnapshots(TestCase):
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
         self.good_bmi.create_disk(NEW_DISK, EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, NEW_DISK, NIC)
-        time.sleep(constants.HIL_CALL_TIMEOUT)
 
         self.good_bmi.create_snapshot(NEW_DISK, NEW_SNAP_NAME)
 
@@ -226,7 +224,6 @@ class TestListSnapshots(TestCase):
 
     def tearDown(self):
         self.good_bmi.delete_disk(NEW_DISK)
-        self.good_bmi.deprovision(NODE_NAME, NIC)
         self.good_bmi.remove_image(NEW_SNAP_NAME)
         self.good_bmi.remove_image(EXIST_IMG_NAME)
         self.db.project.delete_with_name(PROJECT)

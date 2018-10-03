@@ -58,7 +58,7 @@ class TestProvisionDeprovision(TestCase):
         self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
 
         # Then deprovision that node
-        response = self.good_bmi.deprovision(NODE_NAME, NEW_DISK, NIC)
+        response = self.good_bmi.deprovision(NODE_NAME, NIC)
         self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
 
         # Delete the disk
@@ -130,7 +130,7 @@ class TestListSnapshots(TestCase):
         self.good_bmi.create_disk(NEW_DISK, EXIST_IMG_NAME)
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
-        self.good_bmi.create_snapshot(NODE_NAME, NEW_SNAP_NAME)
+        self.good_bmi.create_snapshot(NEW_DISK, NEW_SNAP_NAME)
 
     def runTest(self):
         response = self.good_bmi.list_snapshots()
