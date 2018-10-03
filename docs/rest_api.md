@@ -26,8 +26,55 @@ Each possible API call has:
 * An example
 
 ---
+###create_disk:
+
+This will create a disk from a source image and an iscsi target pointing to that image.
+
+Following is the call for API:
+
+####Link:
+http://BMI_SERVER:PORT/create_disk/
+
+####Request Type:
+PUT
+
+####Request Body:
+```json
+{
+ "project" : "<project_name>",
+ "disk_name" : "<disk_name>" ,
+ "img_name" : "<source image>" ,
+}
+```
+
+####Responses:
+* 200. This means the create_disk call is successful.
+* 401. Authentication Failure
+* 403. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
+* 409. Image busy exception.
+* 405. You used a wrong request method like PUT instead of POST etc.
+* 400. If Request is a bad one.
+* 500. Internal BMI Error
+
+####Example:
+Send a PUT Request with following body to http://<BMI_SERVER>:<PORT>/create_disk/
+
+```json
+{
+ "project" : "bmi_infra",
+ "disk_name" : "centos7-controller" ,
+ "img_name" : "centos7-golden" ,
+}
+```
+**Make sure to use HTTP Basic Auth to pass HIL Credentials**
+
+This should return a 200 or other errors as explained above.
+
+---
 ###Provision:
-Provision API is needed for provisioning a node from MOC cluster as of now. Provision operation internally calls a ceph clone operation. Ceph clone operation usually takes a snap_
+
+This call creates the boot configuration file (based on mac address) and the ipxe file that refers to the target
+specified.
 
 Following is the call for API:
 
@@ -42,7 +89,7 @@ PUT
 {
  "project" : "<project_name>",
  "node" : "<node_name>" ,
- "img" : "<image_name>" ,
+ "disk_name" : "<disk_name>" ,
  "nic" : "<nic to generate the boot configuration file for>"
 }
 ```
@@ -51,6 +98,7 @@ PUT
 * 200. This means the provision call is successful.
 * 401. Authentication Failure
 * 403. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
+* 404. If the nic is not found or the disk is not found.
 * 409. Image busy exception.
 * 405. You used a wrong request method like PUT instead of POST etc.
 * 400. If Request is a bad one.
@@ -63,7 +111,7 @@ Send a PUT Request with following body to http://<BMI_SERVER>:<PORT>/provision/
 {
  "project" : "bmi_infra",
  "node" : "cisco-2016" ,
- "img" : "hadoopMaster.img" ,
+ "disk_name" : "hadoopMaster" ,
  "nic" : "nic01"
 }
 ```
@@ -72,9 +120,46 @@ Send a PUT Request with following body to http://<BMI_SERVER>:<PORT>/provision/
 This should return a 200 or other errors as explained above.
 
 ---
+###Delete_disk:
+
+This call will *delete* your disk.
+
+####Link:
+http://BMI_SERVER:PORT/delete_disk/
+
+####Request Type:
+DELETE
+
+####Request Body:
+```json
+{
+ "project" : "<project_name>",
+ "disk_name" : "disk_name" ,
+}
+```
+
+####Responses:
+* 200. This means the delete_disk call is successful.
+* 401. Authentication Failure
+* 404. Disk not found
+* 405. You used a wrong request method like PUT instead of POST etc.
+* 400. If Request is a bad one.
+* 500. Internal BMI Error
+
+####Example:
+Send a DELETE Request with following body to http://<BMI_SERVER>:<PORT>/deprovision/
+```json
+{
+ "project" : "bmi_infra",
+ "disk_name" : "centos7-controller" ,
+}
+```
+
+---
 ###Deprovision:
 
-Following is the call for API:
+This call deletes the boot configuration file and the ipxe file for that.
+You must have the node in your hil project when making this call.
 
 ####Link:
 http://BMI_SERVER:PORT/deprovision/
@@ -87,15 +172,14 @@ DELETE
 {
  "project" : "<project_name>",
  "node" : "<node_name>" ,
- "nic" : "<nic to connect on>"
+ "nic" : "<nic whose boot configuration file will be deleted>"
 }
 ```
 
 ####Responses:
-* 200. This means the delete node call is successful.
+* 200. This means the deprovision call is successful.
 * 401. Authentication Failure
-* 403. This means unauthorized access to ceph image or snapshot or image already exists in ceph.
-* 404. Image not found exception.
+* 404. Nic not found.
 * 405. You used a wrong request method like PUT instead of POST etc.
 * 400. If Request is a bad one.
 * 500. Internal BMI Error
@@ -156,9 +240,10 @@ The list of images which are in your project - if it is successful with a status
 
 ---
 ###Create Snapshot:
-Snapshot is feature which is available to preserve the state of your node. Using ceph as backend we can preserve the state of your node as a snapshot and use this snapshot for further cloning.
+Snapshot creates a new image that preserves the state of your disk. This allows you to
+do the customization on one image and then provision other names from the snapshot.
 
-**The Node should be provisioned and powered down before calling this function**
+**If the node is provisioned from the disk to be snapshotted, please power it off.**
 
 Following is the call for API:
 
@@ -172,7 +257,7 @@ PUT
 ```json
 {
  "project" : "<project_name>",
- "node" : "<node_name>" ,
+ "disk_name" : "<disk_name>" ,
  "snap_name" : "<snapshot_name>"
 }
 ```
@@ -191,8 +276,8 @@ Send a PUT Request with following body to http://BMI_SERVER:PORT/create_snapshot
 ```json
 {
 "project":"bmi_infra",
-"node": "cisco-2016",
-"snap_name":"test_snap2016"
+"disk_name": "centos7-base",
+"snap_name":"centos7-compute"
 }
 ```
 
