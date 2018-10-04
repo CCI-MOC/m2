@@ -3,30 +3,19 @@
 # The CI Tool will just create a new image based of this and run tests
 
 # Using ubuntu as base
-FROM centos
+FROM ubuntu
 
 # Install all dependencies except dnsmasq
-RUN yum install -y epel-release
-RUN rpm --import 'https://download.ceph.com/keys/release.asc'
-COPY docker/yum.repo /etc/yum.repos.d/ceph.repo
-RUN yum -y update && yum install -y ceph-common-0.94.9 librbd1-devel-0.94.9 librados2-devel-0.94.9 python python-setuptools python-pip sudo sqlite cpan perl-Config-General libxslt-devel git make gcc
+RUN apt-get -y update && apt-get install -y tgt-rbd ceph-common python python-dev python-setuptools build-essential python-pip sudo sqlite3 git
 
 # Install test stuff
 RUN pip install dumb-init pytest pytest-random-order coverage==4.3 pytest-cov coveralls
 
-RUN git clone https://github.com/fujita/tgt
-WORKDIR tgt/
-RUN git reset --hard 3c8c9e96b82d87a334b1d340fa29218b7b94f26d
-RUN sudo make CEPH_RBD=1 clean
-RUN sudo make CEPH_RBD=1
-RUN sudo make CEPH_RBD=1 install
-
-WORKDIR ../
 # Create user and remove password for root
 RUN useradd -ms /bin/bash bmi
 RUN passwd -d bmi
 RUN passwd -d root
-RUN usermod -aG wheel bmi
+RUN usermod -aG sudo bmi
 
 # Create required folders
 RUN mkdir /etc/bmi/
@@ -51,6 +40,7 @@ COPY docker/runbmi.sh /home/bmi/runbmi.sh
 RUN chmod a+x /home/bmi/runbmi.sh
 
 # Set Environment variables
+# We can easily override these when launching the container
 ENV HIL_USERNAME=admin
 ENV HIL_PASSWORD=admin
 
