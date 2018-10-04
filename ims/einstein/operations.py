@@ -214,7 +214,7 @@ class BMI:
     @log
     def provision(self, node_name, img_name, nic):
         try:
-            mac_addr = "01-" + self.hil.get_node_mac_addr(node_name). \
+            mac_addr = "01-" + self.hil.get_node_mac_addr(node_name, nic). \
                 replace(":", "-")
 
             parent_id = self.db.image.fetch_id_with_name_from_project(img_name,
