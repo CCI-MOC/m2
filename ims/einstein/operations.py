@@ -250,7 +250,6 @@ class BMI:
         and then creates an iscsi endpoint for <disk_name>.
         Returns the disk image name (which also happens to be the iscsi target
         name)
-
         Note: The name of the iscsi target and the name of disk in ceph is same
         """
         # Database Operations
