@@ -28,7 +28,7 @@ Each possible API call has:
 ---
 ###create_disk:
 
-This will create a disk from a source image and an iscsi target pointing to that image.
+This will create a disk from a source image and return an iscsi target pointing to that image.
 
 Following is the call for API:
 
