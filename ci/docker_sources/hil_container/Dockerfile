@@ -20,19 +20,15 @@ RUN usermod -aG wheel hil
 
 WORKDIR /home/hil
 
-RUN git clone https://github.com/CCI-MOC/hil.git
+RUN git clone https://github.com/cci-moc/hil -b v0.3
 
 WORKDIR /home/hil/hil
-
-RUN git reset --hard f88d2fc92066c1e83e428ebeeca351971f306053
 
 RUN pip install --upgrade pip setuptools
 
 RUN python setup.py install
 
 COPY hil.cfg /etc/hil.cfg
-
-COPY hil.cfg /home/hil
 
 COPY hil.cfg /home/hil/hil
 
@@ -54,7 +50,7 @@ USER hil
 
 ENV HIL_ENDPOINT=http://127.0.0.1:7000
 
-RUN ./setupdb.sh
+RUN source ./setupdb.sh
 
 USER root
 

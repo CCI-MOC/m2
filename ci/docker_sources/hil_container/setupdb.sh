@@ -1,3 +1,7 @@
+export HIL_USERNAME=haasadmin
+
+export HIL_PASSWORD=admin1234
+
 hil-admin run-dev-server -p 7000 &
 
 sleep 5
@@ -5,6 +9,8 @@ sleep 5
 hil-admin serve-networks &
 
 sleep 5
+
+hil-admin create-admin-user haasadmin admin1234
 
 hil project create bmi_infra
 
@@ -18,7 +24,7 @@ hil project node add bmi_infra bmi_node
 
 hil switch register bmi_switch mock mockhost mockuser mockpass
 
-hil port register bmi_switch gi1/0/1  *** Port here had to be renamed
+hil port register bmi_switch gi1/0/1
 
 hil port nic add bmi_switch gi1/0/1 bmi_node bmi_nic
 
