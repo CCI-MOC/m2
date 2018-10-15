@@ -29,12 +29,15 @@ NEW_SNAP_NAME = _cfg.tests.new_snap_name
 NOT_EXIST_IMG_NAME = _cfg.tests.not_exist_img_name
 NOT_EXIST_SNAP_NAME = _cfg.tests.not_exist_snap_name
 
+NEW_DISK = 'new-disk'
+
 IMG2 = 'img2'
 
 
-class TestProvision(TestCase):
+class TestProvisionDeprovision(TestCase):
     """
-    Imports an image and calls provision
+    This tests multiple things. It creates an image, then provisions
+    from it and then deprovisions the node and delete the image.
     """
     @trace
     def setUp(self):
@@ -46,44 +49,28 @@ class TestProvision(TestCase):
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
 
     def runTest(self):
-        response = self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NIC)
+        # First create a disk
+        response = self.good_bmi.create_disk(NEW_DISK, EXIST_IMG_NAME)
         self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
-        time.sleep(constants.HIL_CALL_TIMEOUT)
 
-    def tearDown(self):
-        self.good_bmi.deprovision(NODE_NAME, NIC)
-        self.good_bmi.remove_image(EXIST_IMG_NAME)
-        self.db.project.delete_with_name(PROJECT)
-        self.db.close()
-        self.good_bmi.shutdown()
-        time.sleep(constants.HIL_CALL_TIMEOUT)
+        # Then provision a node from that disk
+        response = self.good_bmi.provision(NODE_NAME, NEW_DISK, NIC)
+        self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
 
-
-class TestDeprovision(TestCase):
-    """
-    Same as above, but calls deprovision in the test (Test is same as previous)
-    """
-    @trace
-    def setUp(self):
-        self.db = Database()
-        self.db.project.insert(PROJECT)
-
-        self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
-                            PROJECT)
-        self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NIC)
-        time.sleep(constants.HIL_CALL_TIMEOUT)
-
-    def runTest(self):
+        # Then deprovision that node
         response = self.good_bmi.deprovision(NODE_NAME, NIC)
         self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
-        time.sleep(constants.HIL_CALL_TIMEOUT)
+
+        # Delete the disk
+        response = self.good_bmi.delete_disk(NEW_DISK)
+        self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
 
     def tearDown(self):
         self.good_bmi.remove_image(EXIST_IMG_NAME)
         self.db.project.delete_with_name(PROJECT)
         self.db.close()
         self.good_bmi.shutdown()
+        time.sleep(constants.HIL_CALL_TIMEOUT)
 
 
 class TestCreateSnapshot(TestCase):
@@ -98,11 +85,11 @@ class TestCreateSnapshot(TestCase):
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NIC)
+        self.good_bmi.create_disk(NEW_DISK, EXIST_IMG_NAME)
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
     def runTest(self):
-        response = self.good_bmi.create_snapshot(NODE_NAME, NEW_SNAP_NAME)
+        response = self.good_bmi.create_snapshot(NEW_DISK, NEW_SNAP_NAME)
         self.assertEqual(response[constants.STATUS_CODE_KEY], 200)
 
         snaps = self.db.image.fetch_snapshots_from_project(PROJECT)
@@ -119,7 +106,7 @@ class TestCreateSnapshot(TestCase):
             fs.get_image(img_id)
 
     def tearDown(self):
-        self.good_bmi.deprovision(NODE_NAME, NIC)
+        self.good_bmi.delete_disk(NEW_DISK)
         self.good_bmi.remove_image(NEW_SNAP_NAME)
         self.good_bmi.remove_image(EXIST_IMG_NAME)
         self.db.project.delete_with_name(PROJECT)
@@ -140,10 +127,10 @@ class TestListSnapshots(TestCase):
         self.good_bmi = BMI(CORRECT_HIL_USERNAME, CORRECT_HIL_PASSWORD,
                             PROJECT)
         self.good_bmi.import_ceph_image(EXIST_IMG_NAME)
-        self.good_bmi.provision(NODE_NAME, EXIST_IMG_NAME, NIC)
+        self.good_bmi.create_disk(NEW_DISK, EXIST_IMG_NAME)
         time.sleep(constants.HIL_CALL_TIMEOUT)
 
-        self.good_bmi.create_snapshot(NODE_NAME, NEW_SNAP_NAME)
+        self.good_bmi.create_snapshot(NEW_DISK, NEW_SNAP_NAME)
 
     def runTest(self):
         response = self.good_bmi.list_snapshots()
@@ -152,7 +139,7 @@ class TestListSnapshots(TestCase):
                          NEW_SNAP_NAME)
 
     def tearDown(self):
-        self.good_bmi.deprovision(NODE_NAME, NIC)
+        self.good_bmi.delete_disk(NEW_DISK)
         self.good_bmi.remove_image(NEW_SNAP_NAME)
         self.good_bmi.remove_image(EXIST_IMG_NAME)
         self.db.project.delete_with_name(PROJECT)

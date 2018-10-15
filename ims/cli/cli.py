@@ -61,25 +61,73 @@ def cli():
     pass
 
 
+@cli.group(short_help='Disk related commands')
+def disk():
+    """
+    subcommands for manipulating disks.
+    """
+    pass
+
+
+@disk.command(name='create', short_help="Create a Disk")
+@click.argument(constants.PROJECT_PARAMETER)
+@click.argument(constants.IMAGE_NAME_PARAMETER)
+@click.argument(constants.DISK_NAME_PARAMETER)
+def create_disk(project, img, disk_name):
+    """
+    Create a disk
+
+    \b
+    Arguments:
+    PROJECT 	= The HIL Project attached to your credentials
+    IMG     	= The Name of the Image to use
+    DISK_NAME   = The Name of the Disk to create
+    """
+    data = {constants.PROJECT_PARAMETER: project,
+            constants.DISK_NAME_PARAMETER: disk_name,
+            constants.IMAGE_NAME_PARAMETER: img}
+    res = requests.put(_url + "create_disk", data=data,
+                       auth=(_username, _password))
+    click.echo(res.content)
+
+
+@disk.command(name='delete', short_help="Delete a Disk")
+@click.argument(constants.PROJECT_PARAMETER)
+@click.argument(constants.DISK_NAME_PARAMETER)
+def delete_disk(project, disk_name):
+    """
+    Delete a disk
+    \b
+    Arguments:
+    PROJECT     = The HIL Project attached to your credentials
+    DISK_NAME   = The Name of the Disk to delete
+    """
+    data = {constants.PROJECT_PARAMETER: project,
+            constants.DISK_NAME_PARAMETER: disk_name}
+    res = requests.delete(_url + "delete_disk", data=data,
+                          auth=(_username, _password))
+    click.echo(res.content)
+
+
 @cli.command(name='pro', short_help="Provision a Node")
 @click.argument(constants.PROJECT_PARAMETER)
 @click.argument(constants.NODE_NAME_PARAMETER)
-@click.argument(constants.IMAGE_NAME_PARAMETER)
+@click.argument(constants.DISK_NAME_PARAMETER)
 @click.argument(constants.NIC_PARAMETER)
-def provision(project, node, img, nic):
+def provision(project, node, disk_name, nic):
     """
     Provision a Node
 
     \b
     Arguments:
-    PROJECT = The HIL Project attached to your credentials
-    NODE    = The Node to Provision
-    IMG     = The Name of the Image to Provision
-    NIC     = The NIC to use for Network Boot
+    PROJECT       = The HIL Project attached to your credentials
+    NODE          = The Node to Provision
+    DISK_NAME     = The Name of the Disk to provision with
+    NIC           = The NIC to use for Network Boot
     """
     data = {constants.PROJECT_PARAMETER: project,
             constants.NODE_NAME_PARAMETER: node,
-            constants.IMAGE_NAME_PARAMETER: img,
+            constants.DISK_NAME_PARAMETER: disk_name,
             constants.NIC_PARAMETER: nic}
     res = requests.put(_url + "provision/", data=data,
                        auth=(_username, _password))
@@ -108,21 +156,21 @@ def deprovision(project, node, nic):
     click.echo(res.content)
 
 
-@cli.command(name='showpro',
-             short_help='Lists Provisioned Nodes')
+@cli.command(name='showdisks',
+             short_help='Show disks that belong to project')
 @click.argument(constants.PROJECT_PARAMETER)
 @bmi_exception_wrapper
-def list_provisioned_nodes(project):
+def list_disks(project):
     """
-    Lists Provisioned Nodes under a Project.
+    Show all disks that belong to <project>.
 
     \b
     Arguments:
     PROJECT = The HIL Project attached to your credentials
     """
     with BMI(_username, _password, project) as bmi:
-        table = PrettyTable(field_names=["Node", "Provisioned Image"])
-        ret = bmi.list_provisioned_nodes()
+        table = PrettyTable(field_names=["Disk", "Source Image"])
+        ret = bmi.list_disks()
         if ret[constants.STATUS_CODE_KEY] == 200:
             for clone in ret[constants.RETURN_VALUE_KEY]:
                 table.add_row(clone)
@@ -183,9 +231,9 @@ def snap():
 
 @snap.command(name='create', short_help='Create Snapshot')
 @click.argument(constants.PROJECT_PARAMETER)
-@click.argument(constants.NODE_NAME_PARAMETER)
+@click.argument(constants.DISK_NAME_PARAMETER)
 @click.argument(constants.SNAP_NAME_PARAMETER)
-def create_snapshot(project, node, snap_name):
+def create_snapshot(project, disk_name, snap_name):
     """
     Create a Snapshot of a Node's state to preserve it
 
@@ -199,7 +247,7 @@ def create_snapshot(project, node, snap_name):
     SNAP_NAME = The Name which needs to be used for saving snapshot
     """
     data = {constants.PROJECT_PARAMETER: project,
-            constants.NODE_NAME_PARAMETER: node,
+            constants.DISK_NAME_PARAMETER: disk_name,
             constants.SNAP_NAME_PARAMETER: snap_name}
     res = requests.put(_url + "create_snapshot/", data=data,
                        auth=(_username, _password))

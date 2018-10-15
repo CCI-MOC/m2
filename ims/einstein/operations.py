@@ -3,6 +3,7 @@ import base64
 import time
 
 import os
+import errno
 
 import ims.common.config as config
 import ims.common.constants as constants
@@ -89,10 +90,6 @@ class BMI:
     def __get_ceph_image_name(self, name):
         img_id = self.db.image.fetch_id_with_name_from_project(name,
                                                                self.proj)
-        if img_id is None:
-            logger.info("Raising Image Not Found Exception for %s", name)
-            raise db_exceptions.ImageNotFoundException(name)
-
         return str(self.cfg.bmi.uid) + "img" + str(img_id)
 
     def get_ceph_image_name_from_project(self, name, project_name):
@@ -126,6 +123,40 @@ class BMI:
         logger.debug("The Mac Addr File name is %s", mac_addr)
         self.__generate_ipxe_file(node_name, target_name)
         self.__generate_mac_addr_file(img_name, node_name, mac_addr)
+
+    @log
+    def __unregister(self, node_name, mac_addr):
+        logger.debug("The Mac Addr File name is %s", mac_addr)
+        self.__delete_ipxe_file(node_name)
+        self.__delete_mac_addr_file(mac_addr)
+
+    @log
+    def __delete_ipxe_file(self, node_name):
+        """Delete the ipxe file"""
+        ipxe_file = self.cfg.tftp.ipxe_path + node_name + ".ipxe"
+        self.__delete_file(ipxe_file)
+
+    @log
+    def __delete_mac_addr_file(self, mac_addr):
+        """Delete the mac_addr file"""
+        mac_addr_file = self.cfg.tftp.pxelinux_path + mac_addr
+        self.__delete_file(mac_addr_file)
+
+    @log
+    def __delete_file(self, file_path):
+        """Helper function to delete a file.
+        If the file does not exist, consider it a success.
+        """
+        # FIXME: This method doesn't need to be on the class at all.
+        # Moving it out of the class breaks logging for this function,
+        # which is weird.
+        try:
+            os.remove(file_path)
+        except OSError as e:
+            if e.errno == errno.ENOENT:
+                logger.info("mac_addr file does not exist")
+                return
+            raise RegistrationFailedException(node_name, e.strerror)
 
     @log
     def __generate_ipxe_file(self, node_name, target_name):
@@ -211,121 +242,144 @@ class BMI:
         self.db.close()
 
     # Provisions from HIL and Boots the given node with given image
-    @log
-    def provision(self, node_name, img_name, nic):
-        try:
-            mac_addr = "01-" + self.hil.get_node_mac_addr(node_name, nic). \
-                replace(":", "-")
 
+    @log
+    def create_disk(self, disk_name, img_name):
+        """
+        Creates a new image named <disk_name> from <img_name>,
+        and then creates an iscsi endpoint for <disk_name>.
+        Returns the disk image name (which also happens to be the iscsi target
+        name)
+        Note: The name of the iscsi target and the name of disk in ceph is same
+        """
+        # Database Operations
+        try:
+            # Find the image id by using the image name, and then create a new
+            # entry for the new disk image.
             parent_id = self.db.image.fetch_id_with_name_from_project(img_name,
                                                                       self.proj
                                                                       )
-            self.db.image.insert(node_name, self.pid, parent_id)
-            clone_ceph_name = self.__get_ceph_image_name(node_name)
+            self.db.image.insert(disk_name, self.pid, parent_id)
+
+            # This generates the name that BMI *must* have used when it created
+            # the copy in ceph of img_name
             ceph_img_name = self.__get_ceph_image_name(img_name)
+
+            # Prepare the ceph image name to be used.
+            clone_ceph_name = self.__get_ceph_image_name(disk_name)
+        except db_exceptions.ORMException as e:
+            clone_ceph_name = self.__get_ceph_image_name(disk_name)
+            return {constants.STATUS_CODE_KEY: 409,
+                    constants.MESSAGE_KEY:
+                    "Disk exists. Endpoint:" + clone_ceph_name}
+        except DBException as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+        # Storage Operations
+        try:
             self.fs.clone(ceph_img_name, self.cfg.bmi.snapshot,
                           clone_ceph_name)
-            ceph_config = self.cfg.fs
-            logger.debug("Contents of ceph_config = %s", str(ceph_config))
+        except FileSystemException as e:
+            logger.exception('')
+            self.db.image.delete_with_name_from_project(disk_name, self.proj)
+
+        # iSCSI Operations
+        try:
             self.iscsi.add_target(clone_ceph_name)
-            logger.info("The create command was executed successfully")
-            self.__register(node_name, img_name, clone_ceph_name, mac_addr)
+        except ISCSIException as e:
+            logger.exception('')
+            self.fs.remove(clone_ceph_name)
+            self.db.image.delete_with_name_from_project(disk_name, self.proj)
+
+        logger.info("The create_disk command was executed successfully")
+
+        # This will be changed to return a list of all targets, with each
+        # target including the endpoint, port and target name.
+        return self.__return_success(clone_ceph_name)
+
+    @log
+    def delete_disk(self, disk_name):
+        """
+        Deletes the disk image <disk_name>. Also deletes the iSCSI target
+        pointing to that image.
+        """
+        try:
+            # Get the ceph image name.
+            ceph_img_name = self.__get_ceph_image_name(disk_name)
+        except DBException as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+        try:
+            self.iscsi.remove_target(ceph_img_name)
+        except ISCSIException as e:
+            logger.exception('')
+            return self.__return_error(e)
+
+        try:
+            ret = self.fs.remove(str(ceph_img_name).encode("utf-8"))
+        except FileSystemException as e:
+            # what if this fails? Also, we should check if it doesnt exists
+            # in ceph then continue, otherwise raise an error.
+            self.isci.add_target(ceph_img_name)
+            return self.__return_error(e)
+
+        # If __get_ceph_image_name(disk_name) passes, then it confirms that
+        # existence of disk_name, and then this delete from db command should
+        # succeed. Will think more if I need to wrap this up in a try except
+        # block.
+        self.db.image.delete_with_name_from_project(disk_name, self.proj)
+        return self.__return_success(ret)
+
+    @log
+    def provision(self, node_name, disk_name, nic):
+        """
+        This takes in the name of the disk, and then creates the ipxe
+        and macaddress file for <node> with <nic>
+        """
+        try:
+            mac_addr = "01-" + self.hil.get_node_mac_addr(node_name, nic). \
+                replace(":", "-")
+            clone_ceph_name = self.__get_ceph_image_name(disk_name)
+            self.__register(node_name, disk_name, clone_ceph_name, mac_addr)
             return self.__return_success(True)
 
-        except RegistrationFailedException as e:
-            # Message is being handled by custom formatter
-            # TODO: add a deployment and a unit test for this case.
-            logger.exception('')
-            clone_ceph_name = self.__get_ceph_image_name(node_name)
-            self.iscsi.remove_target(clone_ceph_name)
-            self.fs.remove(clone_ceph_name)
-            self.db.image.delete_with_name_from_project(node_name, self.proj)
-            time.sleep(constants.HIL_CALL_TIMEOUT)
-            return self.__return_error(e)
-
-        except ISCSIException as e:
-            # Message is being handled by custom formatter
-            logger.exception('')
-            clone_ceph_name = self.__get_ceph_image_name(node_name)
-            self.fs.remove(clone_ceph_name)
-            self.db.image.delete_with_name_from_project(node_name, self.proj)
-            time.sleep(constants.HIL_CALL_TIMEOUT)
-            return self.__return_error(e)
-
-        except FileSystemException as e:
-            # Message is being handled by custom formatter
-            logger.exception('')
-            self.db.image.delete_with_name_from_project(node_name, self.proj)
-            time.sleep(constants.HIL_CALL_TIMEOUT)
-            return self.__return_error(e)
-        except DBException as e:
-            # Message is being handled by custom formatter
-            logger.exception('')
-            time.sleep(constants.HIL_CALL_TIMEOUT)
-            return self.__return_error(e)
-        except HILException as e:
+        except (RegistrationFailedException, DBException, HILException) as e:
             # Message is being handled by custom formatter
             logger.exception('')
             return self.__return_error(e)
 
-    # This is for detach a node and removing it from iscsi
-    # and destroying its image
     @log
     def deprovision(self, node_name, nic):
-        ceph_img_name = None
+        """
+        This takes in the name of the node and nic to deprovision.
+        This method deletes the ipxe file and the bootfile.
+        """
         try:
-            ceph_img_name = self.__get_ceph_image_name(node_name)
-            self.db.image.delete_with_name_from_project(node_name, self.proj)
-            ceph_config = self.cfg.fs
-            logger.debug("Contents of ceph+config = %s", str(ceph_config))
-            self.iscsi.remove_target(ceph_img_name)
-            logger.info("The delete command was executed successfully")
-            ret = self.fs.remove(str(ceph_img_name).encode("utf-8"))
-            return self.__return_success(ret)
+            mac_addr = "01-" + self.hil.get_node_mac_addr(node_name, nic). \
+                replace(":", "-")
+            self.__unregister(node_name, mac_addr)
+            return self.__return_success(True)
 
-        except FileSystemException as e:
-            logger.exception('')
-            self.iscsi.add_target(ceph_img_name)
-            parent_name = self.fs.get_parent_info(ceph_img_name)[1]
-
-            parent_id = self.db.image.fetch_id_with_name_from_project(
-                parent_name,
-                self.proj)
-            self.db.image.insert(node_name, self.pid, parent_id,
-                                 id=self.__extract_id(ceph_img_name))
-            time.sleep(constants.HIL_CALL_TIMEOUT)
-            return self.__return_error(e)
-        except ISCSIException as e:
-            logger.exception('')
-            parent_name = self.fs.get_parent_info(ceph_img_name)[1]
-            parent_id = self.db.image.fetch_id_with_name_from_project(
-                parent_name,
-                self.proj)
-            self.db.image.insert(node_name, self.pid, parent_id,
-                                 id=self.__extract_id(ceph_img_name))
-            time.sleep(constants.HIL_CALL_TIMEOUT)
-            return self.__return_error(e)
-        except DBException as e:
-            logger.exception('')
-            time.sleep(constants.HIL_CALL_TIMEOUT)
-            return self.__return_error(e)
-        except HILException as e:
+        except (RegistrationFailedException, HILException) as e:
+            # Message is being handled by custom formatter
             logger.exception('')
             return self.__return_error(e)
 
     # Creates snapshot for the given image with snap_name as given name
     # fs_obj will be populated by decorator
     @log
-    def create_snapshot(self, node_name, snap_name):
+    def create_snapshot(self, disk_name, snap_name):
         try:
             self.hil.validate_project(self.proj)
 
-            ceph_img_name = self.__get_ceph_image_name(node_name)
+            ceph_img_name = self.__get_ceph_image_name(disk_name)
 
             self.fs.snap_image(ceph_img_name, self.cfg.bmi.snapshot)
             self.fs.snap_protect(ceph_img_name,
                                  self.cfg.bmi.snapshot)
-            parent_id = self.db.image.fetch_parent_id(self.proj, node_name)
+            parent_id = self.db.image.fetch_parent_id(self.proj, disk_name)
             self.db.image.insert(snap_name, self.pid, parent_id,
                                  is_snapshot=True)
             snap_ceph_name = self.__get_ceph_image_name(snap_name)
@@ -391,7 +445,9 @@ class BMI:
             return self.__return_error(e)
 
     @log
-    def list_provisioned_nodes(self):
+    def list_disks(self):
+        """Show all disks that belong to <project>."""
+
         try:
             clones = self.db.image.fetch_clones_from_project(self.proj)
             return self.__return_success(clones)
@@ -421,8 +477,8 @@ class BMI:
 
         Clone an image in ceph to be used by BMI.
 
-        :param img: Name of image in ceph
-        :return: True on successful completion
+        : param img: Name of image in ceph
+        : return: True on successful completion
         """
 
         try:
@@ -475,8 +531,8 @@ class BMI:
         import_ceph_image except we can directly start the cloning process
         because it is already a snapshot.
 
-        :param img: Name of snapshot in ceph
-        :return: True on successful completion
+        : param img: Name of snapshot in ceph
+        : return: True on successful completion
         """
         try:
             ceph_img_name = str(img)
@@ -549,11 +605,11 @@ class BMI:
         """
         Create a deep copy of src image
 
-        :param img1: Name of src image
-        :param dest_project: Name of the project where des image will be
+        : param img1: Name of src image
+        : param dest_project: Name of the project where des image will be
         created
-        :param img2: Name of des image
-        :return: True on successful completion
+        : param img2: Name of des image
+        : return: True on successful completion
         """
         try:
             if not self.is_admin and (self.proj != dest_project):
