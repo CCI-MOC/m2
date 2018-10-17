@@ -23,6 +23,7 @@ LOGS_SECTION = 'logs'
 TFTP_SECTION = 'tftp'
 TESTS_SECTION = 'tests'
 DRIVER_SECTION = 'driver'
+TEMPLATES_SECTION = 'templates'
 
 NET_ISOLATOR_DRIVER_OPT = 'net_isolator'
 ISCSI_DRIVER_OPT = 'iscsi'
@@ -127,3 +128,5 @@ HIL_CALL_TIMEOUT = 10
 BMI_ADMIN_PROJECT = "bmi_infra"
 
 HIL_BMI_CHANNEL = "vlan/native"
+
+TGT_TEMPLATE_FILE = 'tgt_template_location'

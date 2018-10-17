@@ -8,6 +8,9 @@ def parse_config(cfg):
     cfg.option(constants.BMI_SECTION, constants.SERVICE_OPT, type=bool)
     cfg.option(constants.BMI_SECTION, constants.SNAPSHOT_OPT)
 
+    # Template section
+    cfg.option(constants.TEMPLATES_SECTION, constants.TGT_TEMPLATE_FILE)
+
     # DB Section
     cfg.option(constants.DB_SECTION, constants.DB_PATH_OPT)
 
