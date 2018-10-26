@@ -39,8 +39,12 @@ def parse_config(cfg):
     cfg.option(constants.DRIVER_SECTION, constants.ISCSI_DRIVER_OPT)
     cfg.option(constants.DRIVER_SECTION, constants.FS_DRIVER_OPT)
 
-    # Mandatory Sections (Typically Driver Sections)
+    # ISCSI section
     cfg.section(constants.ISCSI_SECTION)
+    cfg.option(constants.ISCSI_SECTION, constants.PRIMARY_ISCSI_HOST)
+    cfg.option(constants.ISCSI_SECTION, constants.SECONDARY_ISCSI_HOST)
+
+    # Mandatory Sections (Typically Driver Sections)
     cfg.section(constants.NET_ISOLATOR_SECTION)
     cfg.section(constants.FS_SECTION)
 

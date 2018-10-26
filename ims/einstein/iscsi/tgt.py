@@ -37,7 +37,7 @@ class TGT(ISCSI):
         :return: None
         """
         try:
-            command = 'systemctl start tgtd'
+            command = 'sudo systemctl start tgtd'
             self.client.run_command(command)
         except UnknownHostException as e:
             raise iscsi_exceptions.StartFailedException()
@@ -50,7 +50,7 @@ class TGT(ISCSI):
         :return: None
         """
         try:
-            command = 'systemctl stop tgtd'
+            command = 'sudo systemctl stop tgtd'
             self.client.run_command(command)
         except UnknownHostException as e:
             raise iscsi_exceptions.StopFailedException()
@@ -63,7 +63,7 @@ class TGT(ISCSI):
         :return: None
         """
         try:
-            command = 'systemctl restart tgtd'
+            command = 'sudo systemctl restart tgtd'
             self.client.run_command(command)
         except UnknownHostException as e:
             raise iscsi_exceptions.RestartFailedException()
@@ -125,9 +125,9 @@ class TGT(ISCSI):
             raise iscsi_exceptions.TargetExistsException()
 
         self.__generate_config_file(target_name)
-        command = "tgt-admin --execute"
+        command = "sudo tgt-admin --execute"
         try:
-            output = primary_client.run_command(command)
+            output = self.client.run_command(command)
         except UnknownHostException as e:
             raise iscsi_exceptions.TargetCreationFailed(str(e))
 
@@ -143,19 +143,16 @@ class TGT(ISCSI):
         if target_name not in targets:
             raise iscsi_exceptions.TargetDoesntExistException()
 
-        config_file = os.path.join('/tmp/', target_name + ".conf")
-        # TODO: Remove the files from both iscsi servers and run the
-        # tgt-admin command on them.
-        os.remove(os.path.join(self.TGT_ISCSI_CONFIG,
-                                       target_name + ".conf"))
-                command = "tgt-admin -f --delete {0}".format(target_name)
-                output = shell.call(command, sudo=True)
-                logger.debug("Output = %s", output)
-            else:
-                raise iscsi_exceptions.TargetDoesntExistException()
-        except (IOError, OSError) as e:
-            raise iscsi_exceptions.TargetDeletionFailed(str(e))
-        except shell_exceptions.CommandFailedException as e:
+        config_file = os.path.join(self.TGT_ISCSI_CONFIG, target_name + ".conf")
+        command = "tgt-admin -f --delete {0}".format(target_name)
+        try:
+            # Delete the configuration file from both remote hosts
+            delete_file = 'sudo rm -f ' + config_file
+            self.client.run_command(delete_file)
+            # Then delete the target
+            output = self.client.run_command(command)
+            logger.debug("Output = %s", output)
+        except UnknownHostException as e:
             raise iscsi_exceptions.TargetDeletionFailed(str(e))
 
     @log
@@ -167,7 +164,7 @@ class TGT(ISCSI):
         :return: target list
         """
         primary_client = ParallelSSHClient([primary_iscsi])
-        command = "tgt-admin -s"
+        command = "sudo tgt-admin -s"
         try:
             output = primary_client.run_command(command)
         except UnknownHostException as e:
@@ -175,6 +172,7 @@ class TGT(ISCSI):
 
         # The output returned by parallelSSHClient is a generator
         # so I am collecting all the lines in a list.
+        # TODO: Test the consume output flag
         formatted_output = []
         for line in output.items()[0][1].stdout:
             formatted_output.append(line)

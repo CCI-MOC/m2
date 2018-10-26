@@ -33,8 +33,8 @@ FS_DRIVER_OPT = 'fs'
 NET_ISOLATOR_URL_OPT = 'url'
 
 # ISCSI Keys
-ISCSI_PASSWORD_OPT = 'password'
-ISCSI_IP_OPT = 'ip'
+PRIMARY_ISCSI_HOST = 'primary_iscsi_host'
+SECONDARY_ISCSI_HOST = 'secondary_iscsi_host'
 
 # DB
 DB_PATH_OPT = 'path'

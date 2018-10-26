@@ -40,7 +40,10 @@ class BMI:
             # Need to make this generic by passing specific config
             self.iscsi = TGT(self.cfg.fs.conf_file,
                              self.cfg.fs.id,
-                             self.cfg.fs.pool)
+                             self.cfg.fs.pool,
+                             self.cfg.iscsi.primary_iscsi_host,
+                             self.cfg.iscsi.secondary_iscsi_host,
+                             self.cfg.templates.tgt_template_location)
         elif args.__len__() == 3:
             username, password, project = args
             self.cfg = config.get()
@@ -62,7 +65,10 @@ class BMI:
             # self.iscsi = IET(self.fs, self.config.iscsi_update_password)
             self.iscsi = TGT(self.cfg.fs.conf_file,
                              self.cfg.fs.id,
-                             self.cfg.fs.pool)
+                             self.cfg.fs.pool,
+                             self.cfg.iscsi.primary_iscsi,
+                             self.cfg.iscsi.secondary_iscsi,
+                             self.cfg.templates.tgt_template_location)
 
     def __enter__(self):
         return self
@@ -171,7 +177,7 @@ class BMI:
                     line = line.replace(constants.IPXE_TARGET_NAME,
                                         target_name)
                     line = line.replace(constants.IPXE_ISCSI_IP,
-                                        self.cfg.iscsi.ip)
+                                        self.cfg.iscsi.primary_iscsi_host)
                     ipxe.write(line)
             logger.info("Generated ipxe file")
             os.chmod(path, 0755)
