@@ -43,7 +43,7 @@ class BMI:
                              self.cfg.fs.pool,
                              self.cfg.iscsi.primary_iscsi_host,
                              self.cfg.iscsi.secondary_iscsi_host,
-                             self.cfg.templates.tgt_template_location)
+                             self.cfg.templates.tgt_template_file)
         elif args.__len__() == 3:
             username, password, project = args
             self.cfg = config.get()
@@ -68,7 +68,7 @@ class BMI:
                              self.cfg.fs.pool,
                              self.cfg.iscsi.primary_iscsi,
                              self.cfg.iscsi.secondary_iscsi,
-                             self.cfg.templates.tgt_template_location)
+                             self.cfg.templates.tgt_template_file)
 
     def __enter__(self):
         return self

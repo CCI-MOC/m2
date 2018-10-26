@@ -129,4 +129,4 @@ BMI_ADMIN_PROJECT = "bmi_infra"
 
 HIL_BMI_CHANNEL = "vlan/native"
 
-TGT_TEMPLATE_FILE = 'tgt_template_location'
+TGT_TEMPLATE_FILE = 'tgt_template_file'
