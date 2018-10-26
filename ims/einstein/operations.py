@@ -66,8 +66,8 @@ class BMI:
             self.iscsi = TGT(self.cfg.fs.conf_file,
                              self.cfg.fs.id,
                              self.cfg.fs.pool,
-                             self.cfg.iscsi.primary_iscsi,
-                             self.cfg.iscsi.secondary_iscsi,
+                             self.cfg.iscsi.primary_iscsi_host,
+                             self.cfg.iscsi.secondary_iscsi_host,
                              self.cfg.templates.tgt_template_file)
 
     def __enter__(self):
