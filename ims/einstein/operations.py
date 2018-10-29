@@ -41,9 +41,9 @@ class BMI:
             self.iscsi = TGT(self.cfg.fs.conf_file,
                              self.cfg.fs.id,
                              self.cfg.fs.pool,
+                             self.cfg.templates.tgt_template_file,
                              self.cfg.iscsi.primary_iscsi_host,
-                             self.cfg.iscsi.secondary_iscsi_host,
-                             self.cfg.templates.tgt_template_file)
+                             self.cfg.iscsi.secondary_iscsi_host)
         elif args.__len__() == 3:
             username, password, project = args
             self.cfg = config.get()
@@ -66,9 +66,9 @@ class BMI:
             self.iscsi = TGT(self.cfg.fs.conf_file,
                              self.cfg.fs.id,
                              self.cfg.fs.pool,
+                             self.cfg.templates.tgt_template_file,
                              self.cfg.iscsi.primary_iscsi_host,
-                             self.cfg.iscsi.secondary_iscsi_host,
-                             self.cfg.templates.tgt_template_file)
+                             self.cfg.iscsi.secondary_iscsi_host)
 
     def __enter__(self):
         return self
@@ -291,6 +291,7 @@ class BMI:
             self.db.image.delete_with_name_from_project(disk_name, self.proj)
 
         # iSCSI Operations
+        self.iscsi.assert_running()
         try:
             self.iscsi.add_target(clone_ceph_name)
         except ISCSIException as e:
@@ -316,7 +317,8 @@ class BMI:
         except DBException as e:
             logger.exception('')
             return self.__return_error(e)
-
+        
+        self.iscsi.assert_running()
         try:
             self.iscsi.remove_target(ceph_img_name)
         except ISCSIException as e:

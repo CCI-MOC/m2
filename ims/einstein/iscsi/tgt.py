@@ -8,8 +8,9 @@ from ims.exception import shell_exceptions
 from ims.exception.exception import ShellException
 from ims.interfaces.iscsi import ISCSI
 
-from pssh.clients import ParallelSSHClient
+from pssh.clients import ParallelSSHClient, SSHClient
 from pssh.exceptions import UnknownHostException
+from gevent import joinall
 
 logger = create_logger(__name__)
 
@@ -19,13 +20,16 @@ class TGT(ISCSI):
 
     # TODO add TGT_ISCSI_CONFIG in config, update in PR related to Issue #30
     # TODO add service name in config
-    def __init__(self, fs_config_loc, fs_user, fs_pool, primary_iscsi, secondary_iscsi, tgt_template_file):
+    def __init__(self, fs_config_loc, fs_user, fs_pool, tgt_template_file, primary_iscsi, secondary_iscsi=None):
         self.TGT_ISCSI_CONFIG = "/etc/tgt/conf.d/"
         self.fs_config_loc = fs_config_loc
         self.fs_user = fs_user
         self.fs_pool = fs_pool
+        self.primary_iscsi = primary_iscsi
+        self.secondary_iscsi = secondary_iscsi
+        self.tgt_template_file = tgt_template_file
         if secondary_iscsi is None:
-            self.client = ParallelSSHClient([primary_iscsi])
+            self.client = SSHClient([primary_iscsi])
         else:
             self.client = ParallelSSHClient([primary_iscsi, secondary_iscsi])
 
@@ -38,9 +42,13 @@ class TGT(ISCSI):
         """
         try:
             command = 'sudo systemctl start tgtd'
-            self.client.run_command(command)
+            output = self.client.run_command(command)
+            self.client.join(output)
         except UnknownHostException as e:
             raise iscsi_exceptions.StartFailedException()
+        
+        for status in output.values():
+            assert status.exit_code == 0, "Failed to start TGTd"
 
     @log
     def stop_server(self):
@@ -51,9 +59,13 @@ class TGT(ISCSI):
         """
         try:
             command = 'sudo systemctl stop tgtd'
-            self.client.run_command(command)
+            output = self.client.run_command(command)
+            self.client.join(output)
         except UnknownHostException as e:
             raise iscsi_exceptions.StopFailedException()
+        
+        for status in output.values():
+            assert status.exit_code == 0, "Failed to stop TGTd"
 
     @log
     def restart_server(self):
@@ -64,22 +76,32 @@ class TGT(ISCSI):
         """
         try:
             command = 'sudo systemctl restart tgtd'
-            self.client.run_command(command)
+            output = self.client.run_command(command)
+            self.client.join(output)
         except UnknownHostException as e:
             raise iscsi_exceptions.RestartFailedException()
+        
+        for status in output.values():
+            assert status.exit_code == 0, "Failed to restart TGTd"
 
     @log
-    def show_status(self):
+    def assert_running(self):
         """
-        Returns the status of tgtd
+        Asserts that both iscsi servers are reachable
+        and have tgtd running.  
 
-        :return: Running or Dead or Error as String
+        :return: None.
         """
-        pass
-        # FIXME: Actually check the status of TGTD on both machine
-        # If TGTD is not running on any of the machine, raise an error.
-        # Also, actually call this method in operations.py before doing
-        # any other operation.
+        # Get the status of tgtd from both machines
+        command = "systemctl is-active tgtd"
+        try:
+            output = self.client.run_command(command)
+            self.client.join(output)
+        except UnknownHostException as e:
+            raise iscsi_exceptions.ListTargetFailedException(str(e))
+        # Store the output in dictionaries
+        for status in output.values():
+            assert status.exit_code == 0, "TGT is not active on one of the servers"
 
     def __generate_config_file(self, target_name):
         """
@@ -89,9 +111,10 @@ class TGT(ISCSI):
         :return: None
         """
         # Create the config file in /tmp/
+        config_file_name = target_name + ".conf"
+        config_file_path = os.path.join('/tmp/', config_file_name)
         try:
-            config_file = os.path.join('/tmp/', target_name + ".conf")
-            config = open(config_file, 'w')
+            config = open(config_file_path, 'w')
             for line in open(self.tgt_template_file, 'r'):
                 line = line.replace('${target_name}', target_name)
                 line = line.replace('${ceph_user}', self.fs_user)
@@ -104,14 +127,16 @@ class TGT(ISCSI):
 
         # Copy the config file to the iscsi servers
         try:
-            self.client.copy_file(config_file, self.TGT_ISCSI_CONFIG)
+            cmds = self.client.copy_file(config_file_path, self.TGT_ISCSI_CONFIG + config_file_name)
+            if self.secondary_iscsi is not None:
+                joinall(cmds, raise_error=True)
+                # Check pxssh errors here
         except UnknownHostException as e:
             raise iscsi_exceptions.TargetCreationFailed(str(e))
 
         # Delete the file from /tmp/
-        os.remove(config_file)
+        os.remove(config_file_path)
 
-    # TODO Add tgt-admin to config
     @log
     def add_target(self, target_name):
         """
@@ -128,8 +153,12 @@ class TGT(ISCSI):
         command = "sudo tgt-admin --execute"
         try:
             output = self.client.run_command(command)
+            self.client.join(output)
         except UnknownHostException as e:
             raise iscsi_exceptions.TargetCreationFailed(str(e))
+        
+        for status in output.values():
+            assert status.exit_code == 0, "Faied to add target on one or both machines"
 
     @log
     def remove_target(self, target_name):
@@ -144,41 +173,53 @@ class TGT(ISCSI):
             raise iscsi_exceptions.TargetDoesntExistException()
 
         config_file = os.path.join(self.TGT_ISCSI_CONFIG, target_name + ".conf")
-        command = "tgt-admin -f --delete {0}".format(target_name)
+        command = "sudo tgt-admin -f --delete {0}".format(target_name)
         try:
             # Delete the configuration file from both remote hosts
             delete_file = 'sudo rm -f ' + config_file
             self.client.run_command(delete_file)
             # Then delete the target
             output = self.client.run_command(command)
-            logger.debug("Output = %s", output)
+            self.client.join(output)
         except UnknownHostException as e:
             raise iscsi_exceptions.TargetDeletionFailed(str(e))
+        
+        for status in output.values():
+            assert status.exit_code == 0, "Faied to add remove target form one or both machines"
 
     @log
     def list_targets(self):
         """
         Lists all the targets available by querying tgt-admin.
-        We only check the primary TGT server to get the list of targets.
-
+        
+        We check both primary and secondary servers for the list.
+        If the targets dont match no both hosts, an assertion error
+        is raised.
         :return: target list
         """
-        primary_client = ParallelSSHClient([primary_iscsi])
-        command = "sudo tgt-admin -s"
+        # Run the tgt command to collect the raw output
+        command = "sudo tgt-admin -s|grep Target"
         try:
-            output = primary_client.run_command(command)
+            output = self.client.run_command(command)
+            self.client.join(output)
         except UnknownHostException as e:
             raise iscsi_exceptions.ListTargetFailedException(str(e))
+        
+        target = {}
+        # Store targets from both iscsi servers
+        for host, host_output in output.items():
+            target[host] = []
+            for line in host_output.stdout:
+                target[host].append(line)
+        logger.debug("Output = %s", target)
 
-        # The output returned by parallelSSHClient is a generator
-        # so I am collecting all the lines in a list.
-        # TODO: Test the consume output flag
-        formatted_output = []
-        for line in output.items()[0][1].stdout:
-            formatted_output.append(line)
-        logger.debug("Output = %s", formatted_output)
+        # Make sure both iscsi servers have the same targets
+        if self.secondary_iscsi is not None:
+            assert target[self.primary_iscsi] == target[self.secondary_iscsi]
 
+        # Prepare the target_list to be returned.
         target_list = [target.split(":")[1].strip() for target in
-                       formatted_output if
+                       target[self.primary_iscsi] if
                        re.match("^Target [0-9]+:", target)]
         return target_list
+
