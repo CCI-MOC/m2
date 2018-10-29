@@ -10,6 +10,7 @@ def parse_config(cfg):
 
     # Template section
     cfg.option(constants.TEMPLATES_SECTION, constants.TGT_TEMPLATE_FILE)
+    cfg.option(constants.TEMPLATES_SECTION, constants.IPXE_TEMPLATE_FILE)
 
     # DB Section
     cfg.option(constants.DB_SECTION, constants.DB_PATH_OPT)

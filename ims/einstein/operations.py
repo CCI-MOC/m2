@@ -166,18 +166,18 @@ class BMI:
 
     @log
     def __generate_ipxe_file(self, node_name, target_name):
-        template_loc = os.path.abspath(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-        logger.debug("Template LOC = %s", template_loc)
+        template_loc = self.cfg.templates.ipxe_template_file
         path = self.cfg.tftp.ipxe_path + node_name + ".ipxe"
         logger.debug("The Path for ipxe file is %s", path)
         try:
             with open(path, 'w') as ipxe:
-                for line in open(template_loc + "/ipxe.temp", 'r'):
+                for line in open(template_loc, 'r'):
                     line = line.replace(constants.IPXE_TARGET_NAME,
                                         target_name)
-                    line = line.replace(constants.IPXE_ISCSI_IP,
+                    line = line.replace(constants.IPXE_ISCSI_IP_1,
                                         self.cfg.iscsi.primary_iscsi_host)
+                    line = line.replace(constants.IPXE_ISCSI_IP_2,
+                                        self.cfg.iscsi.secondary_iscsi_host)
                     ipxe.write(line)
             logger.info("Generated ipxe file")
             os.chmod(path, 0755)

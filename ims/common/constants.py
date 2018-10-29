@@ -107,7 +107,8 @@ CHANNEL_PARAMETER = "channel"
 
 # Template Parameters
 IPXE_TARGET_NAME = "${target_name}"
-IPXE_ISCSI_IP = "${iscsi_ip}"
+IPXE_ISCSI_IP_1 = "${iscsi_ip_1}"
+IPXE_ISCSI_IP_2 = "${iscsi_ip_2}"
 MAC_IMG_NAME = "${img_name}"
 MAC_IPXE_NAME = "${ipxe.file}"
 CEPH_IMG_NAME = "${ceph_img_name}"
@@ -130,3 +131,4 @@ BMI_ADMIN_PROJECT = "bmi_infra"
 HIL_BMI_CHANNEL = "vlan/native"
 
 TGT_TEMPLATE_FILE = 'tgt_template_file'
+IPXE_TEMPLATE_FILE = 'ipxe_template_file'
