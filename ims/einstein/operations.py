@@ -291,7 +291,7 @@ class BMI:
             self.db.image.delete_with_name_from_project(disk_name, self.proj)
 
         # iSCSI Operations
-        self.iscsi.assert_running()
+        self.iscsi.ensure_running()
         try:
             self.iscsi.add_target(clone_ceph_name)
         except ISCSIException as e:
@@ -317,8 +317,8 @@ class BMI:
         except DBException as e:
             logger.exception('')
             return self.__return_error(e)
-        
-        self.iscsi.assert_running()
+
+        self.iscsi.ensure_running()
         try:
             self.iscsi.remove_target(ceph_img_name)
         except ISCSIException as e:
