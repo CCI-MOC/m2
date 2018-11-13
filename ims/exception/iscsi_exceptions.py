@@ -98,4 +98,4 @@ class PSSHException(ISCSIException):
         self.error = error
 
     def __str__(self):
-        return "PSSH reports an error {0}".format(self.error)
+        return "Could not connect to iscsi servers: {0}".format(self.error)

@@ -289,15 +289,17 @@ class BMI:
         except FileSystemException as e:
             logger.exception('')
             self.db.image.delete_with_name_from_project(disk_name, self.proj)
+            return self.__return_error(e)
 
         # iSCSI Operations
-        self.iscsi.ensure_running()
         try:
+            self.iscsi.ensure_running()
             self.iscsi.add_target(clone_ceph_name)
         except ISCSIException as e:
             logger.exception('')
             self.fs.remove(clone_ceph_name)
             self.db.image.delete_with_name_from_project(disk_name, self.proj)
+            return self.__return_error(e)
 
         logger.info("The create_disk command was executed successfully")
 
@@ -318,8 +320,8 @@ class BMI:
             logger.exception('')
             return self.__return_error(e)
 
-        self.iscsi.ensure_running()
         try:
+            self.iscsi.ensure_running()
             self.iscsi.remove_target(ceph_img_name)
         except ISCSIException as e:
             logger.exception('')

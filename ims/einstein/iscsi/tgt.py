@@ -42,11 +42,10 @@ class TGT(ISCSI):
         :return: None
         """
         command = 'sudo systemctl start tgtd'
-        output = self._run_command(command)
-        for status in output.values():
-            if status.exit_code != 0:
-                raise iscsi_exceptions.StartFailedException(
-                    "Failed to start TGTd on one or either hosts")
+        self._check_status(
+            self._run_command(command),
+            iscsi_exceptions.StartFailedException,
+            "Failed to start TGTd on one or either hosts")
 
     @log
     def ensure_running(self):
@@ -94,7 +93,6 @@ class TGT(ISCSI):
                 config_file_path, self.TGT_ISCSI_CONFIG + config_file_name)
             if self.secondary_iscsi is not None:
                 joinall(cmds, raise_error=True)
-                # Check pxssh errors here
         except Exception as e:
             if type(e).__name__ in dir(pssh.exceptions):
                 raise iscsi_exceptions.PSSHException(
@@ -118,19 +116,18 @@ class TGT(ISCSI):
             raise iscsi_exceptions.TargetExistsException()
 
         self.__generate_config_file(target_name)
-        command = "sudo tgt-admin --execute"
-        output = self._run_command(command)
 
-        for status in output.values():
-            if status.exit_code != 0:
-                raise iscsi_exceptions.TargetCreationFailed(
-                    "One of the iscsi machines returend non-zero exit status "
-                    " when adding a target")
+        command = "sudo tgt-admin --execute"
+        self._check_status(
+            self._run_command(command),
+            iscsi_exceptions.TargetCreationFailed,
+            "One of the iscsi machines returend non-zero exit status "
+            " when adding a target")
 
     @log
     def remove_target(self, target_name):
         """
-        Removes target specified
+        Removes <target_name> and deletes the configuration file.
 
         :param target_name: Name of target to be removed
         :return: None
@@ -141,25 +138,21 @@ class TGT(ISCSI):
 
         config_file = os.path.join(
             self.TGT_ISCSI_CONFIG, target_name + ".conf")
-        command = "sudo tgt-admin -f --delete {0}".format(target_name)
-        try:
-            # Delete the configuration file from both remote hosts
-            delete_file = 'sudo rm -f ' + config_file
-            # Then delete the target
-            output = self.client.run_command(command)
-            self.client.join(output)
-        except Exception as e:
-            if type(e).__name__ in dir(pssh.exceptions):
-                raise iscsi_exceptions.PSSHException(
-                    "Trouble with ssh connection to iscsi servers: " + str(e))
-            else:
-                raise iscsi_exceptions.TargetDeletionFailed(str(e))
 
-        for status in output.values():
-            if status.exit_code != 0:
-                raise iscsi_exceptions.TargetDeletionFailed(
-                    "One of the iscsi machines returend non-zero exit status "
-                    " when removing a target")
+        # Delete the configuration file from both remote hosts
+        delete_file = 'sudo rm -f ' + config_file
+        self._check_status(
+            self._run_command(delete_file),
+            iscsi_exceptionsTargetDeletionFailed,
+            "Failed to delete configuration file")
+
+        # Delete the iscsi target
+        command = "sudo tgt-admin -f --delete {0}".format(target_name)
+        self._check_status(
+            self._run_command(command),
+            iscsi_exceptions.TargetDeletionFailed,
+            "One of the iscsi machines returend non-zero exit status "
+            " when removing a target")
 
     @log
     def list_targets(self):
@@ -174,12 +167,6 @@ class TGT(ISCSI):
         # Run the tgt command to collect the raw output
         command = "sudo tgt-admin -s|grep Target"
         output = self._run_command(command)
-
-        for status in output.values():
-            if status.exit_code != 0:
-                raise iscsi_exceptions.ListTargetFailedException(
-                    "One of the iscsi machines returend non-zero exit status "
-                    " when listing targets")
 
         target = {}
         # Store targets from both iscsi servers
@@ -211,9 +198,15 @@ class TGT(ISCSI):
             self.client.join(output)
         except Exception as e:
             if type(e).__name__ in dir(pssh.exceptions):
-                raise iscsi_exceptions.PSSHException(
-                    "Trouble with ssh connection to iscsi servers: " + str(e))
+                raise iscsi_exceptions.PSSHException(e)
             else:
                 raise
 
         return output
+
+    @log
+    def _check_status(self, output, custom_exception, message):
+        """Check the exit status from output of a command"""
+        for status in output.values():
+            if status.exit_code != 0:
+                raise custom_exception(message)
