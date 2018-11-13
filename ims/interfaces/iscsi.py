@@ -37,22 +37,6 @@ class ISCSI(object):
         '''
         pass
 
-    @abstractmethod
-    def stop_server(self):
-        '''
-        Stops the iscsi server
-        :return:
-        '''
-        pass
-
-    @abstractmethod
-    def restart_server(self):
-        '''
-        Restart the iscsi server.
-        :return:
-        '''
-        pass
-
     def persist_targets(self):
         '''
         Restart the iscsi server.

@@ -59,7 +59,7 @@ class TGT(ISCSI):
         """
         # Get the status of tgtd from both machines
         command = "systemctl is-active tgtd"
-        output = _run_command(command)
+        output = self._run_command(command)
 
         for status in output.values():
             if status.exit_code != 0:
@@ -96,7 +96,7 @@ class TGT(ISCSI):
                 joinall(cmds, raise_error=True)
                 # Check pxssh errors here
         except Exception as e:
-            if type(e).__name__ in dir(pssh.exceptions)
+            if type(e).__name__ in dir(pssh.exceptions):
                 raise iscsi_exceptions.PSSHException(
                     "Trouble with ssh connection to iscsi servers: " + str(e))
             else:
@@ -149,7 +149,7 @@ class TGT(ISCSI):
             output = self.client.run_command(command)
             self.client.join(output)
         except Exception as e:
-            if type(e).__name__ in dir(pssh.exceptions)
+            if type(e).__name__ in dir(pssh.exceptions):
                 raise iscsi_exceptions.PSSHException(
                     "Trouble with ssh connection to iscsi servers: " + str(e))
             else:
@@ -210,7 +210,7 @@ class TGT(ISCSI):
             output = self.client.run_command(command)
             self.client.join(output)
         except Exception as e:
-            if type(e).__name__ in dir(pssh.exceptions)
+            if type(e).__name__ in dir(pssh.exceptions):
                 raise iscsi_exceptions.PSSHException(
                     "Trouble with ssh connection to iscsi servers: " + str(e))
             else:
