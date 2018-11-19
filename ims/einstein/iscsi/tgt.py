@@ -143,7 +143,7 @@ class TGT(ISCSI):
         delete_file = 'sudo rm -f ' + config_file
         self._check_status(
             self._run_command(delete_file),
-            iscsi_exceptionsTargetDeletionFailed,
+            iscsi_exceptions.TargetDeletionFailed,
             "Failed to delete configuration file")
 
         # Delete the iscsi target
